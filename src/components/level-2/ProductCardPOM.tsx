@@ -57,7 +57,7 @@ export default function ProductCardPrductOfMonth({
     (settings.currency ) as string,
       (settings.locale ) as string
 );
-console.log("settings.currency---------------",settings.currency)
+
   let priceDiscounted;
   let priceTarget = product.price ?? 0;
   if (product.discountPrice && product.discountPrice > 0) {
@@ -79,6 +79,8 @@ console.log("settings.currency---------------",settings.currency)
     image: product.image,
     categoryId: product.categoryId,
     productCat: product.productCat!,
+    taxRate: product.taxRate,
+    taxType: product.taxType,
     
   };
 

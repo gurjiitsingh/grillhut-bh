@@ -10,13 +10,16 @@ import {
   updateOrderMaster,
 } from "@/app/(universal)/action/orders/dbOperations";
 
+const MAINTAIN_STOCK = process.env.NEXT_PUBLIC_MAINTAIN_STOCK === "true";
+const SEND_CUSTOMER_EMAIL = process.env.CUSTOMER_EMAIL_CONF === "true";
+const SEND_BUSINESS_EMAIL = process.env.BUSINESS_EMAIL_CONF === "true";
+
 export default function OrderComplete() {
   const searchParams = useSearchParams();
   const PaymentType = searchParams.get("paymentType");
   const Paymentstatus = searchParams.get("status");
   const orderId = searchParams.get("orderMasterId");
 
-  console.log("inside order complete--------------------------next dec stock");
   const router = useRouter();
 
   const { TEXT, BRANDING } = useLanguage();
@@ -25,7 +28,6 @@ export default function OrderComplete() {
   const id = orderId as string;
 
   async function updateOrderStatus(status: string) {
-    console.log("status ------------------------", status);
     await updateOrderMaster(id, status);
   }
 
@@ -56,7 +58,10 @@ export default function OrderComplete() {
         if (address !== undefined && address !== null) {
           const Address = JSON.parse(address);
           const email = Address.email as string;
-          await sendOrderConfirmationEmail(email);
+
+          if (SEND_CUSTOMER_EMAIL || SEND_BUSINESS_EMAIL) {
+            await sendOrderConfirmationEmail(email);
+          }
         }
 
         if (result === "success") {
@@ -91,10 +96,9 @@ export default function OrderComplete() {
     async function finalizeOrder() {
       await createOrder();
 
-      // ✅ Handle payment result and stock update
       if (PaymentType === "paypal" && Paymentstatus === "success") {
         await updateOrderStatus("Completed");
-        await decreaseProductStockFromOrder(id);
+        if (MAINTAIN_STOCK) await decreaseProductStockFromOrder(id);
       }
       if (PaymentType === "paypal" && Paymentstatus === "fail") {
         await updateOrderStatus("Payment failed");
@@ -102,16 +106,16 @@ export default function OrderComplete() {
 
       if (PaymentType === "stripe" && Paymentstatus === "success") {
         await updateOrderStatus("Completed");
-        await decreaseProductStockFromOrder(id);
+        if (MAINTAIN_STOCK) await decreaseProductStockFromOrder(id);
       }
       if (PaymentType === "stripe" && Paymentstatus === "fail") {
         await updateOrderStatus("Payment failed");
       }
 
-      // ✅ For COD, directly complete and update stock
+      // COD / Cash
       if (PaymentType === "cod" || PaymentType === "Barzahlung") {
         await updateOrderStatus("Completed");
-        await decreaseProductStockFromOrder(id);
+        if (MAINTAIN_STOCK) await decreaseProductStockFromOrder(id);
       }
     }
 

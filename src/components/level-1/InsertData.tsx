@@ -15,6 +15,8 @@ export default function InsertData({baseProductName,addOnData}:{baseProductName:
           image:addOnData.image,
           categoryId:"",
           productCat:"",
+          taxRate: undefined,
+  taxType: undefined,
         } 
   return (
     <CartButton cartProduct={cartProduct} />

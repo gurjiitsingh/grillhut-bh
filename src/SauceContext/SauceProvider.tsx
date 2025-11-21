@@ -5,7 +5,7 @@ import CartContext from "./SauceContext";
 
 //import { productT } from "@/lib/types/productT";
 import { addressT } from "@/lib/types/addressType";
-import { productT, ProductType } from "@/lib/types/productType";
+import {  ProductType } from "@/lib/types/productType";
 
 interface Props {
   children: React.ReactNode;

@@ -28,9 +28,9 @@ const CartButtonAdd = ({ cartProduct }: { cartProduct: cartProductType }) => {
 
   return (
     <>
-      <div className="flex justify-end w-[100px] rounded-lg ">
+      <div className="flex justify-end w-[100px]  ">
         {quantity > 0 ? (
-          <div className="flex justify-between rounded-lg gap-2 w-full  px-1 py-2">
+          <div className="flex justify-between  gap-2 w-full  px-1">
             <div className="bg-[#F3F2F0] px-[3px] pt-[1px] pb-[3px]  rounded-lg">
               <button
                 onClick={removeFromCartL}

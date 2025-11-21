@@ -14,13 +14,13 @@ function TableRows({ order }: { order: orderMasterDataT }) {
   const { settings } = UseSiteContext();
   const flatDiscount = formatCurrencyNumber(
     Number(order.flatDiscount) ?? 0,
-    (settings.currency || "EUR") as string,
-    (settings.locale || "de-DE") as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
   const endTotalG = formatCurrencyNumber(
     Number(order.endTotalG) ?? 0,
-    (settings.currency || "EUR") as string,
-    (settings.locale || "de-DE") as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
   async function handleDelete(id: string) {

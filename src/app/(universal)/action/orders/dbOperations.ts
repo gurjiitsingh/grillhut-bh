@@ -116,9 +116,9 @@ export async function calculateTaxForCart(cartData: ProductType[]) {
   };
 }
 
-const SHOULD_CHECK_STOCK =
-  process.env.CHECK_STOCK === "true" ||
-  process.env.CHECK_STOCK === "1";
+const SHOULD_MAINTAIN_STOCK =
+  process.env.NEXT_PUBLIC_MAINTAIN_STOCK === "true" ||
+  process.env.NEXT_PUBLIC_MAINTAIN_STOCK === "1";
 
 export async function createNewOrder(purchaseData: orderDataType) {
   const {
@@ -149,7 +149,7 @@ export async function createNewOrder(purchaseData: orderDataType) {
 
   // Step 1: Check stock before order
 
-  if (SHOULD_CHECK_STOCK) {
+  if (SHOULD_MAINTAIN_STOCK) {
   const stockCheck = await checkStockAvailability(cartData);
 
   if (!stockCheck.success) {
@@ -264,14 +264,14 @@ export async function marketingData({
   email: string;
   noOfferEmails: boolean;
 }) {
-  console.log("this is inside marketing data");
+ 
 
   // Get current German time
-  const now = new Date();
-  const germanDateStr = now.toLocaleString("en-DE", {
-    timeZone: "Europe/Berlin",
-  });
-  const germanDate = new Date(germanDateStr);
+  // const now = new Date();
+  // const germanDateStr = now.toLocaleString("en-DE", {
+  //   timeZone: "Europe/Berlin",
+  // });
+  // const germanDate = new Date(germanDateStr);
 
   const docRef = adminDb.collection("customerRecentOrder").doc(userId!);
 

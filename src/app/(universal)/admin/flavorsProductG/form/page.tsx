@@ -9,13 +9,13 @@ import { flavorsProductGSchema, flavorsProductGSchemaType } from "@/lib/types/fl
 import { addNewProduct } from "@/app/(universal)/action/flavorsProductG/dbOperation";
 //import Images from "@/app/(universal)/admin/products/form/componets/Images";
 import { fetchCategories } from "@/app/(universal)/action/category/dbOperations";
-import { categoryTypeArr } from "@/lib/types/categoryType";
+import { categoryType } from "@/lib/types/categoryType";
 
 const Page = () => {
   const baseProductId = "params.id";
  // console.log("addonprodut form  baseproductId============", baseProductId);
 
-  const [categories, setCategory] = useState<categoryTypeArr>([]);
+  const [categories, setCategory] = useState<categoryType[]>([]);
 
   useEffect(() => {
     async function prefetch() {

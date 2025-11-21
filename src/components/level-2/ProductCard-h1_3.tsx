@@ -48,8 +48,8 @@ export default function ProdcutCardHorizontical({
 
   const priceRegular = formatCurrencyNumber(
       product.price ?? 0,
-      (settings.currency || "EUR") as string,
-      (settings.locale || "de-DE") as string
+      (settings.currency) as string,
+      (settings.locale) as string
     );
     let priceDiscounted;
     let priceTarget = product.price ?? 0;
@@ -58,8 +58,8 @@ export default function ProdcutCardHorizontical({
       // priceDiscounted = product.discountPrice.toString().replace (/\./g, ",");
       priceDiscounted = formatCurrencyNumber(
         product.discountPrice,
-        (settings.currency || "EUR") as string,
-        (settings.locale || "de-DE") as string
+        (settings.currency) as string,
+        (settings.locale ) as string
       );
     }
 
@@ -74,6 +74,8 @@ export default function ProdcutCardHorizontical({
     image: product.image,
     categoryId: product.categoryId,
     productCat: product.productCat!,
+    taxRate: product.taxRate,
+    taxType: product.taxType,
     
   };
 
@@ -99,8 +101,8 @@ export default function ProdcutCardHorizontical({
         )}
       </div>
 
-      <div className="w-full flex flex-col pl-3 justify-between">
-        <div className="w-full flex-col gap-4 justify-between ">
+      <div className="w-full h-full flex  flex-col pl-3 justify-between">
+        <div className="w-full  flex-col gap-4 justify-between ">
           <div className="w-full flex gap-1  justify-between ">
             <div className="flex text-gray-600 text-sm font-sami-bold items-start justify-start  min-w-[180px] ">
            {/* product-card-add-title-cover-1 */}
@@ -116,13 +118,13 @@ export default function ProdcutCardHorizontical({
             // onClick={() =>
             //  // alert(product.productDesc ?? "Keine Beschreibung verfügbar")
             // }
-            className="text-sm text-[#736d6f] font-light text-left   overflow-hidden"
+            className="text-sm min-h-[60px] flex  text-[#736d6f] font-light text-left   overflow-hidden"
           >
             {product.productDesc}
           </button>
 
           {!product.flavors && (
-            <div className=" flex  items-center  justify-between py-px   rounded-3xl">
+            <div className=" flex  items-center  justify-between py-px ">
             
               {/* common code start */}
               {product.discountPrice !== undefined &&

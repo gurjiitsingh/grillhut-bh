@@ -20,9 +20,17 @@ import { purchaseDataT } from "@/lib/types/cartDataType";
 import { fetchdeliveryByZip } from "@/app/(universal)/action/delivery/dbOperation";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
 import { useLanguage } from '@/store/LanguageContext';
+import { useCartContext } from "@/store/CartContext";
+
+
+
 
 const Address = () => {
-  // const { endTotalG, cartData, totalDiscountG } = useCartContext();
+   const { 
+   // endTotalG, 
+    cartData, 
+   // totalDiscountG 
+  } = useCartContext();
 const { TEXT } = useLanguage();
   const {
     //deliveryDis,
@@ -147,7 +155,13 @@ const { TEXT } = useLanguage();
         localStorage.setItem("customer_name", JSON.stringify(customerNameS));
       }
 
-      //createNewOrderFile(cartData, customAddress);
+  const WINONDER_ENABLED = process.env.NEXT_PUBLIC_WINONDER;
+const { createNewOrderFile } = await import(
+      '@/app/(universal)/action/newOrderFile/newfile'
+    );
+  if (WINONDER_ENABLED) {
+    createNewOrderFile(cartData, customAddress);
+  }
     }
     // end of ok order condition
   }

@@ -65,52 +65,131 @@ export default function CartLeft() {
     }
   }, [settings?.pickup_discount]);
 
-  useEffect(() => {
-    if (!cartData || cartData.length === 0) return;
+//   useEffect(() => {
+//   if (!settings || !settings.currency || !settings.locale) return; // wait until ready
 
-    let total = 0;
-    let filteredTotal = 0;
+//   console.log("settings new-------------", settings);
+  
+//   const roundedTotalCU = formatCurrencyNumber(
+//     itemTotal ?? 0,
+//     settings.currency,
+//     settings.locale
+//   );
 
-    cartData.forEach((item: cartProductType) => {
-      const quantity = Number(item.quantity) || 0;
-      const price = parseFloat(item.price as any) || 0;
-      const itemTotal = quantity * price;
-      total += itemTotal;
+//  setitemTotalComa(roundedTotalCU);
+// }, [itemTotal, settings?.currency, settings?.locale]);
 
-      if (disablePickupCatDiscountIds?.includes(item.categoryId)) {
-        filteredTotal += itemTotal;
-      }
-    });
+  // useEffect(() => {
+  //   if (!cartData || cartData.length === 0) return;
 
-    const roundedTotal = parseFloat(total.toFixed(2));
-    setitemTotal(roundedTotal);
+  //   let total = 0;
+  //   let filteredTotal = 0;
 
-    const roundedTotalCU = formatCurrencyNumber(
-      roundedTotal ?? 0,
-      (settings.currency ) as string,
-      (settings.locale ) as string
-    );
+  //   cartData.forEach((item: cartProductType) => {
+  //     const quantity = Number(item.quantity) || 0;
+  //     const price = parseFloat(item.price as any) || 0;
+  //     const itemTotal = quantity * price;
+  //     total += itemTotal;
 
-    //setitemTotalComa(roundedTotal.toFixed(2).replace(".", ","));
-    setitemTotalComa(roundedTotalCU);
+  //     if (disablePickupCatDiscountIds?.includes(item.categoryId)) {
+  //       filteredTotal += itemTotal;
+  //     }
+  //   });
 
-    const pickupDiscountAmount = calculateDiscount(
-      filteredTotal,
-      pickupDiscountPersent
-    );
-    setFilteredCategoryDiscount(pickupDiscountAmount);
+  //   const roundedTotal = parseFloat(total.toFixed(2));
+  //   setitemTotal(roundedTotal);
 
-    function calculateDiscount(
-      total: number,
-      percent: number | string | undefined | null
-    ): number {
-      const safeTotal = typeof total === "number" ? total : 0;
-      const safePercent = Number(percent);
-      if (isNaN(safePercent) || safePercent <= 0) return 0;
-      return parseFloat(((safeTotal * safePercent) / 100).toFixed(2));
+    
+
+  //   console.log("dilevery type-------------",deliveryType)
+  //   console.log("payment-------------",paymentType)
+  //   console.log("settings-------------",paymentType,settings)
+
+  //   console.log("settings.currency-------------",settings.currency)
+  //   console.log("local-------------", settings.locale)
+  //   const roundedTotalCU = formatCurrencyNumber(
+  //     roundedTotal ?? 0,
+  //     (settings.currency ) as string,
+  //     (settings.locale ) as string
+  //   );
+
+  //   //setitemTotalComa(roundedTotal.toFixed(2).replace(".", ","));
+  //   setitemTotalComa(roundedTotalCU);
+
+  //   const pickupDiscountAmount = calculateDiscount(
+  //     filteredTotal,
+  //     pickupDiscountPersent
+  //   );
+  //   setFilteredCategoryDiscount(pickupDiscountAmount);
+
+  //   function calculateDiscount(
+  //     total: number,
+  //     percent: number | string | undefined | null
+  //   ): number {
+  //     const safeTotal = typeof total === "number" ? total : 0;
+  //     const safePercent = Number(percent);
+  //     if (isNaN(safePercent) || safePercent <= 0) return 0;
+  //     return parseFloat(((safeTotal * safePercent) / 100).toFixed(2));
+  //   }
+  // }, [cartData, pickupDiscountPersent, disablePickupCatDiscountIds]);
+
+  
+  
+useEffect(() => {
+  if (!cartData || cartData.length === 0) return;
+
+  let total = 0;
+  let filteredTotal = 0;
+
+  cartData.forEach((item: cartProductType) => {
+    const quantity = Number(item.quantity) || 0;
+    const price = parseFloat(item.price as any) || 0;
+    const itemTotal = quantity * price;
+    total += itemTotal;
+
+    if (disablePickupCatDiscountIds?.includes(item.categoryId)) {
+      filteredTotal += itemTotal;
     }
-  }, [cartData, pickupDiscountPersent, disablePickupCatDiscountIds]);
+  });
 
+  const roundedTotal = parseFloat(total.toFixed(2));
+  setitemTotal(roundedTotal);
+
+  // 🧾 Calculate pickup discount (independent of settings)
+  const pickupDiscountAmount = calculateDiscount(
+    filteredTotal,
+    pickupDiscountPersent
+  );
+  setFilteredCategoryDiscount(pickupDiscountAmount);
+
+  function calculateDiscount(
+    total: number,
+    percent: number | string | undefined | null
+  ): number {
+    const safeTotal = typeof total === "number" ? total : 0;
+    const safePercent = Number(percent);
+    if (isNaN(safePercent) || safePercent <= 0) return 0;
+    return parseFloat(((safeTotal * safePercent) / 100).toFixed(2));
+  }
+}, [cartData, pickupDiscountPersent, disablePickupCatDiscountIds]);
+
+
+ useEffect(() => {
+  if (!settings?.currency || !settings?.locale) return;
+  if (itemTotal <= 0) return;
+
+  const roundedTotalCU = formatCurrencyNumber(
+    itemTotal,
+    settings.currency as string,
+    settings.locale as string
+  );
+  setitemTotalComa(roundedTotalCU);
+
+  
+}, [itemTotal, settings?.currency, settings?.locale]);
+
+  
+  
   useEffect(() => {
     if (itemTotal <= 0) return;
 
@@ -198,39 +277,47 @@ export default function CartLeft() {
     }
   }, [couponDisc, itemTotal, cartData, deliveryType]);
 
-  useEffect(() => {
-    const netPay = (
-      itemTotal +
-      deliveryCost -
-      calculatedPickUpDiscountL -
-      calCouponDiscount -
-      flatCouponDiscount
-    ).toFixed(2);
+ useEffect(() => {
+  if (itemTotal <= 0) return;
 
-    const netDiscount = (
-      couponDiscountPercentL + pickUpDiscountPercentL
-    ).toFixed(2);
+  // 💰 Compute numeric total
+  const netPay =
+    itemTotal +
+    deliveryCost -
+    calculatedPickUpDiscountL -
+    calCouponDiscount -
+    flatCouponDiscount;
 
-    setDeliveryCost(deliveryCost);
+  const netDiscount = couponDiscountPercentL + pickUpDiscountPercentL;
 
-    const netPayCU = formatCurrencyNumber(
-      Number(netPay) ?? 0,
-      (settings.currency) as string,
-      (settings.locale ) as string
-    );
+  // Update numeric states
+  setEndTotalG(parseFloat(netPay.toFixed(2)));
+  setTotalDiscountG(parseFloat(netDiscount.toFixed(2)));
 
-    setEndTotalComma(netPayCU);
-    setEndTotalG(parseFloat(netPay));
-    setTotalDiscountG(parseFloat(netDiscount));
-  }, [
-    deliveryCost,
-    calCouponDiscount,
-    itemTotal,
-    flatCouponDiscount,
-    couponDiscountPercentL,
-    pickUpDiscountPercentL,
-    calculatedPickUpDiscountL,
-  ]);
+  // Also update delivery cost in context
+  setDeliveryCost(deliveryCost);
+}, [
+  deliveryCost,
+  calCouponDiscount,
+  itemTotal,
+  flatCouponDiscount,
+  couponDiscountPercentL,
+  pickUpDiscountPercentL,
+  calculatedPickUpDiscountL,
+]);
+
+useEffect(() => {
+  if (!settings?.currency || !settings?.locale) return;
+  if (!endTotalG || isNaN(endTotalG)) return;
+
+  const netPayCU = formatCurrencyNumber(
+    endTotalG,
+    settings.currency as string,
+    settings.locale as string
+  );
+
+  setEndTotalComma(netPayCU);
+}, [endTotalG, settings?.currency, settings?.locale]);
 
   useEffect(() => {
     if (deliveryType === "delivery") {
@@ -274,19 +361,7 @@ export default function CartLeft() {
         return;
       }
 
-      // if (deliveryType === "delivery") {
-      //    if (
-      //     !deliveryDis ||
-      //     typeof deliveryDis.price !== "number" ||
-      //     isNaN(deliveryDis.price)
-      //   ) {
-      //     console.log("deliveryDis.price-------",typeof(deliveryDis!.price))
-      //     setIsLoading(false);
-      //     toast.error(TEXT.error_address_not_deliverable);
-      //     return; // ⛔ stop
-      //   }
-
-      //  }
+     
 
       if (deliveryType === "delivery") {
         if (!deliveryDis || deliveryDis.price === null) {

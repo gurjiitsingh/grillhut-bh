@@ -9,12 +9,9 @@ import { deleteImage, upload } from "@/lib/cloudinary";
 import { fetchCategories } from "@/app/(universal)/action/category/dbOperations";
 import { cache } from "react";
 
-
 import path from "path";
 import fs from "fs";
 import { randomUUID } from "crypto";
-
-
 
 // ✅ Cached version — reduces Firestore reads massively
 export const fetchProducts = cache(async (): Promise<ProductType[]> => {
@@ -55,8 +52,8 @@ export const fetchProducts = cache(async (): Promise<ProductType[]> => {
         updatedAt,
 
         // tax fields
-        taxRate: data.taxRate ?? null,
-        taxType: data.taxType ?? null,
+        taxRate: data.taxRate ?? undefined,
+        taxType: data.taxType ?? undefined,
       };
     });
   } catch (error) {
@@ -83,7 +80,7 @@ export async function addNewProduct(formData: FormData) {
 
     // ✅ New tax fields
     const taxRateRaw = formData.get("taxRate") as string | null;
-    const taxType = (formData.get("taxType") as string | null);
+    const taxType = formData.get("taxType") as string | null;
 
     const stockQty = stockQtyRaw ? parseInt(stockQtyRaw, 10) : null;
     const priceF = parseFloat(price.replace(/,/g, ".")) || 0;
@@ -158,12 +155,12 @@ export async function addNewProduct(formData: FormData) {
     };
 
     // ✅ Save to Firestore
-console.log("product -----------------------", data)
-   const docRef = await adminDb.collection("products").add(data);
+    console.log("product -----------------------", data);
+    const docRef = await adminDb.collection("products").add(data);
 
     revalidateTag("products");
     revalidateTag("featured-products");
-    
+
     // ✅ ✅ ✅ REVALIDATE ALL PRODUCT PAGES
     revalidatePath("/"); // storefront home
     revalidatePath("/products"); // storefront products page
@@ -335,7 +332,7 @@ export async function editProduct(formData: FormData) {
   try {
     await productRef.update(productData);
     revalidateTag("products");
- revalidateTag("featured-products");
+    revalidateTag("featured-products");
     return { message: "✅ Product updated successfully" };
   } catch (error) {
     console.error("❌ Failed to update product:", error);
@@ -380,8 +377,6 @@ export async function deleteProduct(id: string, oldImageUrl: string) {
     return { errors: "Failed to delete product." };
   }
 }
-
-
 
 //* addition */
 export async function fetchAllProducts(): Promise<ProductType[]> {
@@ -565,7 +560,6 @@ export async function addNewProduct_without_revalidate(formData: FormData) {
   }
 }
 
-
 export async function fetchProductById(
   id: string
 ): Promise<ProductType | null> {
@@ -609,8 +603,6 @@ export async function fetchProductById(
     throw new Error("Error fetching product");
   }
 }
-
-
 
 export async function fetchProductByCategoryId(
   id: string
@@ -669,7 +661,7 @@ export async function toggleFeatured(productId: string, isFeatured: boolean) {
     const productRef = adminDb.collection("products").doc(productId);
     await productRef.update({ isFeatured });
 
-revalidateTag("featured-products");
+    revalidateTag("featured-products");
     return {
       success: true,
       message: `Product ${
@@ -717,8 +709,8 @@ export async function uploadProductFromCSV(data: Partial<ProductType>) {
       data.status === "out_of_stock"
         ? data.status
         : undefined,
-        taxRate:data.taxRate ?? 0,
-        taxType:data.taxType ?? "inclusive",
+    taxRate: data.taxRate ?? 0,
+    taxType: data.taxType ?? "inclusive",
   };
 
   await adminDb.collection("products").add(productData);

@@ -50,8 +50,8 @@ export default function ProdcutCardHorizontical({
     // priceDiscounted = product.discountPrice.toString().replace (/\./g, ",");
     priceDiscounted = formatCurrencyNumber(
       product.discountPrice,
-      (settings.currency || "EUR") as string,
-      (settings.locale || "de-DE") as string
+      (settings.currency) as string,
+      (settings.locale) as string
     );
   }
 
@@ -64,6 +64,8 @@ export default function ProdcutCardHorizontical({
     image: product.image,
     categoryId: product.categoryId,
     productCat: product.productCat!,
+    taxRate: product.taxRate,
+    taxType: product.taxType,
   };
 
   const isCartDisabled = (() => {
