@@ -1,7 +1,7 @@
 export const SEO = {
-  title: "Masala – Indian Restaurant in Gifhorn, Lower Saxony",
+  title: "Grill Hut Junction – G. T. Road, Bhogpur, Punjab 144201",
   description:
-    "Authentic Indian food at Masala Gifhorn. Order online for delivery or visit us in Lower Saxony.",
+    "Authentic food at Grill Hut , G. T. Road, Bhogpur, Punjab 144201. Order online for delivery ",
 };
 
 
@@ -11,15 +11,15 @@ export const BRANDING = {
   offer_instruction: "",
   delivery_note: "Delivery is also available.",
   home_page_disclaimer:"",// "Food may differ from image.",
-  brand: "Masala",
-  tag_line: "Taste of India",
-  brand_name: "Masala Taste of India",
+  brand: "Grill Hut Junction",
+  tag_line: "",
+  brand_name: "Grill Hut Junction ",
    poweredBy: "Powered by",
     poweredByUrl: "http://www.gstadeveloper.com",
     copyright: {
       prefix: "Copyright ©",
       suffix: "All Rights Reserved by",
-      company: "Masala Taste of India"
+      company: "Grill Hut Junction "
     },
 
 
@@ -30,7 +30,7 @@ export const BRANDING = {
   copyright: {
     prefix: "Copyright ©",
     suffix: "All Rights Reserved by",
-    company: "Masala Taste of India",
+    company: "Grill Hut Junction ",
   },
 },
 
@@ -68,14 +68,14 @@ export const BRANDING = {
     { name: "Home", link: "/" },
     { name: "About Us", link: "/about" },
     { name: "Contact", link: "/contact" },
-    { name: "Table Reservation", link: "/reservation" },
+    // { name: "Table Reservation", link: "/reservation" },
   ],
 
   menu: [
     { name: "Home", link: "/" },
     { name: "About Us", link: "/about" },
     { name: "Contact", link: "/contact" },
-    { name: "Table Reservation", link: "/reservation" },
+    // { name: "Table Reservation", link: "/reservation" },
   ],
 
   sections: {
@@ -83,11 +83,11 @@ export const BRANDING = {
       title: "Quick Links",
       items: [
         { name: "Home", href: "/" },
-        { name: "Menu", href: "/" },
+        { name: "Menu", href: "/menu" },
         { name: "About", href: "/about" },
         { name: "Contact", href: "/contact" },
-        { name: "Reservation", href: "/reservation" },
-        { name: "Allergens", href: "/allergene" },
+        // { name: "Reservation", href: "/reservation" },
+        // { name: "Allergens", href: "/allergene" },
       ],
     },
     company: {

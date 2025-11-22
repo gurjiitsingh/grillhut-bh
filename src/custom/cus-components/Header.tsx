@@ -39,7 +39,7 @@ const Header = () => {
   return (
     <header
       className={`w-full fixed top-0 z-50 transition-all duration-300 
-        ${scrolled ? "bg-white shadow-sm text-slate-5" : "bg-transparent shadow-none text-white"}
+        ${scrolled ? "bg-white shadow-sm text-slate-5" : "bg-transparent shadow-none text-slate-400"}
       `}
     >
       <div className="max-w-7xl mx-auto py-3 px-6 flex items-center justify-between">

@@ -171,7 +171,7 @@ export default function Products() {
   }
 
   return (
-    <div id="bf" className="max-w-6xl mx-auto my-6">
+    <div  className="max-w-7xl mx-auto my-6">
       <div className="px-2">
         <div className={containerClass}>
           {products.map((product, i) => (
