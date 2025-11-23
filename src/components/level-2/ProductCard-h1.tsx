@@ -88,7 +88,7 @@ export default function ProdcutCardHorizontical({
 
   //common code end
   return (
-    <div className="bg-white w-full  lg:w-[48%]    shadow-md flex flex-row   rounded-xl items-center p-1">
+    <div className="bg-white w-full  lg:w-[49%]    shadow-md flex flex-row   rounded-xl items-center p-1">
       <div className="rounded-lg border-1 border-slate-100 flex items-center justify-center w-[120px]   md:w-[150px]    overflow-hidden">
         {product.image && (
           <img

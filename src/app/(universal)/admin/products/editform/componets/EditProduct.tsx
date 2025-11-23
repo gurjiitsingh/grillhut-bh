@@ -40,7 +40,7 @@ const EditProduct = () => {
       setValue("oldImgageUrl", data.image);
       setValue("price", data.price?.toString() ?? "0");
       setValue("discountPrice", data.discountPrice?.toString() ?? "0");
-      setValue("stockQty", data.stockQty?.toString() ?? "-1");
+      setValue("stockQty", data.stockQty?.toString() ?? "0");
       setValue("status", data.status ?? "published");
       setValue("sortOrder", data.sortOrder?.toString() ?? "0");
       setValue("categoryId", data.categoryId);
@@ -86,7 +86,7 @@ const EditProduct = () => {
     setIsSubmitting(false);
 
     if (!result?.errors) {
-   //   alert("✅ Product updated successfully!");
+      //   alert("✅ Product updated successfully!");
       router.push(`/admin/products?productId=${data.id}`);
     } else {
       alert("❌ Something went wrong. Check console for details.");
@@ -106,7 +106,9 @@ const EditProduct = () => {
         <div className="flex-1 flex flex-col gap-5">
           {/* Product Details */}
           <div className="bg-white rounded-xl p-4 border shadow-sm flex flex-col gap-3">
-            <h2 className="font-semibold text-lg text-gray-800">Product Details</h2>
+            <h2 className="font-semibold text-lg text-gray-800">
+              Product Details
+            </h2>
 
             <input {...register("id")} hidden />
 
@@ -162,6 +164,9 @@ const EditProduct = () => {
                   {...register("discountPrice")}
                   className="input-style py-1"
                   placeholder="Enter discount price"
+                  onFocus={(e) => {
+                    if (e.target.value === "0") e.target.value = "";
+                  }}
                 />
                 <p className="text-xs text-destructive">
                   {errors.discountPrice?.message}
@@ -175,6 +180,9 @@ const EditProduct = () => {
                 {...register("stockQty")}
                 className="input-style py-1"
                 placeholder="Enter stock quantity"
+                onFocus={(e) => {
+                  if (e.target.value === "0") e.target.value = "";
+                }}
               />
               <p className="text-xs text-destructive">
                 {errors.stockQty?.message}
@@ -187,7 +195,9 @@ const EditProduct = () => {
         <div className="flex-1 flex flex-col gap-5">
           {/* Image Upload */}
           <div className="bg-white rounded-xl p-4 border shadow-sm flex flex-col gap-3">
-            <h2 className="font-semibold text-lg text-gray-800">Product Image</h2>
+            <h2 className="font-semibold text-lg text-gray-800">
+              Product Image
+            </h2>
             <input {...register("oldImgageUrl")} hidden />
             <input
               {...register("image")}
@@ -220,7 +230,10 @@ const EditProduct = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="label-style">Sort Order</label>
-                <input {...register("sortOrder")} className="input-style py-1" />
+                <input
+                  {...register("sortOrder")}
+                  className="input-style py-1"
+                />
                 <p className="text-xs text-destructive">
                   {errors.sortOrder?.message}
                 </p>
@@ -247,6 +260,9 @@ const EditProduct = () => {
                   {...register("taxRate")}
                   className="input-style py-1"
                   placeholder="e.g. 5, 12, 18"
+                   onFocus={(e) => {
+    if (e.target.value) e.target.value = "";
+  }}
                 />
                 <p className="text-xs text-destructive">
                   {errors.taxRate?.message}
@@ -256,7 +272,9 @@ const EditProduct = () => {
               <div>
                 <label className="label-style">GST Type</label>
                 <select {...register("taxType")} className="input-style py-1">
-                  <option value="inclusive">Inclusive (Deducted from total)</option>
+                  <option value="inclusive">
+                    Inclusive (Deducted from total)
+                  </option>
                   <option value="exclusive">Exclusive (Added on total)</option>
                 </select>
               </div>
@@ -270,7 +288,9 @@ const EditProduct = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className={`btn-save w-full mt-2 ${isSubmitting ? "opacity-80" : ""}`}
+              className={`btn-save w-full mt-2 ${
+                isSubmitting ? "opacity-80" : ""
+              }`}
             >
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>

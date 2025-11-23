@@ -66,10 +66,15 @@ export default function Products() {
   }, [cardType]);
 
   // ✅ Set initial category (runs only when settings OR global id changes)
-  useEffect(() => {
-    const fallback = settings.display_category as string;
-    setCategoryId(productCategoryIdG || fallback || "");
-  }, [settings, productCategoryIdG]);
+
+
+useEffect(() => {
+  if (!settings?.display_category && !productCategoryIdG) return;
+
+  const fallback = settings.display_category ?? "";
+
+  setCategoryId(String(productCategoryIdG || fallback));
+}, [settings, productCategoryIdG]);
 
   // ✅ Fetch ONCE (no remount loop now)
   useEffect(() => {
@@ -141,38 +146,38 @@ export default function Products() {
   let containerClass = "";
   switch (cardType) {
     case "1":
-      containerClass = "flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-5 ";
+      containerClass = "flex flex-col justify-between md:flex-row md:flex-wrap gap-3 md:gap-5 ";
       break;
     case "11":
-      containerClass = "flex flex-col md:flex-row md:flex-wrap gap-2 md:gap-2";
+      containerClass = "flex flex-col justify-between md:flex-row md:flex-wrap gap-2 md:gap-2";
       break;
     case "12":
-      containerClass = "flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-5";
+      containerClass = "flex flex-col justify-between md:flex-row md:flex-wrap gap-3 md:gap-5";
       break;
     case "2":
     case "3":
       containerClass =
-        "flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-5 justify-center";
+        "flex flex-col md:flex-row justify-between md:flex-wrap gap-3 md:gap-5 justify-center";
       break;
     case "4":
-      containerClass = "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3";
+      containerClass = "grid grid-cols-2 justify-between sm:grid-cols-4 lg:grid-cols-6 gap-3";
       break;
     case "5":
-      containerClass = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3";
+      containerClass = "grid grid-cols-2 justify-between sm:grid-cols-3 lg:grid-cols-4 gap-3";
       break;
     case "6":
-      containerClass = "flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-5";
+      containerClass = "flex flex-col justify-between md:flex-row md:flex-wrap gap-3 md:gap-5";
       break;
     case "7":
-      containerClass = "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3";
+      containerClass = "grid grid-cols-2 justify-between sm:grid-cols-4 lg:grid-cols-6 gap-3";
       break;
     default:
-      containerClass = "flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-5";
+      containerClass = "flex flex-col justify-between md:flex-row md:flex-wrap gap-3 md:gap-5";
   }
 
   return (
     <div  className="max-w-7xl mx-auto my-6">
-      <div className="px-2">
+      <div className="px-4 sm:px-6 lg:px-12">
         <div className={containerClass}>
           {products.map((product, i) => (
             <Card

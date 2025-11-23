@@ -5,7 +5,7 @@ export default function Login() {
 
 
   return (
-    <div className="flex items-center justify-end py-4">
+    <div className="flex items-center justify-end py-2">
       <LinkDropdown  />
     </div>
   );

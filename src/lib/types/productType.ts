@@ -158,7 +158,7 @@ export const editPorductSchema = z.object({
       "Invalid tax rate"
     ),
 
-  taxType: z.enum(["inclusive", "exclusive"]).optional(),
+  taxType: z.enum(["inclusive", "exclusive",""]).optional(),
 });
 
 export type TeditProductSchema = z.infer<typeof editPorductSchema>;

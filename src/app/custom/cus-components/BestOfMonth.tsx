@@ -58,7 +58,7 @@ export default function BestOfMonth() {
 
 
   return (
-    <section className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 ">
+    <section className=" max-w-7xl mx-auto px-2 md:px-0">
       <div className="bg-[#f8f0ec] rounded-3xl py-1 md:py-10 my-12 relative overflow-hidden select-none">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Header */}

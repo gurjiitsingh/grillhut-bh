@@ -95,7 +95,7 @@ useEffect(() => {
   };
 
   return (
-    <div id="order_now" className="relative max-w-7xl mx-auto  px-0 md:px-0 my-6">
+    <div id="order_now" className="scroll-mt-24 relative max-w-7xl mx-auto  px-4 sm:px-6 lg:px-12 my-6">
       {/* Arrows */}
       <button
         onClick={() => scroll("left")}

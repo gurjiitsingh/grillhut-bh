@@ -66,7 +66,7 @@ const Page = () => {
     } else {
       formData.append("image", "0");
     }
-console.log("formData----------------",data)
+
 
     const result = await addNewProduct(formData);
     setIsSubmitting(false);
@@ -77,7 +77,7 @@ console.log("formData----------------",data)
         name: "",
       //  price: 0,
        // discountPrice: 0,
-        stockQty: -1,
+        stockQty: 0,
         sortOrder: (Number(data.sortOrder) + 1) || 1,
       //  categoryId: "",
         productDesc: "",

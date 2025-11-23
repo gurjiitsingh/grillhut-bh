@@ -235,5 +235,5 @@ export async function getAllSettings(): Promise<SettingsDataType> {
     const data = doc.data();
     allSettings[doc.id] = data.value as value;
   });
-  return allSettings;
+   return allSettings;
 }

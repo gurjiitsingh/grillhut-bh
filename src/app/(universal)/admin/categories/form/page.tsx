@@ -13,6 +13,7 @@ const Form = () => {
     register,
     formState: { errors },
     handleSubmit,
+     reset,
     setValue,
   } = useForm<TcategorySchema>({
     resolver: zodResolver(categorySchema),
@@ -34,7 +35,22 @@ const Form = () => {
         formData.append("image", data.image[0]);
       }
 
-      await addNewCategory(formData);
+    const result =  await addNewCategory(formData);
+
+          if (!result?.errors) {
+    //  alert("✅ Product added successfully!");
+    const SO = (Number(data.sortOrder) + 1) || 1;
+      reset({
+        // name: "",
+             sortOrder:SO.toString(),
+      //  categoryId: "",
+      
+      //  taxRate: 0, // ✅ reset tax field
+      });
+    } else {
+      console.error("❌ Validation errors:", result.errors);
+      alert("Something went wrong. Check console for details.");
+    }
 
       setValue("name", "");
       setValue("desc", "");
