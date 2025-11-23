@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
 import dynamic from "next/dynamic";
 import Navbar from "@/components/level-2/Navbar";
-import Login from "../../components/buttons/Login";
-import { LanguageSwitcher } from "../../languages/LanguageSwitcher";
+import Login from "@/components/buttons/Login";
+import { LanguageSwitcher } from "@/languages/LanguageSwitcher";
 
 export const headerFlags = {
   SHOW_LANGUAGE_SWITCHER: process.env.NEXT_PUBLIC_SHOW_LANGUAGE_SWITCHER === "1",
@@ -42,11 +42,11 @@ const Header = () => {
         ${scrolled ? "bg-white shadow-sm text-slate-5" : "bg-transparent shadow-none text-slate-400"}
       `}
     >
-      <div className="max-w-7xl  mx-auto py-2 px-4 sm:px-6 lg:px-12 flex items-center justify-between">
-        <div className=" ">
+      <div className="max-w-7xl mx-auto py-3 px-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => bargerMenuToggle(false)}
-            className="lg:hidden  rounded-md header-toggle-hover"
+            className="lg:hidden p-2 rounded-md header-toggle-hover"
             aria-label="Toggle menu"
           >
             <FaBars size={28} />
