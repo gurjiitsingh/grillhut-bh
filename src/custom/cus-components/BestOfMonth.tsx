@@ -12,10 +12,13 @@ import {
 } from "react-icons/fa";
 import {  Chicle } from "next/font/google";
 
+import { Cinzel, Lato, Roboto, Poppins } from "next/font/google";
+import ProductCardPrductOfMonth from "../../components/level-2/ProductCardPOM";
 
-import ProductCardPrductOfMonth from "@/components/level-2/ProductCardPOM"
-
-
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["400", "700"], 
+});
 const chicle = Chicle({ subsets: ["latin"], weight: "400" });
 
 export default function BestOfMonth() {
@@ -55,7 +58,7 @@ export default function BestOfMonth() {
 
 
   return (
-    <section className=" max-w-7xl mx-auto px-2 md:px-0">
+    <section className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 ">
       <div className="bg-[#f8f0ec] rounded-3xl py-1 md:py-10 my-12 relative overflow-hidden select-none">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Header */}

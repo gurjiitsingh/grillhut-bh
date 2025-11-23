@@ -13,7 +13,7 @@ const chicle = Chicle({
 export default function HeroSectionCustom() {
   return (
     <section className="relative w-full overflow-hidden">
-
+      
       {/* ==========================
           HERO IMAGE WITH LOGO
       =========================== */}
@@ -30,9 +30,9 @@ export default function HeroSectionCustom() {
         {/* dark overlay (transparent right now) */}
         <div className="absolute inset-0 bg-black/0 md:bg-black/0" />
 
-        {/* LOGO that sits inside max container */}
+        {/* LOGO inside container with padding */}
         <div className="absolute bottom-[13rem] md:bottom-auto md:top-40 w-full">
-          <div className="md:max-w-7xl md:mx-auto md:px-0 flex justify-center md:justify-start z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex justify-center md:justify-start z-20">
             <div
               className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white flex items-center justify-center shadow-lg"
               data-aos="fade-right"
@@ -65,10 +65,11 @@ export default function HeroSectionCustom() {
         md:justify-center
       "
       >
-        <div className="w-full md:max-w-7xl md:mx-auto md:px-0 flex justify-center md:justify-start">
-          <div className="text-[#2b2b2b] md:text-white max-w-lg px-6 pb-6 mt-[-60px] md:mt-0 md:p-0">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex justify-center md:justify-start">
 
-            {/* Title #5e8147 */}
+          <div className="text-[#2b2b2b] md:text-white max-w-lg pb-6 mt-[-60px] md:mt-0">
+
+            {/* Title */}
             <h2
               className={`${chicle.className} text-4xl md:text-5xl my-3 text-[#ea9244] md:text-white`}
             >
