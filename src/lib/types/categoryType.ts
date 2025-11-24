@@ -20,7 +20,7 @@ export const categorySchema = z.object({
     .string()
     .trim()
     .min(1, { message: "Category name is required" })
-    .max(40, { message: "Category name is to long" }),
+    .max(70, { message: "Category name is to long" }),
   sortOrder: z.string().optional(),
   desc: z
     .string().optional(),    
@@ -39,11 +39,11 @@ export const editCategorySchema = z.object({
     .string()
     .trim()
     .min(1, { message: "Category name is required" })
-    .max(30, { message: "Category name is to long" }),
+    .max(70, { message: "Category name is to long" }),
   desc: z
     .string()
     .min(4, { message: "productDescrition of product is needed" })
-    .max(100, { message: "productDescription is too long" }),
+    .max(200, { message: "productDescription is too long" }),
   // slug: z
   // .string()
   // .min(4, { message: "productDescrition of product is needed" })

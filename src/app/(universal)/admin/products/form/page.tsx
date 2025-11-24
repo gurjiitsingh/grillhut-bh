@@ -32,7 +32,7 @@ const Page = () => {
     defaultValues: {
       status: "published",
       discountPrice: 0,
-      stockQty: -1,
+      stockQty: 0,
     //  sortOrder: 0,
     //  taxRate: 0, // ✅ default tax 0%
     },
@@ -136,7 +136,11 @@ const Page = () => {
               </div>
               <div>
                 <label className="label-style">Discount Price</label>
-                <input {...register("discountPrice")} className="input-style py-1" placeholder="Enter discount price" />
+                <input {...register("discountPrice")}
+                  onFocus={(e) => {
+                    if (e.target.value === "0") e.target.value = "";
+                  }}
+                className="input-style py-1" placeholder="Enter discount price" />
                 <p className="text-xs text-destructive">{errors.discountPrice?.message}</p>
               </div>
             </div>
@@ -157,7 +161,12 @@ const Page = () => {
 
             <div>
               <label className="label-style">Stock Quantity</label>
-              <input {...register("stockQty")} className="input-style py-1" placeholder="Enter stock quantity" />
+              <input
+               {...register("stockQty")} 
+                 onFocus={(e) => {
+                    if (e.target.value === "0") e.target.value = "";
+                  }}
+               className="input-style py-1" placeholder="Enter stock quantity" />
               <p className="text-xs text-destructive">{errors.stockQty?.message}</p>
             </div>
           </div>
