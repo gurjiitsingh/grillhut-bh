@@ -16,7 +16,7 @@ const SignIn = () => {
       email: formData.get('email'),
       password: formData.get('password'),
       redirect: true,
-      callbackUrl: '/user',
+      callbackUrl: '/admin',
     };
 
     const response = await signIn('credentials', loginData);
