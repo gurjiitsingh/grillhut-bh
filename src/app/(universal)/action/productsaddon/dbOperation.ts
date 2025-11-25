@@ -89,9 +89,9 @@ type rt = {
 
 export async function deleteProduct(
   id: string,
-  oldImgageUrl: string
+  oldImageUrl: string
 ): Promise<rt> {
-  console.log("out put ", id, oldImgageUrl);
+  console.log("out put ", id, oldImageUrl);
   revalidateTag("addons");
   return { errors: "Delete not implemented yet" };
 }

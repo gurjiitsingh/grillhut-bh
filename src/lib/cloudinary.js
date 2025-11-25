@@ -64,9 +64,9 @@ cloudinary.uploader.destroy(public_id, function(error,result) {console.log(error
 
 
 
-//  export async function deleteOldImage(oldImgageUrl){
+//  export async function deleteOldImage(oldImageUrl){
 
-//     const imageUrlArray = oldImgageUrl.split('/');
+//     const imageUrlArray = oldImageUrl.split('/');
 //     console.log(imageUrlArray[imageUrlArray.length-1])
 //     const imageName = imageUrlArray[imageUrlArray.length-2]+"/"+imageUrlArray[imageUrlArray.length-1]
  

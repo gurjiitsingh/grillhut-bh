@@ -24,7 +24,7 @@ export const categorySchema = z.object({
   sortOrder: z.string().optional(),
   desc: z
     .string().optional(),    
-    oldImgageUrl: z.any().optional(),
+    oldImageUrl: z.any().optional(),
   slug: z.string().optional(),
   image: z.any().optional(),
   isFeatured: z.string().optional(),
@@ -49,7 +49,7 @@ export const editCategorySchema = z.object({
   // .max(100, { message: "productDescription is too long" }),
   // image: z.any().refine((file: File) => file?.length !== 0, "File is required"),
   image: z.any().optional(),
-  oldImgageUrl: z.any().optional(),
+  oldImageUrl: z.any().optional(),
   isFeatured: z.string().optional(), 
   disablePickupDiscount: z.boolean().optional(),
 });

@@ -186,7 +186,7 @@ export async function editProduct(formData: FormData) {
   const sortOrderRaw = formData.get("sortOrder") as string;
   let categoryId = formData.get("categoryId") as string;
   const productDesc = formData.get("productDesc");
-  const oldImageUrl = formData.get("oldImgageUrl") as string;
+  const oldImageUrl = formData.get("oldImageUrl") as string;
   const image = formData.get("image");
   const status = formData.get("status") || "published";
 

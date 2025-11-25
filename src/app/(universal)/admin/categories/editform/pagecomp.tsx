@@ -33,7 +33,7 @@ const PageComp = () => {
       setValue("id", id);
       setValue("name", categoryData.name);
       setValue("desc", categoryData.desc);
-      setValue("oldImgageUrl", categoryData.image);
+      setValue("oldImageUrl", categoryData.image);
       setValue("sortOrder", categoryData.sortOrder!.toString());
       setValue("isFeatured", categoryData.isFeatured!.toString());
     }
@@ -43,7 +43,7 @@ const PageComp = () => {
   async function onsubmit(data: TeditCategorySchema) {
     const formData = new FormData();
     formData.append("name", data.name);
-    formData.append("oldImgageUrl", data.oldImgageUrl);
+    formData.append("oldImageUrl", data.oldImageUrl);
     formData.append("desc", data.desc ?? "");
     formData.append("image", data.image[0]);
     formData.append("isFeatured", data.isFeatured!);
@@ -115,7 +115,7 @@ const PageComp = () => {
             {/* Image Upload */}
             <div className="bg-white border rounded-2xl shadow-sm p-4 sm:p-6 space-y-3">
               <h2 className="text-lg font-semibold text-gray-700">Picture</h2>
-              <input {...register("oldImgageUrl")} hidden />
+              <input {...register("oldImageUrl")} hidden />
 
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700">

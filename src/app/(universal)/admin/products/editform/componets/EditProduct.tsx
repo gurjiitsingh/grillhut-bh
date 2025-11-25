@@ -37,7 +37,7 @@ const EditProduct = () => {
       setValue("id", id);
       setValue("name", data.name);
       setValue("productDesc", data.productDesc);
-      setValue("oldImgageUrl", data.image);
+      setValue("oldImageUrl", data.image);
       setValue("price", data.price?.toString() ?? "0");
       setValue("discountPrice", data.discountPrice?.toString() ?? "0");
       setValue("stockQty", data.stockQty?.toString() ?? "0");
@@ -71,7 +71,7 @@ const EditProduct = () => {
     formData.append("sortOrder", data.sortOrder);
     formData.append("productDesc", data.productDesc ?? "");
     formData.append("status", data.status ?? "published");
-    formData.append("oldImgageUrl", data.oldImgageUrl ?? "");
+    formData.append("oldImageUrl", data.oldImageUrl ?? "");
     formData.append("isFeatured", data.isFeatured ? "true" : "false");
 
     // Tax fields
@@ -198,7 +198,7 @@ const EditProduct = () => {
             <h2 className="font-semibold text-lg text-gray-800">
               Product Image
             </h2>
-            <input {...register("oldImgageUrl")} hidden />
+            <input {...register("oldImageUrl")} hidden />
             <input
               {...register("image")}
               type="file"

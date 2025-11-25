@@ -26,7 +26,7 @@ const Form = () => {
         setValue("name", productData.name);
         setValue("desc", productData.desc);
        // setValue("categoryId", "yishiwe");
-       // setValue("oldImgageUrl", productData.image);
+       // setValue("oldImageUrl", productData.image);
         setValue("price", priceS);
         setValue("sortOrder", productData.sortOrder!.toString());
        // setValue("categoryId", productData.categoryId!);

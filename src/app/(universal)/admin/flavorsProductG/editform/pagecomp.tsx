@@ -46,7 +46,7 @@ const PageComp = () => {
       setValue("name", productData.name);
       setValue("productDesc", productData.productDesc);
      // setValue("categoryId", "yishiwe");
-    // setValue("oldImgageUrl", productData.image);
+    // setValue("oldImageUrl", productData.image);
       setValue("price", priceS);
      // setValue("productCat", productData.productCat);
      // setValue("isFeatured", productData.isFeatured);
@@ -66,7 +66,7 @@ const PageComp = () => {
      formData.append("productCat", data.productCat);
      formData.append("productDesc", data.productDesc);
     // formData.append("image", data.image[0]);
-    //  formData.append("oldImgageUrl",data.oldImgageUrl!)
+    //  formData.append("oldImageUrl",data.oldImageUrl!)
     // // formData.append("isFeatured",data.isFeatured)
      formData.append("id", data.id!);
 
@@ -137,7 +137,7 @@ const PageComp = () => {
                 <h1 className="font-semibold">Product</h1>
                 <div className="flex w-full flex-col gap-2  my-15 ">
                   <input {...register("id")} hidden />
-                  {/* <input {...register("oldImgageUrl")} /> */}
+                  {/* <input {...register("oldImageUrl")} /> */}
                   <div className="flex flex-col gap-1 w-full">
                     <label className="label-style" htmlFor="product-title">
                       Product Name<span className="text-red-500">*</span>{" "}

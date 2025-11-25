@@ -90,7 +90,7 @@ export const editCouponSchema = z.object({
   isFeatured: z.boolean().optional(),
   minSpend: z.string().optional(),
   image: z.any().optional(),
-  oldImgageUrl: z.string().optional(),
+  oldImageUrl: z.string().optional(),
   // .refine((file) => file.size < MAX_FILE_SIZE, "Max size is 5MB.")
   // .refine(
   //   (file) => checkFileType(file),

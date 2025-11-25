@@ -138,7 +138,7 @@ export const editPorductSchema = z.object({
   isFeatured: z.boolean().optional(),
 
   image: z.any().optional(),
-  oldImgageUrl: z.string().optional(),
+  oldImageUrl: z.string().optional(),
 
   status: z
     .enum(["published", "draft", "out_of_stock"])
