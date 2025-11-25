@@ -11,6 +11,7 @@ import {
 
 import TableRows from "./TableRows";
 import { useSearchParams, useRouter } from "next/navigation";
+import { ProductType } from "@/lib/types/productType";
 
 export default function ListView() {
   const router = useRouter();
@@ -37,7 +38,7 @@ useEffect(() => {
 
       const productsJson = await productsRes.json();
       const categoriesJson = await categoriesRes.json();
-console.log("productsJson----", productsJson,categoriesJson)
+
 
       setProducts(productsJson?? []);
       setCategories(categoriesJson ?? []);
@@ -55,21 +56,45 @@ console.log("productsJson----", productsJson,categoriesJson)
 
 
   // ✅ Filter when URL state or products change
+  // useEffect(() => {
+  //   let list = [...products];
+
+  //   if (urlCategory) {
+  //     list = list.filter((p) => p.categoryId === urlCategory);
+  //   }
+
+  //   if (urlSearch) {
+  //     list = list.filter((p) =>
+  //       p.name.toLowerCase().includes(urlSearch.toLowerCase())
+  //     );
+  //   }
+
+  //   setFiltered(list);
+  // }, [urlCategory, urlSearch, products]);
+
+
+
   useEffect(() => {
-    let list = [...products];
+  let list = [...products];
 
-    if (urlCategory) {
-      list = list.filter((p) => p.categoryId === urlCategory);
-    }
+  if (urlCategory) {
+    list = list.filter((p) => p.categoryId === urlCategory);
+  }
 
-    if (urlSearch) {
-      list = list.filter((p) =>
-        p.name.toLowerCase().includes(urlSearch.toLowerCase())
-      );
-    }
+  if (urlSearch) {
+    list = list.filter((p) =>
+      p.name.toLowerCase().includes(urlSearch.toLowerCase())
+    );
+  }
 
-    setFiltered(list);
-  }, [urlCategory, urlSearch, products]);
+  // ⭐ Sort by sortOrder (undefined → 0)
+  list = list.sort(
+    (a: ProductType, b: ProductType) =>
+      (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+  );
+
+  setFiltered(list);
+}, [urlCategory, urlSearch, products]);
 
   // ✅ Update URL without refreshing
   function updateURL(key: string, value: string) {

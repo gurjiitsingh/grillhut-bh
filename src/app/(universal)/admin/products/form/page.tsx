@@ -14,13 +14,39 @@ const Page = () => {
   const [categoryData, setCategoryData] = useState<categoryType[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    async function prefetch() {
-      const categoriesData = await fetchCategories();
-      setCategoryData(categoriesData);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await fetch("/api/categories", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store", // optional: prevents caching in Next.js
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch categories");
+
+      const categories: categoryType[] = await res.json();
+
+      // Sort categories by sortOrder
+      const sorted = [...categories].sort(
+        (a, b) => Number(a.sortOrder ?? 0) - Number(b.sortOrder ?? 0)
+      );
+
+   
+      setCategoryData(sorted);
+
+    
+
+    } catch (error) {
+      console.error("Error fetching categories:", error);
     }
-    prefetch();
-  }, []);
+  };
+
+  fetchData();
+}, []);
+
 
   const {
     register,

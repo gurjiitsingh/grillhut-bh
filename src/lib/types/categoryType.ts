@@ -42,8 +42,7 @@ export const editCategorySchema = z.object({
     .max(70, { message: "Category name is to long" }),
   desc: z
     .string()
-    .min(4, { message: "productDescrition of product is needed" })
-    .max(200, { message: "productDescription is too long" }),
+   .optional(), 
   // slug: z
   // .string()
   // .min(4, { message: "productDescrition of product is needed" })
