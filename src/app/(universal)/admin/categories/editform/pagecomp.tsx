@@ -44,7 +44,7 @@ const PageComp = () => {
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("oldImgageUrl", data.oldImgageUrl);
-    formData.append("desc", data.desc);
+    formData.append("desc", data.desc ?? "");
     formData.append("image", data.image[0]);
     formData.append("isFeatured", data.isFeatured!);
     formData.append("id", data.id!);
