@@ -10,7 +10,7 @@ export type cartProductType = {
   name: string;
   image: string;
   taxRate: number | undefined;
-  taxType: string | undefined;
+  taxType: "inclusive" | "exclusive" | undefined;
 };
 
 export type newOrderConditionType = {
