@@ -59,7 +59,7 @@ const { TEXT } = useLanguage();
   useEffect(() => {
     setCustomerAddressIsComplete(false);
     setValue("password", "123456");
-    setValue("city", "Lower Saxony");
+    setValue("city", "abc");
   }, []);
 
   async function handleZipcodeChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -155,11 +155,13 @@ const { TEXT } = useLanguage();
         localStorage.setItem("customer_name", JSON.stringify(customerNameS));
       }
 
-  const WINONDER_ENABLED = process.env.NEXT_PUBLIC_WINONDER;
-const { createNewOrderFile } = await import(
+  const WINONDER_ENABLED = process.env.NEXT_PUBLIC_WINONDER === "true";
+
+console.log("WINONDER_ENABLED----------------", WINONDER_ENABLED)
+  if (WINONDER_ENABLED) {
+    const { createNewOrderFile } = await import(
       '@/app/(universal)/action/newOrderFile/newfile'
     );
-  if (WINONDER_ENABLED) {
     createNewOrderFile(cartData, customAddress);
   }
     }

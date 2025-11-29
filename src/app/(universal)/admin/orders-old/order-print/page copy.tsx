@@ -8,7 +8,7 @@ import {
 import { searchAddressByAddressId } from "@/app/(universal)/action/address/dbOperations";
 import { useSearchParams } from "next/navigation";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
-import { orderProductsT } from "@/lib/types/orderType";
+import { OrderProductT } from "@/lib/types/orderType";
 import { orderMasterDataT } from "@/lib/types/orderMasterType";
 import { addressResT } from "@/lib/types/addressType";
 import { formatCurrencyNumber } from "@/utils/formatCurrency";
@@ -18,7 +18,7 @@ export default function PrintOrderPage() {
   const masterOrderId = searchParams.get("masterId") as string;
   const addressId = searchParams.get("addressId") as string;
 
-  const [orderProducts, setOrderProducts] = useState<orderProductsT[]>([]);
+  const [orderProducts, setOrderProducts] = useState<OrderProductT[]>([]);
   const [customerAddress, setCustomerAddress] = useState<addressResT>();
   const [orderMasterData, setOrderMasterData] = useState<orderMasterDataT | null>(null);
   const { settings } = UseSiteContext();

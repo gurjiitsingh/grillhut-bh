@@ -9,7 +9,7 @@ import { searchAddressByAddressId } from "@/app/(universal)/action/address/dbOpe
 import { useSearchParams } from "next/navigation";
 import ListHead from "./ListHead";
 import { addressResT } from "@/lib/types/addressType";
-import { orderProductsT } from "@/lib/types/orderType";
+import { OrderProductT } from "@/lib/types/orderType";
 import { orderMasterDataT } from "@/lib/types/orderMasterType";
 import { formatCurrencyNumber } from '@/utils/formatCurrency';
 import { UseSiteContext } from "@/SiteContext/SiteContext";
@@ -23,7 +23,7 @@ const OrderDetail = () => {
   // );
   const addressId = searchParams.get("addressId") as string;
   const masterOrderId = searchParams.get("masterId") as string;
-  const [orderProducts, setOrderProducts] = useState<orderProductsT[]>([]);
+  const [orderProducts, setOrderProducts] = useState<OrderProductT[]>([]);
   const [customerAddress, setCustomerAddress] = useState<addressResT>();
   const [orderMasterData, setOrderMasterData] = useState<orderMasterDataT | null>(null);
 
@@ -58,8 +58,8 @@ const OrderDetail = () => {
   
   const endTotalGS = formatCurrencyNumber(
     Number(endTotalG?.toFixed(2)) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
 
@@ -68,32 +68,32 @@ const OrderDetail = () => {
   //const itemTotalS = itemTotal?.toFixed(2).toString().replace (/\./g, ",");
   const itemTotalS = formatCurrencyNumber(
     Number(itemTotal?.toFixed(2)) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
     const deliveryCost = formatCurrencyNumber(
     Number(orderMasterData?.deliveryCost) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
 
     const calculatedPickUpDiscount = formatCurrencyNumber(
     Number(orderMasterData?.calculatedPickUpDiscountL) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
     const flatDiscount = formatCurrencyNumber(
     Number(orderMasterData?.flatDiscount) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
       const calCouponDiscount = formatCurrencyNumber(
     Number(orderMasterData?.calCouponDiscount) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
   

@@ -5,15 +5,19 @@ import { Timestamp } from "firebase/firestore";
 import { addUserDirect } from "../user/dbOperation";
 import { addCustomerAddressDirect } from "../address/dbOperations";
 import { TOrderMaster, orderMasterDataT } from "@/lib/types/orderMasterType";
-import { orderProductsT } from "@/lib/types/orderType";
 import {
-  cartProductType,
+  CartItem,
+  CartItemWithTax,
   orderDataType,
   purchaseDataT,
 } from "@/lib/types/cartDataType";
 import { ProductType } from "@/lib/types/productType";
 import admin from "firebase-admin";
 import { checkStockAvailability } from "@/lib/firestore/checkStockAvailability";
+import { convertProductsToCartItems } from "@/lib/cart/convertProductsToCartItems";
+import { calculateTaxForCart } from "@/lib/tax/calculateTaxForCart";
+import { OrderProductT } from "@/lib/types/orderType";
+const TAX_IMPLEMENT = process.env.TAX_IMPLEMENT === "true";
 
 type orderMasterDataSafeT = Omit<orderMasterDataT, "createdAt"> & {
   createdAt: string; // ISO string
@@ -63,58 +67,15 @@ export async function createNewOrderCustomerAddress(
   return { addressAddedId, UserAddedId, customerName };
 }
 
-export type CartProductWithTax = cartProductType & {
-  taxAmount: number; // tax per item
-  taxTotal: number; // tax for quantity
-  finalPrice: number; // price including tax
-  finalTotal: number; // final price * qty
-};
 
-export async function calculateTaxForCart(cartData: ProductType[]) {
-  let totalTax = 0;
-  const updatedProducts: CartProductWithTax[] = [];
 
-  for (const item of cartData) {
-    const price = Number(item.price) || 0;
-    const quantity = Number(item.quantity) || 0;
-    const taxRate = Number(item.taxRate) || 0;
-    const taxType = item.taxType;
 
-    let taxAmount = 0;
-    let finalPrice = price;
 
-    if (taxType === "exclusive") {
-      taxAmount = price * (taxRate / 100);
-      finalPrice = price + taxAmount;
-    } else {
-      taxAmount = price * (taxRate / (100 + taxRate));
-      finalPrice = price;
-    }
 
-    const taxTotal = taxAmount * quantity;
-    const finalTotal = finalPrice * quantity;
 
-    totalTax += taxTotal;
 
-    updatedProducts.push({
-      ...item,
-      quantity,
-      productCat: item.productCat ?? "",
-      id: item.id ?? "",
-      taxRate,
-      taxType: item.taxType ?? "",
-      taxAmount: Number(taxAmount.toFixed(2)),
-      taxTotal: Number(taxTotal.toFixed(2)),
-      finalPrice: Number(finalPrice.toFixed(2)),
-      finalTotal: Number(finalTotal.toFixed(2)),
-    });
-  }
 
-  return {
-    totalTax: Number(totalTax.toFixed(2)),
-    products: updatedProducts,
-  };
-}
+
 
 const SHOULD_MAINTAIN_STOCK =
   process.env.NEXT_PUBLIC_MAINTAIN_STOCK === "true" ||
@@ -141,14 +102,40 @@ export async function createNewOrder(purchaseData: orderDataType) {
     cartData,
   } = purchaseData;
 
-  // const { totalTax, products: cartWithTax } = await calculateTaxForCart(
-  //   cartData
-  // );
-  // console.log("totalTax-------------", totalTax);
-  // console.log("totalTax-------------", cartWithTax);
 
+
+let cartWithTax: CartItemWithTax[] = [];
+let totalTax = 0;
+
+const cartItems: CartItem[] = convertProductsToCartItems(cartData);
+
+// if (TAX_IMPLEMENT) {
+//   const taxResult = await calculateTaxForCart(cartItems);
+
+//   totalTax = taxResult.totalTax;
+//   cartWithTax = taxResult.products;
+//   console.log("totaltax------------------",totalTax)
+//   console.log("cartWithTax------------------",cartWithTax)
+//  } else {
+//   console.log("TAX DISABLED :: Skipping tax calculation");
+// }
+
+let totalExclusiveTax = 0;
+
+if (TAX_IMPLEMENT) {
+  const taxResult = await calculateTaxForCart(cartItems);
+  cartWithTax = taxResult.products;
+
+  // Compute tax only for exclusive items
+  totalExclusiveTax = cartWithTax
+    .filter((item) => item.taxType === "exclusive")
+    .reduce((sum, item) => sum + item.taxTotal, 0);
+
+  totalTax = taxResult.totalTax; // keep this for reporting
+ }
+const finalGrandTotal = endTotalG + totalExclusiveTax;
   // Step 1: Check stock before order
-
+   
   if (SHOULD_MAINTAIN_STOCK) {
   const stockCheck = await checkStockAvailability(cartData);
 
@@ -198,13 +185,17 @@ export async function createNewOrder(purchaseData: orderDataType) {
     createdAtUTC: nowUTC, // ISO string, cross-compatible
     time: nowGerman,
     srno: new_srno,
+    totalTax, //::::::::::::::: addtion cartWithTax also add tax record 11/26/2025
+    finalGrandTotal
   } as orderMasterDataT;
 
+ 
   // Add to orderMaster collection
   const orderMasterId = await addOrderToMaster(orderMasterData);
 
-  // Add each product to orderProducts
-  for (const product of cartData) {
+  // Add each product to orderProducts ::::::::::::::: addtion cartWithTax also add tax record 11/26/2025
+ // for (const product of cartData) {
+ for (const product of cartWithTax) {
     await addProductDraft(product, userId!, orderMasterId!);
   }
 
@@ -301,7 +292,7 @@ export async function updateOrderMaster(id: string, status: string) {
 }
 
 export async function addProductDraft(
-  element: ProductType,
+  element: CartItemWithTax,
   userAddedId: string,
   orderMasterId: string
 ) {
@@ -312,7 +303,14 @@ export async function addProductDraft(
     quantity: element.quantity,
     orderMasterId,
     userId: userAddedId,
+     taxAmount: element.taxAmount,   // per one item
+  taxTotal: element.taxTotal,    // tax * quantity
+  finalPrice: element.finalPrice,  // price + tax
+  finalTotal: element.finalTotal,  // finalPrice * quantity
   };
+
+ 
+  
 
   try {
     const docRef = await adminDb.collection("orderProducts").add(product);
@@ -392,6 +390,7 @@ export async function fetchOrdersPaginated({
       couponDiscountPercentL: data.couponDiscountPercentL || 0,
       pickUpDiscountPercentL: data.pickUpDiscountPercentL || 0,
       createdAt: data.createdAt?.toDate?.().toISOString() || "",
+      totalTax: data.totalTax || 0,
       createdAtUTC: data.createdAtUTC || "", // ✅ Add support
       time: data.time || "",
     } as orderMasterDataT;
@@ -516,7 +515,7 @@ export async function fetchOrderMasterById(id: string) {
 /***************** Order detail  **************************/
 
 export async function fetchOrderProductsByOrderMasterId(OrderMasterId: string) {
-  const data: orderProductsT[] = [];
+  const data: OrderProductT[] = [];
 
   const snapshot = await adminDb
     .collection("orderProducts")
@@ -524,7 +523,7 @@ export async function fetchOrderProductsByOrderMasterId(OrderMasterId: string) {
     .get();
 
   snapshot.forEach((doc) => {
-    data.push(doc.data() as orderProductsT);
+    data.push(doc.data() as OrderProductT);
   });
 
   return data;

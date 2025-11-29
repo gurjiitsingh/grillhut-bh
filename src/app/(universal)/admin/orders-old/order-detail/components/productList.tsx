@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import { orderProductsT } from "@/lib/types/orderType";
+import { OrderProductT } from "@/lib/types/orderType";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
 import { formatCurrencyNumber } from "@/utils/formatCurrency";
 
 type ProductListProps = {
-  item: orderProductsT;
+  item: OrderProductT;
 };
 
 const ProductList = ({ item }: ProductListProps) => {

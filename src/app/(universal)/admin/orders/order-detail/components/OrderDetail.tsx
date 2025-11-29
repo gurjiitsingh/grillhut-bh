@@ -9,7 +9,7 @@ import { searchAddressByAddressId } from "@/app/(universal)/action/address/dbOpe
 import { useSearchParams } from "next/navigation";
 import ListHead from "./ListHead";
 import { addressResT } from "@/lib/types/addressType";
-import { orderProductsT } from "@/lib/types/orderType";
+import { OrderProductT } from "@/lib/types/orderType";
 import { orderMasterDataT } from "@/lib/types/orderMasterType";
 import { formatCurrencyNumber } from '@/utils/formatCurrency';
 import { UseSiteContext } from "@/SiteContext/SiteContext";
@@ -23,7 +23,7 @@ const OrderDetail = () => {
   // );
   const addressId = searchParams.get("addressId") as string;
   const masterOrderId = searchParams.get("masterId") as string;
-  const [orderProducts, setOrderProducts] = useState<orderProductsT[]>([]);
+  const [orderProducts, setOrderProducts] = useState<OrderProductT[]>([]);
   const [customerAddress, setCustomerAddress] = useState<addressResT>();
   const [orderMasterData, setOrderMasterData] = useState<orderMasterDataT | null>(null);
 
@@ -37,7 +37,30 @@ const OrderDetail = () => {
       const orderProductList = await fetchOrderProductsByOrderMasterId(
         masterOrderId
       );
-      const addressRes = await searchAddressByAddressId(addressId);
+     
+
+let addressRes;
+
+if (addressId === "POS_ORDER") {
+  addressRes = {
+    id: "POS_ORDER",
+    email: "pos@local",
+    firstName: "Walk-in",
+    lastName: "Customer",
+    userId: "POS",
+    mobNo: "-",
+    addressLine1: "POS Counter",
+    addressLine2: "-",
+    city: "-",
+    state: "-",
+    zipCode: "-"
+  };
+} else {
+  addressRes = await searchAddressByAddressId(addressId);
+}
+
+
+
       // console.log("orderProductList ---------", orderProductList);
 
       setOrderProducts(orderProductList);
@@ -54,46 +77,53 @@ const OrderDetail = () => {
     // console.log("addre ins use efferxt-----", customerAddress);
   }, [customerAddress]);
   const endTotalG = orderMasterData?.endTotalG;
-  //const endTotalGS = endTotalG?.toFixed(2).toString().replace (/\./g, ",");
-  
-  const endTotalGS = formatCurrencyNumber(
-    Number(endTotalG?.toFixed(2)) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+   
+    
+  const totalTax = formatCurrencyNumber(
+    Number(orderMasterData?.totalTax ?? 0),
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
+  const finalGrandTotal = formatCurrencyNumber(
+    Number(orderMasterData?.finalGrandTotal ?? 0),
+    (settings.currency ) as string,
+    (settings.locale ) as string
+  );
 
-
-  const itemTotal = orderMasterData?.itemTotal;
-  //const itemTotalS = itemTotal?.toFixed(2).toString().replace (/\./g, ",");
-  const itemTotalS = formatCurrencyNumber(
-    Number(itemTotal?.toFixed(2)) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+      const itemTotal = formatCurrencyNumber(
+    Number(orderMasterData?.itemTotal ?? 0),
+    (settings.currency ) as string,
+    (settings.locale ) as string
+  );
+    const endTotalGS = formatCurrencyNumber(
+    Number(endTotalG?.toFixed(2)) ?? 0,
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
     const deliveryCost = formatCurrencyNumber(
     Number(orderMasterData?.deliveryCost) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
 
     const calculatedPickUpDiscount = formatCurrencyNumber(
     Number(orderMasterData?.calculatedPickUpDiscountL) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
     const flatDiscount = formatCurrencyNumber(
     Number(orderMasterData?.flatDiscount) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
       const calCouponDiscount = formatCurrencyNumber(
     Number(orderMasterData?.calCouponDiscount) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
   
@@ -121,11 +151,11 @@ const OrderDetail = () => {
           </div>
 
 
-          <div className="flex gap-2">
-            <div className="font-semibold">Discount total:</div>{" "}
-            <div className="">{orderMasterData?.totalDiscountG}{" "}%</div>
+         
+ <div className="flex gap-2">
+            <div className="font-semibold">Total Payable:</div>{" "}
+            <div className="">{finalGrandTotal}</div>
           </div>
-
          
         </div>
 
@@ -137,7 +167,7 @@ const OrderDetail = () => {
 
           <div className="flex gap-2">
             <div className="font-semibold">Item total:</div>{" "}
-            <div className="">{itemTotalS}</div>
+            <div className="">{itemTotal}</div>
           </div>
 
           
@@ -166,8 +196,14 @@ const OrderDetail = () => {
             <div className="font-semibold">Subtotal:</div>{" "}
             <div className="">{endTotalGS}</div>
           </div>
-
-
+   <div className="flex gap-2">
+            <div className="font-semibold">Tax:</div>{" "}
+            <div className="">{totalTax}</div>
+          </div>
+ <div className="flex gap-2">
+            <div className="font-semibold">Grand Total:</div>{" "}
+            <div className="">{finalGrandTotal}</div>
+          </div>
 
         </div>
 

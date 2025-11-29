@@ -1,10 +1,10 @@
-'use client';
-import React, { useState } from 'react';
+"use client";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { categorySchema, TcategorySchema } from "@/lib/types/categoryType";
 import { Button } from "@/components/ui/button";
-import { addNewCategory } from '@/app/(universal)/action/category/dbOperations';
+import { addNewCategory } from "@/app/(universal)/action/category/dbOperations";
 
 const Form = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,7 +13,7 @@ const Form = () => {
     register,
     formState: { errors },
     handleSubmit,
-     reset,
+    reset,
     setValue,
   } = useForm<TcategorySchema>({
     resolver: zodResolver(categorySchema),
@@ -28,6 +28,8 @@ const Form = () => {
       formData.append("sortOrder", data.sortOrder!);
       formData.append("desc", data.desc ?? "");
       formData.append("isFeatured", data.isFeatured!);
+      formData.append("taxRate", String(data.taxRate ?? 0)); // ✅ added tax info
+      formData.append("taxType", data.taxType as string);
 
       if (data.image?.[0] === undefined) {
         formData.append("image", "0");
@@ -35,22 +37,22 @@ const Form = () => {
         formData.append("image", data.image[0]);
       }
 
-    const result =  await addNewCategory(formData);
+      const result = await addNewCategory(formData);
 
-          if (!result?.errors) {
-    //  alert("✅ Product added successfully!");
-    const SO = (Number(data.sortOrder) + 1) || 1;
-      reset({
-        // name: "",
-             sortOrder:SO.toString(),
-      //  categoryId: "",
-      
-      //  taxRate: 0, // ✅ reset tax field
-      });
-    } else {
-      console.error("❌ Validation errors:", result.errors);
-      alert("Something went wrong. Check console for details.");
-    }
+      if (!result?.errors) {
+        //  alert("✅ Product added successfully!");
+        const SO = Number(data.sortOrder) + 1 || 1;
+        reset({
+          // name: "",
+          sortOrder: SO.toString(),
+          //  categoryId: "",
+
+          //  taxRate: 0, // ✅ reset tax field
+        });
+      } else {
+        console.error("❌ Validation errors:", result.errors);
+        alert("Something went wrong. Check console for details.");
+      }
 
       setValue("name", "");
       setValue("desc", "");
@@ -92,6 +94,40 @@ const Form = () => {
                 )}
               </div>
             </div>
+
+            {/* General Info + Tax */}
+            <div className="bg-white rounded-xl p-4 border shadow-sm flex flex-col gap-3">
+              <h2 className="font-semibold text-lg text-gray-800">
+                Tax Details
+              </h2>
+
+              {/* TAX SECTION */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="label-style">Tax Rate (%)</label>
+                  <input
+                    {...register("taxRate")}
+                    className="input-style py-1"
+                    placeholder="e.g. 5, 12, 18"
+                  />
+                  <p className="text-xs text-destructive">
+                    {errors.taxRate?.message}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="label-style">Tax Type</label>
+                  <select {...register("taxType")} className="input-style py-1">
+                    <option value="inclusive">
+                      Inclusive (Deducted from total)
+                    </option>
+                    <option value="exclusive">
+                      Exclusive (Added on total)
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Box */}
@@ -131,13 +167,12 @@ const Form = () => {
               )}
 
               <Button
-  type="submit"
-  disabled={isSubmitting}
-  className={`btn-save ${isSubmitting ? 'opacity-80' : ''}`}
->
-  {isSubmitting ? 'Saving...' : 'Save'}
-</Button>
-
+                type="submit"
+                disabled={isSubmitting}
+                className={`btn-save ${isSubmitting ? "opacity-80" : ""}`}
+              >
+                {isSubmitting ? "Saving..." : "Save"}
+              </Button>
             </div>
           </div>
         </div>

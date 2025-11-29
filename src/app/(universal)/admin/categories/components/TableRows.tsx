@@ -16,7 +16,7 @@ import { useLanguage } from '@/store/LanguageContext';
 
 function TableRows({ category }: { category: categoryType }) {
   const { TEXT } = useLanguage();
-
+console.log("ca--------------",category)
   async function handleDelete(category: categoryType) {
     const products = await fetchProductByCategoryId(category.id!);
 
@@ -58,6 +58,7 @@ function TableRows({ category }: { category: categoryType }) {
               alt={category.name}
             />
           )}
+          {/* {category?.image} */}
         </div>
       </TableCell>
 
@@ -77,6 +78,27 @@ function TableRows({ category }: { category: categoryType }) {
 
       <TableCell className="text-sm text-gray-700 dark:text-gray-300">
         {category.desc}
+      </TableCell>
+            <TableCell>
+        {category.taxRate !== undefined && category.taxRate !== null ? (
+          <div className="flex flex-col">
+             <span
+              className={`text-[11px] text-[8px] px-1 py-[1px] rounded  w-fit ${
+               category.taxRate
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {category.taxType}
+            </span>
+            <span className="text-sm font-medium text-gray-800">
+              {category.taxRate}%
+            </span>
+           
+          </div>
+        ) : (
+          <span className="text-sm text-gray-400 italic">—</span>
+        )}
       </TableCell>
 
       <TableCell>

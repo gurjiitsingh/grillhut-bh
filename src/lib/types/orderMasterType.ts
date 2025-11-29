@@ -23,6 +23,8 @@ export type orderMasterDataT = {
   couponDiscountPercentL: number;
   couponCode: string | undefined;
   pickUpDiscountPercentL: number;
+  totalTax: number | undefined;
+  finalGrandTotal: number | undefined;
   
 };
 

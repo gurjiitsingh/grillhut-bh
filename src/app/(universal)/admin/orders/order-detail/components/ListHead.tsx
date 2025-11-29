@@ -18,6 +18,9 @@ export default function ListHead() {
                 <div className="text-[1rem] w-[33%] flex items-start justify-end ">
                   Price
                 </div>
+                 <div className="text-[1rem] w-[33%] flex items-start justify-end ">
+                  Tax
+                </div>
                 <div className="text-[1rem] w-[33%] flex items-start justify-end ">
                   Quantity
                 </div>

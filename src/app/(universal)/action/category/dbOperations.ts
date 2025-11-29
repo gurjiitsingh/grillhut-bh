@@ -26,6 +26,9 @@ export async function fetchCategories(): Promise<categoryType[]> {
       isFeatured: data.isFeatured,
       sortOrder: data.sortOrder,
       disablePickupDiscount: data.disablePickupDiscount,
+       // tax fields
+        taxRate: data.taxRate ,
+        taxType: data.taxType ,
     } as categoryType;
   });
 }
@@ -65,6 +68,9 @@ export async function addNewCategory(formData: FormData) {
   const sortOrder = formData.get("sortOrder");
   const image = formData.get("image");
   const isFeatured = formData.get("isFeatured");
+   const taxRateRaw = formData.get("taxRate") as string ;
+    const taxType = formData.get("taxType") as string ;
+     const taxRate = taxRateRaw ? parseFloat(taxRateRaw) : null;
 
   const receivedData = { name, desc, sortOrder, image, isFeatured };
 
@@ -89,7 +95,8 @@ export async function addNewCategory(formData: FormData) {
     }
   }
 
-  const data = { name, desc, sortOrder, image: imageUrl, isFeatured };
+  const data = { name, desc, sortOrder, image: imageUrl, isFeatured, taxRate, taxType };
+ 
 
   try {
     const docRef = await adminDb.collection("category").add(data);
@@ -108,6 +115,7 @@ export async function addNewCategory(formData: FormData) {
 
 
 export async function editCategory(formData: FormData) {
+  console.log("form---------------",formData)
   const id = formData.get("id") as string;
   const image = formData.get("image");
   const name = formData.get("name");
@@ -116,6 +124,10 @@ export async function editCategory(formData: FormData) {
   const isFeatured = formData.get("isFeatured");
   const sortOrder = formData.get("sortOrder");
 
+  const taxRateRaw = formData.get("taxRate") as string | null;
+  const taxType = (formData.get("taxType") as string ) ?? null;
+  // ✅ Convert taxRate safely
+  const taxRate = taxRateRaw ? parseFloat(taxRateRaw) || null : null;
   const receivedData = {
     id,
     oldImageUrl,
@@ -124,6 +136,8 @@ export async function editCategory(formData: FormData) {
     sortOrder,
     image,
     isFeatured,
+    // taxRate, 
+    // taxType
   };
 
   const result = editCategorySchema.safeParse(receivedData);
@@ -158,7 +172,7 @@ export async function editCategory(formData: FormData) {
         const oldParts = oldImageUrl.split("/");
         const publicId = oldParts.slice(-2).join("/").split(".")[0];
         // ex: anjana-bhog/xyz123
-console.log("delete pic id----------------",publicId)
+
         try {
           await deleteImage(publicId);
           console.log("✅ Old Cloudinary image deleted:", publicId);
@@ -186,6 +200,8 @@ console.log("delete pic id----------------",publicId)
     sortOrder,
     image: imageUrl,
     isFeatured,
+     taxRate, 
+    taxType
   };
 
   try {

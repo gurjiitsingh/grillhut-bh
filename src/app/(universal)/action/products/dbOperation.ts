@@ -53,7 +53,7 @@ export const fetchProducts = cache(async (): Promise<ProductType[]> => {
 
         // tax fields
         taxRate: data.taxRate ?? undefined,
-        taxType: data.taxType ?? undefined,
+        taxType: data.taxType,
       };
     });
   } catch (error) {
@@ -572,7 +572,7 @@ export async function fetchProductById(
     }
 
     const data = docSnap.data();
-    console.log("data.taxRate----------------------", data?.taxRate);
+    //console.log("data.taxRate----------------------", data?.taxRate);
 
     const product: ProductType = {
       id: docSnap.id,

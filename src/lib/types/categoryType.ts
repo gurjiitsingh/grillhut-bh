@@ -10,6 +10,8 @@ export type categoryType = {
   isFeatured?: boolean | undefined;
   sortOrder?: number | undefined;
   disablePickupDiscount?: boolean | undefined;
+  taxRate?: string | number;
+  taxType: "inclusive" | "exclusive" | undefined;
 };
 
 
@@ -28,6 +30,22 @@ export const categorySchema = z.object({
   slug: z.string().optional(),
   image: z.any().optional(),
   isFeatured: z.string().optional(),
+    taxRate: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === undefined || val === ""
+        ? undefined
+        : Number(val.toString().replace(",", "."))
+    )
+    .refine(
+      (val) => val === undefined || (!isNaN(val) && val >= 0),
+      { message: "Invalid tax rate" }
+    ),
+
+  taxType: z
+    .enum(["inclusive", "exclusive"])
+    .optional(),
 });
 
 export type TcategorySchema = z.infer<typeof categorySchema>;
@@ -52,6 +70,18 @@ export const editCategorySchema = z.object({
   oldImageUrl: z.any().optional(),
   isFeatured: z.string().optional(), 
   disablePickupDiscount: z.boolean().optional(),
+    taxRate: z
+    .string()
+    .optional()
+    .refine(
+      (value) =>
+        !value || /^\d*[.,]?\d*$/.test(value),
+      "Invalid tax rate"
+    ),
+
+  taxType: z
+    .enum(["inclusive", "exclusive"])
+    .optional(),
 });
 
 export type TeditCategorySchema = z.infer<typeof editCategorySchema>;

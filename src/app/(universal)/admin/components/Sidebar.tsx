@@ -102,22 +102,23 @@ const Sidebar = () => {
       name: BRANDING.sidebar.orders_realtime,
       link: "/admin/order-realtime",
       icon: <MdOutlineCrisisAlert />,
-    },
-    { key: "SHOW_SALE", name: BRANDING.sidebar.sale, link: "/admin/sale", icon: <FaClipboardList /> },
+    },  { key: "SHOW_CATEGORIES", name: BRANDING.sidebar.categories, link: "/admin/categories", icon: <MdCategory /> },
+     { key: "SHOW_PRODUCTS", name: BRANDING.sidebar.products, link: "/admin/products", icon: <MdInventory /> },
+   
     {
       key: "SHOW_RESERVATIONS",
       name: BRANDING.sidebar.reservations,
       link: "/admin/reservations",
       icon: <BsCardList />,
     },
-    { key: "SHOW_CATEGORIES", name: BRANDING.sidebar.categories, link: "/admin/categories", icon: <MdCategory /> },
+   { key: "SHOW_SALE", name: BRANDING.sidebar.sale, link: "/admin/sale", icon: <FaClipboardList /> },
     {
       key: "SHOW_PICKUP_DISCOUNT",
       name: BRANDING.sidebar.pickup_discount,
       link: "/admin/pickupdiscount/pickup-discount",
       icon: <MdLocalOffer />,
     },
-    { key: "SHOW_PRODUCTS", name: BRANDING.sidebar.products, link: "/admin/products", icon: <MdInventory /> },
+   
     {
       key: "SHOW_VARIANTS",
       name: BRANDING.sidebar.variants,

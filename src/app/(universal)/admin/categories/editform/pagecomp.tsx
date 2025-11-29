@@ -30,12 +30,15 @@ const PageComp = () => {
   useEffect(() => {
     async function prefetch() {
       const categoryData = await fetchCategoryById(id);
+     
       setValue("id", id);
       setValue("name", categoryData.name);
       setValue("desc", categoryData.desc);
       setValue("oldImageUrl", categoryData.image);
       setValue("sortOrder", categoryData.sortOrder!.toString());
       setValue("isFeatured", categoryData.isFeatured!.toString());
+       setValue("taxRate", categoryData.taxRate?.toString() ?? "");
+      setValue("taxType", categoryData.taxType ?? "inclusive");
     }
     prefetch();
   }, [id, setValue]);
@@ -49,6 +52,8 @@ const PageComp = () => {
     formData.append("isFeatured", data.isFeatured!);
     formData.append("id", data.id!);
     formData.append("sortOrder", data.sortOrder!);
+     formData.append("taxRate", String(data.taxRate ?? 0)); // ✅ added tax info
+      formData.append("taxType", data.taxType as string);
 
     const result = await editCategory(formData);
     if (!result?.errors) {
@@ -106,6 +111,40 @@ const PageComp = () => {
                     {errors.sortOrder.message}
                   </p>
                 )}
+              </div>
+            </div>
+
+              {/* General Info + Tax */}
+            <div className="bg-white rounded-xl p-4 border shadow-sm flex flex-col gap-3">
+              <h2 className="font-semibold text-lg text-gray-800">
+                Tax Details
+              </h2>
+
+              {/* TAX SECTION */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="label-style">Tax Rate (%)</label>
+                  <input
+                    {...register("taxRate")}
+                    className="input-style py-1"
+                    placeholder="e.g. 5, 12, 18"
+                  />
+                  <p className="text-xs text-destructive">
+                    {errors.taxRate?.message}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="label-style">Tax Type</label>
+                  <select {...register("taxType")} className="input-style py-1">
+                    <option value="inclusive">
+                      Inclusive (Deducted from total)
+                    </option>
+                    <option value="exclusive">
+                      Exclusive (Added on total)
+                    </option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

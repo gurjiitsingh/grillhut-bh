@@ -23,6 +23,27 @@ export type ProductType = {
   taxType: 'inclusive' | 'exclusive' | undefined;
 };
 
+export type ProductBase = {
+  id: string;
+  name: string;
+  price: number;
+  discountPrice?: number;
+  categoryId: string;
+  productCat?: string;
+  baseProductId: string;
+  productDesc: string;
+  sortOrder: number;
+  image: string;
+  isFeatured: boolean;
+  purchaseSession: string | null;
+  stockQty: number;
+  flavors: boolean;
+  status: 'published' | 'draft' | 'out_of_stock';
+  taxRate?: number;
+  taxType?: 'inclusive' | 'exclusive';
+};
+
+
 export const newPorductSchema = z.object({
   id: z.string().optional(),
 

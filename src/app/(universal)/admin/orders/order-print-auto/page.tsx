@@ -8,7 +8,7 @@ import {
 import { searchAddressByAddressId } from "@/app/(universal)/action/address/dbOperations";
 import { useSearchParams } from "next/navigation";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
-import { orderProductsT } from "@/lib/types/orderType";
+import {  OrderProductT } from "@/lib/types/orderType";
 import { orderMasterDataT } from "@/lib/types/orderMasterType";
 import { addressResT } from "@/lib/types/addressType";
 import { formatCurrencyNumber } from "@/utils/formatCurrency";
@@ -18,7 +18,7 @@ export default function PrintOrderPage() {
   const masterOrderId = searchParams.get("masterId") as string;
   const addressId = searchParams.get("addressId") as string;
 
-  const [orderProducts, setOrderProducts] = useState<orderProductsT[]>([]);
+  const [orderProducts, setOrderProducts] = useState<OrderProductT[]>([]);
   const [customerAddress, setCustomerAddress] = useState<addressResT>();
   const [orderMasterData, setOrderMasterData] = useState<orderMasterDataT | null>(null);
   const { settings } = UseSiteContext();
@@ -51,10 +51,12 @@ export default function PrintOrderPage() {
   const formatCurrency = (value: number) =>
     formatCurrencyNumber(
       value ?? 0,
-      (settings.currency || "EUR") as string,
-      (settings.locale || "de-DE") as string
+      (settings.currency) as string,
+      (settings.locale ) as string
     );
-
+ 
+  const totalTax = formatCurrency(Number(orderMasterData?.totalTax ?? 0));
+  const finalGrandTotal = formatCurrency(Number(orderMasterData?.finalGrandTotal ?? 0));
   const endTotal = formatCurrency(Number(orderMasterData?.endTotalG ?? 0));
   const itemTotal = formatCurrency(Number(orderMasterData?.itemTotal ?? 0));
   const deliveryCost = formatCurrency(Number(orderMasterData?.deliveryCost ?? 0));
@@ -81,36 +83,45 @@ export default function PrintOrderPage() {
       </div>
 
       {/* Products */}
-      <div className="border-t border-b border-black py-1 mb-2">
-        <div className="flex justify-between font-bold border-b border-black pb-1">
-          <span className="w-1/2">Item</span>
-          <span className="w-1/6 text-right">Qty</span>
-          <span className="w-1/6 text-right">Price</span>
-          <span className="w-1/6 text-right">Total</span>
-        </div>
-        {orderProducts.map((item) => {
-          const total = formatCurrency(Number(item.quantity) * Number(item.price));
-          const price = formatCurrency(Number(item.price));
-          return (
-            <div key={item.id} className="flex justify-between py-0.5">
-              <span className="w-1/2 truncate">{item.name}</span>
-              <span className="w-1/6 text-right">{item.quantity}</span>
-              <span className="w-1/6 text-right">{price}</span>
-              <span className="w-1/6 text-right">{total}</span>
-            </div>
-          );
-        })}
+     {/* Products */}
+<div className="border-t border-b border-black py-1 mb-2">
+  <div className="flex justify-between font-bold border-b border-black pb-1">
+    <span className="w-2/5">Item</span>
+    <span className="w-1/6 text-right">Qty</span>
+    <span className="w-1/6 text-right">Price</span>
+    <span className="w-1/6 text-right">Tax</span>
+    <span className="w-1/6 text-right">Total</span>
+  </div>
+
+  {orderProducts.map((item) => {
+    const price = formatCurrency(Number(item.price));
+    const taxAmount = formatCurrency(Number(item.taxAmount));
+    const finalPrice = formatCurrency(Number(item.finalPrice));
+    const finalTotal = formatCurrency(Number(item.finalTotal));
+
+    return (
+      <div key={item.id} className="flex justify-between py-0.5">
+        <span className="w-2/5 truncate">{item.name}</span>
+        <span className="w-1/6 text-right">{item.quantity}</span>
+        <span className="w-1/6 text-right">{price}</span>
+        <span className="w-1/6 text-right">{taxAmount}</span>
+        <span className="w-1/6 text-right">{finalTotal}</span>
       </div>
+    );
+  })}
+</div>
+
 
       {/* Totals */}
       <div className="text-right mb-2">
         <p>Item Total: {itemTotal}</p>
+         <p>Total Tax: {totalTax}</p>
         <p>Delivery: {deliveryCost}</p>
         <p>Pickup Discount: {pickUpDiscount}</p>
         <p>Coupon Flat: {flatDiscount}</p>
         <p>Coupon %: {couponDiscount}</p>
         <p className="font-bold border-t border-black pt-1 mt-1">
-          Grand Total: {endTotal}
+          Grand Total: {finalGrandTotal}
         </p>
       </div>
 

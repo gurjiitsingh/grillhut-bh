@@ -18,6 +18,28 @@ export type newOrderConditionType = {
   message: string;
 };
 
+export type CartItem = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  stockQty: number | null;
+
+  // category + tax info copied from product
+  categoryId: string;
+  productCat: string;
+  taxRate?: number;
+  taxType?: 'inclusive' | 'exclusive';
+  image: string;
+};
+
+export type CartItemWithTax = CartItem & {
+  taxAmount: number;   // per one item
+  taxTotal: number;    // tax * quantity
+  finalPrice: number;  // price + tax
+  finalTotal: number;  // finalPrice * quantity
+};
+
 export type cartDataT = {
   productDesc: string;
   productCat: string;

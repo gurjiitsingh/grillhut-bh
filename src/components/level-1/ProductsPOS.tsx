@@ -181,8 +181,8 @@ useEffect(() => {
   }
 
   return (
-    <div  className="max-w-7xl mx-auto my-6">
-      <div className="px-4 sm:px-6 lg:px-12">
+    <div  className="max-full mx-auto my-1">
+      <div className="px-1">
         <div className={containerClass}>
           {products.map((product, i) => (
             <Card

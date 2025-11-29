@@ -8,16 +8,16 @@ export default function CouponDisc({ total }: { total: number }) {
 
   const coupon_discount = formatCurrencyNumber(
     Number(couponDisc?.discount) ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
   const discount_value_from_percent = ((+total * Number(couponDisc?.discount)) / 100);
 
   const discount_value_from_percentCUR = formatCurrencyNumber(
     discount_value_from_percent ?? 0,
-    (settings.currency || 'EUR') as string,
-    (settings.locale || 'de-DE') as string
+    (settings.currency ) as string,
+    (settings.locale ) as string
   );
 
 

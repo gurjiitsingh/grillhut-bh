@@ -28,7 +28,7 @@ export const MiniCartSubtotal = () => {
       <div>
         <div className="text-gray-700 font-medium">{TEXT.total_label || "Total"}</div>
         <div className="text-sm text-gray-500">
-          {TEXT.discount_hint_checkout || "See discount at checkout"}
+          {/* {TEXT.discount_hint_checkout || "See discount at checkout"} */}
         </div>
       </div>
       <div className="text-rose-600 font-bold text-lg">{total_amount}</div>

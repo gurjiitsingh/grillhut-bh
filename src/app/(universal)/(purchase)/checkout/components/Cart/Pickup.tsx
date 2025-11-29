@@ -14,8 +14,8 @@ export default function Pickup({
   
     const calculatedPickUpDiscountCUR = formatCurrencyNumber(
       calculatedPickUpDiscount ?? 0,
-      (settings.currency || 'EUR') as string,
-      (settings.locale || 'de-DE') as string
+      (settings.currency ) as string,
+      (settings.locale ) as string
     );
 
   return (

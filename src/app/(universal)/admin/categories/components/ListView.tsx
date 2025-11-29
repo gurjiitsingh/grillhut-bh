@@ -59,6 +59,7 @@ useEffect(() => {
               <TableHead className="text-sm text-gray-700 dark:text-gray-300">
                 Description
               </TableHead>
+                <TableHead>Tax</TableHead>
               <TableHead className="hidden md:table-cell text-sm text-gray-700 dark:text-gray-300">
                 Action
               </TableHead>

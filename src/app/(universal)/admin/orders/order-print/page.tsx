@@ -8,7 +8,7 @@ import {
 import { searchAddressByAddressId } from "@/app/(universal)/action/address/dbOperations";
 import { useSearchParams } from "next/navigation";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
-import { orderProductsT } from "@/lib/types/orderType";
+import { OrderProductT } from "@/lib/types/orderType";
 import { orderMasterDataT } from "@/lib/types/orderMasterType";
 import { addressResT } from "@/lib/types/addressType";
 import { formatCurrencyNumber } from "@/utils/formatCurrency";
@@ -18,7 +18,7 @@ export default function PrintOrderPage() {
   const masterOrderId = searchParams.get("masterId") as string;
   const addressId = searchParams.get("addressId") as string;
 
-  const [orderProducts, setOrderProducts] = useState<orderProductsT[]>([]);
+  const [orderProducts, setOrderProducts] = useState<OrderProductT[]>([]);
   const [customerAddress, setCustomerAddress] = useState<addressResT>();
   const [orderMasterData, setOrderMasterData] = useState<orderMasterDataT | null>(null);
   const { settings } = UseSiteContext();
@@ -41,13 +41,15 @@ export default function PrintOrderPage() {
   const formatCurrency = (value: number) =>
     formatCurrencyNumber(
       value ?? 0,
-      (settings.currency || "EUR") as string,
-      (settings.locale || "de-DE") as string
+      (settings.currency) as string,
+      (settings.locale) as string
     );
 
   const handlePrint = () => window.print();
 
   const endTotal = formatCurrency(Number(orderMasterData?.endTotalG ?? 0));
+  const totalTax = formatCurrency(Number(orderMasterData?.totalTax ?? 0));
+  const finalGrandTotal = formatCurrency(Number(orderMasterData?.finalGrandTotal ?? 0));
   const itemTotal = formatCurrency(Number(orderMasterData?.itemTotal ?? 0));
   const deliveryCost = formatCurrency(Number(orderMasterData?.deliveryCost ?? 0));
   const pickUpDiscount = formatCurrency(Number(orderMasterData?.calculatedPickUpDiscountL ?? 0));
@@ -102,7 +104,7 @@ export default function PrintOrderPage() {
         <p>Coupon Flat: {flatDiscount}</p>
         <p>Coupon %: {couponDiscount}</p>
         <p className="font-bold border-t border-black pt-1 mt-1">
-          Grand Total: {endTotal}
+          Grand Total: {finalGrandTotal}
         </p>
       </div>
 
