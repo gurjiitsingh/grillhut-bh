@@ -16,8 +16,7 @@ import {
   orderDataType,
 
 } from "@/lib/types/cartDataType";
-import { convertProductsToCartItemsPOS } from "@/lib/cart/convertProductsToCartItems";
-
+import {  convertProductsToCartItemsPOS } from "@/lib/cart/convertProductsToCartItems";
 
 export default function POSCheckout() {
   const router = useRouter();

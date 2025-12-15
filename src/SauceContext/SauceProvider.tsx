@@ -88,7 +88,7 @@ export const CartProvider: React.FC<Props> = ({
   }
 
   function addsauceToCart(newsauce: ProductType) {
-console.log("sauce to add -------", newsauce)
+
     const isItemInCart = cartData.find(
       (cartItem) => cartItem.id === newsauce.id
     ); // check if the item is already in the cart

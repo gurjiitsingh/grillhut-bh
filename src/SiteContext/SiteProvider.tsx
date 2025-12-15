@@ -54,27 +54,29 @@ export const SiteProvider: React.FC<Props> = ({
   // useEffect(() => {
   //   getAllSettings().then(setSettings).catch(console.error);
   // }, []);
- useEffect(() => {
+useEffect(() => {
   getAllSettings()
     .then((fetched) => {
       setSettings({
-        // currency: fetched.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || 'EUR',
-        // locale: fetched.locale || process.env.NEXT_PUBLIC_DEFAULT_LOCALE || 'de-DE',
-        // ...fetched, // place this last so fetched values override defaults if present
-          currency:  process.env.NEXT_PUBLIC_DEFAULT_CURRENCY as string,
-        locale:  process.env.NEXT_PUBLIC_DEFAULT_LOCALE as string,
-       
+        // Default values from .env
+        currency: process.env.NEXT_PUBLIC_DEFAULT_CURRENCY as string,
+        locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE as string,
+
+        // Now include everything from Firestore
+        ...fetched,  // this overwrites defaults if Firestore has values
       });
     })
     .catch((err) => {
       console.error("Error fetching settings:", err);
-      // fallback to .env if Firestore fetch fails
+
+      // Fallback to .env if Firestore fails
       setSettings({
         currency: process.env.NEXT_PUBLIC_DEFAULT_CURRENCY as string,
         locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE as string,
       });
     });
 }, []);
+
 
 
   useEffect(() => {
