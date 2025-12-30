@@ -15,6 +15,12 @@ import { formatCurrencyNumber } from '@/utils/formatCurrency';
 import { UseSiteContext } from "@/SiteContext/SiteContext";
   import { Timestamp } from "firebase/firestore";
 import { formatFirestoreDateToIST } from "@/utils/date";
+import { formatDateTimeStamp } from "@/utils/formatDateTimestamp";
+
+export type orderMasterDataSafeT = Omit<orderMasterDataT, "createdAt"> & {
+  createdAt: string;
+};
+
 const OrderDetail = () => {
   const searchParams = useSearchParams();
   // console.log(
@@ -26,15 +32,17 @@ const OrderDetail = () => {
   const masterOrderId = searchParams.get("masterId") as string;
   const [orderProducts, setOrderProducts] = useState<OrderProductT[]>([]);
   const [customerAddress, setCustomerAddress] = useState<addressResT>();
-  const [orderMasterData, setOrderMasterData] = useState<orderMasterDataT | null>(null);
+  const [orderMasterData, setOrderMasterData] =
+  useState<orderMasterDataSafeT | null>(null);
 
   const { settings } = UseSiteContext();
 
- 
+   console.log("maserer id-----------", masterOrderId);
+       console.log("addressId-----------", addressId);
 
   useEffect(() => {
     async function getOrderProducts() {
-      // console.log("maserer id-----------", masterOrderId);
+    
       const orderProductList = await fetchOrderProductsByOrderMasterId(
         masterOrderId
       );
@@ -131,11 +139,10 @@ if (addressId === "POS_ORDER") {
 
 
 
-const dateTime = formatFirestoreDateToIST(
-  orderMasterData?.createdAt as string
-);
-
-
+ const dateTime = formatDateTimeStamp(
+    orderMasterData?.createdAt as string,
+    String(settings.locale) || process.env.NEXT_PUBLIC_DEFAULT_LOCALE
+  ) 
 
 
   return (

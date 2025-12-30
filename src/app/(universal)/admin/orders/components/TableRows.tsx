@@ -9,8 +9,11 @@ import { useLanguage } from "@/store/LanguageContext";
 import { formatCurrencyNumber } from "@/utils/formatCurrency";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
 import { formatDateUTC } from "@/utils/formatDateUTC";
+import { formatDateTimeStamp } from "@/utils/formatDateTimestamp";
+import { Timestamp } from "firebase/firestore";
 
 function TableRows({ order }: { order: orderMasterDataT }) {
+ 
  
   const { TEXT } = useLanguage();
   const { settings } = UseSiteContext();
@@ -19,8 +22,8 @@ function TableRows({ order }: { order: orderMasterDataT }) {
     (settings.currency ) as string,
     (settings.locale ) as string
   );
-  const endTotalG = formatCurrencyNumber(
-    Number(order.endTotalG) ?? 0,
+  const grandTotal = formatCurrencyNumber(
+    Number(order.grandTotal) ?? 0,
     (settings.currency ) as string,
     (settings.locale ) as string
   );
@@ -35,6 +38,7 @@ function TableRows({ order }: { order: orderMasterDataT }) {
       }
     }
   }
+ 
 
   return (
     <TableRow className="bg-white dark:bg-zinc-800 hover:bg-amber-50 dark:hover:bg-zinc-700 transition duration-200">
@@ -50,7 +54,7 @@ function TableRows({ order }: { order: orderMasterDataT }) {
           }}
           className="border border-gray-500 hover:bg-amber-300 dark:bg-amber-900 dark:hover:bg-amber-700 text-amber-800 dark:text-white px-3 py-1 rounded-full text-xs font-semibold transition"
         >
-          #{order.srno}eeee
+          #{order.srno}
         </Link>
          <Link
           href={{
@@ -73,14 +77,29 @@ function TableRows({ order }: { order: orderMasterDataT }) {
 
       <TableCell className="text-gray-600 dark:text-zinc-400 text-sm">
         {/* {order.time} */}
-        {formatDateUTC(
-    order.createdAtUTC,
+        {formatDateTimeStamp(
+    order.createdAt as Timestamp,
     String(settings.locale) || process.env.NEXT_PUBLIC_DEFAULT_LOCALE
-  ) || order.time}
+  ) }
 {/* {formatDateUTC(order.createdAtUTC, settings.locale as string || "de-DE")} */}
       </TableCell>
 
+  <TableCell className="text-gray-600 dark:text-zinc-400 text-sm">
+        {/* {order.time} */}
+        {formatDateTimeStamp(
+    order.scheduledAt as Timestamp,
+    String(settings.locale) || process.env.NEXT_PUBLIC_DEFAULT_LOCALE
+  ) }
 
+ 
+      </TableCell>
+      <TableCell className="font-medium text-gray-900 dark:text-zinc-100">
+        {order.orderType}
+      </TableCell>
+         <TableCell className="font-medium text-gray-900 dark:text-zinc-100">
+        {order.tableNo}
+      </TableCell>
+      
       <TableCell>
         <span
           className={`px-2 py-1 text-xs rounded-full font-semibold ${
@@ -96,7 +115,7 @@ function TableRows({ order }: { order: orderMasterDataT }) {
       </TableCell>
 
       <TableCell className="font-medium text-gray-900 dark:text-zinc-100">
-        {endTotalG}
+        {grandTotal}
       </TableCell>
 
       <TableCell className="text-sm text-gray-600 dark:text-zinc-400">

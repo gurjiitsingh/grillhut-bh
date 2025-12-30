@@ -5,12 +5,12 @@ import { z } from "zod";
 export type deliveryType = {
   id: string | undefined;
   name: string;
-  price: string;
+  deliveryCost: number;
   minSpend: number;
-  deliveryDesc: string;
+  note: string;
   productCat: string;
   //image: string;
-  deliveryDistance: string;
+  deliveryDistance?: number | null ;
  // purchaseSession: string | null;
  // quantity: number | null;
  // status: string | null;
@@ -18,30 +18,68 @@ export type deliveryType = {
 
 
 
-const deliverySchema = z.object({
-  // id: z.number().optional(),
+
+
+export const deliverySchema = z.object({
+  // Location name (village / area)
   name: z
     .string()
     .trim()
-    .min(2, { message: "delivery name is very short" })
-    .max(30, { message: "delivery name is very long" }),
-  price: z
-    .string()
-    .refine((value) => /^\d+$/.test(value), "Invalid delivery price"), // Refinement
-  productCat: z.string().min(1, { message: "Please select category" }),
+    .min(2, { message: "Delivery name is very short" })
+    .max(30, { message: "Delivery name is very long" }),
 
-  deliveryDesc: z.string().min(1, { message: "Please select category" }),
+  // 💰 DELIVERY PRICE — store as NUMBER
+  deliveryCost: z
+    .string()
+    .trim()
+    .refine(v => /^\d+(\.\d+)?$/.test(v), "Enter a valid delivery price")
+    .transform(v => Number(v)),   // OUTPUT: number
+
+  // 🛒 MINIMUM SPEND — optional number
+  minSpend: z
+    .string()
+    .trim()
+    .optional()
+    .refine(v => !v || /^\d+(\.\d+)?$/.test(v), "Enter valid minimum spend")
+    .transform(v => (v ? Number(v) : 0)),   // OUTPUT: number
+
+  // 📏 DELIVERY DISTANCE — optional number
+  deliveryDistance: z
+    .preprocess(value => {
+      if (value === undefined || value === null || value === "") return null;
+      if (typeof value === "number") return value;
+      if (typeof value === "string" && /^\d+(\.\d+)?$/.test(value.trim()))
+        return Number(value);
+      return NaN;
+    },
+    z
+      .number()
+      .nullable()
+      .refine(v => v === null || !isNaN(v), "Enter valid distance")
+    ),
+
+  // Category (fixed list string)
+  productCat: z
+    .string()
+    .min(1, { message: "Please select category" }),
+
+  // Description
+  note: z
+    .string()
+    .trim()
+    .min(1, { message: "Please enter delivery description" }),
+
+  // Optional fields
   company: z.string().optional(),
   featured: z.string().optional(),
+
+  // File upload — leave as-is
   image: typeof window === "undefined" ? z.any() : z.any(),
-  minSpend: z.string().optional(),
-  // image:z.object({
-  //   size: z.number(),
-  // type: z.string(),
-  // name: z.string(),
-  // lastModified: z.number(),
-  //  }),
 });
+
+export type TDeliverySchema = z.infer<typeof deliverySchema>;
+
+
 export type TdeliverySchema = z.infer<typeof deliverySchema>;
 
 export type TdeliverySchemaArr = TdeliverySchema[];
@@ -49,11 +87,11 @@ export type TdeliverySchemaArr = TdeliverySchema[];
 export const newPorductSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(4, { message: "delivery name is required" }),
-  price: z
+  deliveryCost: z
     .string(),
    // .refine((value) => /^\d+$/.test(value), "Invalid delivery price"), // Refinement
   productCat: z.string().min(1, { message: "Please select category" }),
-  deliveryDesc: z
+  note: z
     .string().optional(),
    // .min(2, { message: "delivery description is required" }),
   minSpend: z.string().optional(),
@@ -79,11 +117,11 @@ export type TnewdeliverySchemaArr = TnewdeliverySchema[];
 export const editPorductSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(4, { message: "delivery name is required" }),
-  price: z
+  deliveryCost: z
     .string()
     .refine((value) => /^\d+$/.test(value), "Invalid delivery price"), // Refinement
   productCat: z.string().min(1, { message: "Please select category" }),
-  deliveryDesc: z
+  note: z
     .string()
     .min(2, { message: "delivery description is required" }),
   // offerType: z.string().optional(),

@@ -2,8 +2,11 @@
 
 import { adminDb } from "@/lib/firebaseAdmin";
 import { Timestamp } from "firebase/firestore";
-import { addUserDirect } from "../user/dbOperation";
-import { addCustomerAddressDirect } from "../address/dbOperations";
+import { addUserDirect, addUserDirectPrimaryMOB } from "../user/dbOperation";
+import {
+  addCustomerAddressDirect,
+  addCustomerAddressDirectPrimaryMOB,
+} from "../address/dbOperations";
 import { TOrderMaster, orderMasterDataT } from "@/lib/types/orderMasterType";
 import {
   CartItem,
@@ -66,12 +69,62 @@ export async function createNewOrderCustomerAddress(
   return { addressAddedId, UserAddedId, customerName };
 }
 
+export async function createNewOrderCustomerAddressSMALL(
+  purchaseData: purchaseDataT
+) {
+  const { address } = purchaseData;
+  const { email = "", lastName, firstName, mobNo } = address;
+
+  const password = "123456";
+  const username = `${firstName}${lastName}`;
+
+  const finalEmail =
+  email && email.trim() !== ""
+    ? email
+    : `${mobNo}@mail.com`;
+
+  // --- Create user ---
+  const formUser = new FormData();
+  formUser.append("username", username);
+  formUser.append("email", finalEmail);
+  formUser.append("password", password);
+  formUser.append("confirmPassword", password);
+  formUser.append("mobNo", mobNo);
+  formUser.append("firstName", firstName);
+  formUser.append("lastName", lastName);
+
+  const UserAddedId = (await addUserDirectPrimaryMOB(formUser)) as string;
+
+  // --- Add address ---
+  const formAddress = new FormData();
+  formAddress.append("firstName", firstName);
+  formAddress.append("lastName", lastName);
+  formAddress.append("userId", UserAddedId);
+  formAddress.append("email", finalEmail);
+  formAddress.append("mobNo", address.mobNo);
+  formAddress.append("password", password);
+  formAddress.append("addressLine1", address.addressLine1 ?? "");
+  formAddress.append("addressLine2", address.addressLine2 ?? "");
+  formAddress.append("city", address.city ?? "");
+  formAddress.append("state", address.state ?? "Punjab");
+  formAddress.append("zipCode", address.zipCode ?? "123");
+
+  
+  const addressAddedId = await addCustomerAddressDirectPrimaryMOB(formAddress);
+
+  const customerName = `${firstName} ${lastName}`;
+
+  return { addressAddedId, UserAddedId, customerName };
+}
+
 const SHOULD_MAINTAIN_STOCK =
   process.env.NEXT_PUBLIC_MAINTAIN_STOCK === "true" ||
   process.env.NEXT_PUBLIC_MAINTAIN_STOCK === "1";
 
 import { calculateTaxForCart } from "@/lib/tax/calculateTaxForCart-withRounding";
 import { calculateOrderTotals } from "@/lib/orderAmount/calculateOrderTotals";
+import { toTimestamp } from "@/utils/toTimestamp";
+import { toAdminTimestamp } from "@/utils/toAdminTimestamp";
 
 export async function createNewOrder(purchaseData: orderDataType) {
   const {
@@ -79,6 +132,8 @@ export async function createNewOrder(purchaseData: orderDataType) {
     userId,
     customerName,
     email,
+    orderType,
+    tableNo,
     paymentType,
 
     // pricing inputs
@@ -96,8 +151,15 @@ export async function createNewOrder(purchaseData: orderDataType) {
 
     noOffers,
     cartData, // cartProductType[]
-    source ,
+    source,
+    scheduledAt,
   } = purchaseData;
+
+  // 🔒 Normalize userId (defensive programming)
+  // const safeUserId =
+  //   typeof userId === "string"
+  //     ? userId.replace(/^"+|"+$/g, "")
+  //     : userId;
 
   // =====================================================
   // 1️⃣ STOCK CHECK (BEFORE ANY CALCULATION)
@@ -141,10 +203,10 @@ export async function createNewOrder(purchaseData: orderDataType) {
   });
 
   const timeNow = new Date().toLocaleString("en-IN", {
-  dateStyle: "medium",
-  timeStyle: "medium",
-  timeZone: "Asia/Kolkata",
-});
+    dateStyle: "medium",
+    timeStyle: "medium",
+    timeZone: "Asia/Kolkata",
+  });
 
   // =====================================================
   // 5️⃣ GENERATE SERIAL NUMBER (srno)
@@ -166,22 +228,41 @@ export async function createNewOrder(purchaseData: orderDataType) {
   // =====================================================
   // 7️⃣ ORDER MASTER DATA (CLEAN + LEGACY)
   // =====================================================
+  const scheduledTimestamp = toAdminTimestamp(scheduledAt);
+
+  if (scheduledTimestamp && scheduledTimestamp.toMillis() < Date.now()) {
+    return {
+      success: false,
+      message: "Scheduled time is in the past",
+    };
+  }
+
+  const MIN_BUFFER_MS = 30 * 60 * 1000;
+
+  if (
+    scheduledTimestamp &&
+    scheduledTimestamp.toMillis() < Date.now() + MIN_BUFFER_MS
+  ) {
+    return {
+      success: false,
+      message: "Please select a time at least 15 minutes from now",
+    };
+  }
+
   const orderMasterData: orderMasterDataT = {
     // BASIC
-    id: "klkj",
+    id: "temp_id",
     customerName,
     email,
     userId,
     addressId,
-
+    tableNo,
+    orderType,
     srno: new_srno,
-    timeId: "",
-    time: timeNow,
-
     paymentType,
     status: orderStatus,
 
-    // LEGACY FIELDS (KEEP)
+    // LEGACY
     itemTotal,
     deliveryCost,
     totalDiscountG,
@@ -192,34 +273,35 @@ export async function createNewOrder(purchaseData: orderDataType) {
     couponDiscountPercentL,
     pickUpDiscountPercentL,
 
-    taxBeforeDiscount: totals.taxBeforeDiscount, // GST on full subtotal
-    taxAfterDiscount: totals.taxAfterDiscount, // GST after discount
-    totalTax: totals.taxAfterDiscount, // final GST charged
+    // TAX
+    taxBeforeDiscount: totals.taxBeforeDiscount,
+    taxAfterDiscount: totals.taxAfterDiscount,
+    totalTax: totals.taxAfterDiscount,
 
-     // CLEAN TOTALS (NEW)
-     productsCount: cartData.length,
+    // TOTALS
+    productsCount: cartData.length,
     discountTotal: totals.discountTotal,
-
     subTotal: totals.subTotal,
     deliveryFee: deliveryCost,
     grandTotal: totals.grandTotal,
 
     // AUTOMATION
     source,
-    orderStatus: "NEW",
+    orderStatus: scheduledTimestamp ? "SCHEDULED" : "NEW",
     paymentStatus: "PAID",
     printed: false,
     acknowledged: false,
 
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    createdAtUTC: nowUTC,
 
-    //CAN BE REMOVED Rendunt
-    endTotalG: totals.grandTotal!, // legacy mapping
-    finalGrandTotal: totals.grandTotal!,
+    // LEGACY TOTALS
+
+    // ✅ SCHEDULING (SAFE)
+    scheduledAt: scheduledTimestamp,
+    isScheduled: Boolean(scheduledTimestamp),
   };
+  //console.log("data to be saved server --------------", orderMasterData);
 
-  console.log("orderMasterData test -----------------", orderMasterData);
   // =====================================================
   // 8️⃣ SAVE ORDER MASTER
   // =====================================================
@@ -360,6 +442,7 @@ export async function addProductDraft(
 }
 
 export async function addOrderToMaster(element: orderMasterDataT) {
+ // console.log("element-----------", element);
   try {
     const docRef = await adminDb.collection("orderMaster").add(element);
     return docRef.id;
@@ -392,13 +475,15 @@ export async function fetchOrdersPaginated({
   const orders = snapshot.docs.map((doc) => {
     const data = doc.data();
     const date = data.createdAt?.toDate?.();
-    const formattedDate = date?.toLocaleString("en-GB", {
-      year: "numeric",
-      month: "long",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    // const formattedDate = date?.toLocaleString("en-GB", {
+    //   year: "numeric",
+    //   month: "long",
+    //   day: "2-digit",
+    //   hour: "2-digit",
+    //   minute: "2-digit",
+    // });
+
+    //  const deliveryTime = data.scheduledAt?.toDate?.();
 
     //     const dateObj =
     //     typeof data.createdAt === "object" && data.createdAt?.toDate
@@ -408,63 +493,67 @@ export async function fetchOrdersPaginated({
     //     : null;
     // const createdAtISO = dateObj?.toISOString() || data.createdAtUTC || "";
 
-return {
-  id: doc.id,
+    return {
+      id: doc.id,
 
-  // 🧾 Customer Info
-  customerName: data.customerName || "",
-  email: data.email || "",
-  userId: data.userId || "",
-  addressId: data.addressId || "",
+      // 🧾 Customer Info
+      customerName: data.customerName || "",
+      email: data.email || "",
+      userId: data.userId || "",
+      addressId: data.addressId || "",
 
-  // 🕒 Order Info
-  srno: data.srno || 0,
-  timeId: data.timeId || "",
-  time: data.time || "",
-  createdAt: data.createdAt?.toDate?.().toISOString?.() || data.createdAt || "",
-  createdAtUTC: data.createdAtUTC || "",
+      // 🕒 Order Info
+      srno: data.srno || 0,
+      tableNo: data.tableNo,
+      orderType: data.orderType,
+      createdAt:
+        data.createdAt?.toDate?.().toISOString?.() || data.createdAt || "",
+      createdAtUTC: data.createdAtUTC || "",
+      isScheduled: data.isScheduled,
+      scheduledAt:
+        data.scheduledAt?.toDate?.().toISOString?.() || data.scheduledAt || "",
 
-  // 💳 Payment Info
-  paymentType: data.paymentType || "",
-  paymentStatus: data.paymentStatus || "PENDING",
+      // 💳 Payment Info
+      paymentType: data.paymentType || "",
+      paymentStatus: data.paymentStatus || "PENDING",
 
-  // 📦 Status
-  status: data.status || "",
-  orderStatus: data.orderStatus || "NEW",
+      // 📦 Status
+      status: data.status || "",
+      orderStatus: data.orderStatus || "NEW",
 
-  // 💰 Item & Discount Totals
-  itemTotal: data.itemTotal || 0,                        // legacy (before discount & tax)
-  totalDiscountG: data.totalDiscountG || 0,              // legacy
-  flatDiscount: data.flatDiscount || 0,
-  calculatedPickUpDiscountL: data.calculatedPickUpDiscountL || 0,
-  calCouponDiscount: data.calCouponDiscount || 0,
-  couponDiscountPercentL: data.couponDiscountPercentL || 0,
-  pickUpDiscountPercentL: data.pickUpDiscountPercentL || 0,
-  couponCode: data.couponCode || "",
+      // 💰 Item & Discount Totals
+      itemTotal: data.itemTotal || 0, // legacy (before discount & tax)
+      totalDiscountG: data.totalDiscountG || 0, // legacy
+      flatDiscount: data.flatDiscount || 0,
+      calculatedPickUpDiscountL: data.calculatedPickUpDiscountL || 0,
+      calCouponDiscount: data.calCouponDiscount || 0,
+      couponDiscountPercentL: data.couponDiscountPercentL || 0,
+      pickUpDiscountPercentL: data.pickUpDiscountPercentL || 0,
+      couponCode: data.couponCode || "",
 
-  // 🚚 Delivery / Fees
-  deliveryCost: data.deliveryCost || 0,
-  deliveryFee: data.deliveryFee || data.deliveryCost || 0,
+      // 🚚 Delivery / Fees
+      deliveryCost: data.deliveryCost || 0,
+      deliveryFee: data.deliveryFee || data.deliveryCost || 0,
 
-  // 🧮 Tax & Totals (new clean structure)
-  totalTax: data.totalTax || 0,                           // legacy
-  endTotalG: data.endTotalG || 0,                         // legacy
-  finalGrandTotal: data.finalGrandTotal || 0,             // legacy
-  discountTotal: data.discountTotal || data.totalDiscountG || 0,
-  taxBeforeDiscount: data.taxBeforeDiscount || 0,
-  taxAfterDiscount: data.taxAfterDiscount || data.totalTax || 0,
-  subTotal: data.subTotal || data.itemTotal || 0,
-  grandTotal: data.grandTotal || data.finalGrandTotal || data.endTotalG || 0,
+      // 🧮 Tax & Totals (new clean structure)
+      totalTax: data.totalTax || 0, // legacy
+      endTotalG: data.endTotalG || 0, // legacy
+      finalGrandTotal: data.finalGrandTotal || 0, // legacy
+      discountTotal: data.discountTotal || data.totalDiscountG || 0,
+      taxBeforeDiscount: data.taxBeforeDiscount || 0,
+      taxAfterDiscount: data.taxAfterDiscount || data.totalTax || 0,
+      subTotal: data.subTotal || data.itemTotal || 0,
+      grandTotal:
+        data.grandTotal || data.finalGrandTotal || data.endTotalG || 0,
 
-  // 🔖 Meta / Automation
-  source: data.source || "POS",
-  printed: data.printed || false,
-  acknowledged: data.acknowledged || false,
+      // 🔖 Meta / Automation
+      source: data.source || "POS",
+      printed: data.printed || false,
+      acknowledged: data.acknowledged || false,
 
-  // 📝 Notes
-  notes: data.notes || "",
-} as orderMasterDataT;
-
+      // 📝 Notes
+      notes: data.notes || "",
+    } as orderMasterDataT;
   });
 
   const lastDoc = snapshot.docs[snapshot.docs.length - 1];

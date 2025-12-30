@@ -101,7 +101,8 @@ export type orderDataType = {
   userId: string ;
   customerName: string;
   email: string;
-
+  tableNo: string | null;     // Only for DINE_IN
+  orderType: "DINE_IN" | "TAKEAWAY" | "DELIVERY" | "ONLINE";
   // -----------------------------
   // CART SNAPSHOT (REQUIRED)
   // -----------------------------
@@ -110,7 +111,7 @@ export type orderDataType = {
   // -----------------------------
   // REQUIRED LEGACY TOTALS
   // -----------------------------
-  endTotalG?: number;          // legacy grand total
+  // endTotalG?: number;          // legacy grand total
   totalDiscountG: number;
   flatDiscount: number;
 
@@ -156,7 +157,14 @@ export type orderDataType = {
   printed?: boolean;
 
   //remove in future
-  finalGrandTotal?:number;
+  //finalGrandTotal?:number;
+
+  /** Whether order is scheduled for later */
+    isScheduled?: boolean;
+  
+    /** Scheduled execution time (if scheduled order) */
+    //scheduledAt?: Timestamp;
+    scheduledAt: string | null;
 };
 
 

@@ -34,6 +34,8 @@ export default function MonthlySalesTable() {
   const [monthlySales, setMonthlySales] = useState<MonthlySales[]>([]);
   const [loading, setLoading] = useState(true);
 
+  
+
   useEffect(() => {
     fetchMonthlySales();
   }, []);
@@ -49,7 +51,7 @@ export default function MonthlySalesTable() {
      snapshot.docs.forEach((doc) => {
   const data = doc.data() as orderMasterDataT;
   const createdAt = (data.createdAt as Timestamp)?.toDate();
-  const endTotalG = data.endTotalG || 0;
+  const grandTotal = data.grandTotal || 0;
 
   if (!createdAt || data.status !== 'Completed') return; // ✅ Filter only completed orders
 
@@ -65,7 +67,7 @@ export default function MonthlySalesTable() {
     };
   }
 
-  salesMap[monthKey].totalSales += endTotalG;
+  salesMap[monthKey].totalSales += grandTotal;
   salesMap[monthKey].orderCount += 1;
 });
 
@@ -111,14 +113,21 @@ export default function MonthlySalesTable() {
               <tr>
                 <th className="border px-4 py-2 text-left">Month1</th>
                 <th className="border px-4 py-2 text-left">Total Orders</th>
-                <th className="border px-4 py-2 text-left">Total Sales (€)</th>
+                <th className="border px-4 py-2 text-left">Total Sales </th>
               </tr>
             </thead>
             <tbody>
              
-                {monthlySales.map((row,i) => (
-              <TableRows key={i} row={row} />
-            ))}
+               {monthlySales.map((row, i) => (
+  <TableRows
+    key={i}
+    row={{
+      label: row.month,
+      orderCount: row.orderCount,
+      totalSales: row.totalSales,
+    }}
+  />
+))}
             </tbody>
           </table>
         </>

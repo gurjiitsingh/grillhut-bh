@@ -1,114 +1,86 @@
-
-
 import { Timestamp, FieldValue } from "firebase/firestore";
+import admin from "firebase-admin";
+
 export type orderMasterDataT = {
   // =====================================================
-  // EXISTING FIELDS (DO NOT REMOVE / RENAME)
+  // CORE IDENTIFIERS
   // =====================================================
-  id: string; 
-
+  id: string;
+  userId: string;
   customerName: string;
   email: string;
-  userId: string;
   addressId: string;
-
   srno: number;
-  timeId: string;
-  time: string;
+  tableNo: string | null; // Only for DINE_IN
+  orderType: "DINE_IN" | "TAKEAWAY" | "DELIVERY" | "ONLINE";
+  // =====================================================
+  // ORDER TIMING
+  // =====================================================
+  createdAt: Timestamp | FieldValue;
 
-  paymentType: string;
+  /** Whether order is scheduled for later */
+  isScheduled?: boolean;
 
-  itemTotal: number;                  // total of items (before discount & tax)
-  deliveryCost: number;
-
-  totalDiscountG: number;             // legacy
-  flatDiscount: number;
-  calculatedPickUpDiscountL: number;
-  calCouponDiscount: number;
+  /** Scheduled execution time (if scheduled order) */
+  scheduledAt: admin.firestore.Timestamp | admin.firestore.FieldValue | null;
 
   couponCode?: string;
   couponDiscountPercentL: number;
   pickUpDiscountPercentL: number;
 
-  totalTax?: number;                  // legacy / raw tax
-  endTotalG: number;                  // legacy
-  finalGrandTotal?: number;           // legacy
-
-  status: string;                     // legacy status
-  createdAt: Timestamp | string | FieldValue;
-  createdAtUTC?: string;
-
-  // =====================================================
-  // ✅ NEW – CLEAN & CORRECT TOTAL FIELDS (OPTIONAL)
-  // =====================================================
-
-  /** Total discount applied on order (sum of all discounts) */
-  discountTotal?: number;
-
-  /** Tax BEFORE discount (sum of per-product tax) */
-  taxBeforeDiscount?: number;
-
-  /** Tax AFTER discount (adjusted tax – this is the correct tax) */
-  taxAfterDiscount?: number;
-
-  /** Subtotal after discount, before tax */
-  subTotal?: number;
-
   /** Delivery fee (clean naming) */
   deliveryFee?: number;
 
-  /** Final payable amount (clean, correct) */
+  // finalGrandTotal?:number;
+  // =====================================================
+  // ORDER AMOUNTS
+  // =====================================================
+  itemTotal: number;
+  deliveryCost: number;
+
+  totalDiscountG: number;
+  flatDiscount: number;
+  calculatedPickUpDiscountL: number;
+  calCouponDiscount: number;
+
+  totalTax?: number;
+  //endTotalG: number;
+
+  // Clean calculated fields
+  discountTotal?: number;
+  taxBeforeDiscount?: number;
+  taxAfterDiscount?: number;
+  subTotal?: number;
   grandTotal?: number;
 
   // =====================================================
-  // ORDER SOURCE & STATUS (FOR AUTOMATION)
+  // ORDER STATE
   // =====================================================
-
-  /** Where the order came from */
-  source?: "WEB" | "POS" | "APP";
-
-  /** Clean order lifecycle status */
   orderStatus?:
     | "NEW"
+    | "SCHEDULED"
     | "ACCEPTED"
     | "PREPARING"
     | "READY"
     | "COMPLETED"
     | "CANCELLED";
 
-  /** Payment lifecycle */
   paymentStatus?: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
-
+  status: string;
+  paymentType: string;
   // =====================================================
-  // AUTOMATION FLAGS (POS LOGIC)
+  // SOURCE & META
   // =====================================================
-
-  /** Whether order has been auto-printed */
-  printed?: boolean;
-
-  /** Whether staff acknowledged the order (sound stopped) */
-  acknowledged?: boolean;
-
-  // =====================================================
-  // OPTIONAL / FUTURE
-  // =====================================================
-
-  notes?: string;                     // kitchen or customer notes
-
-
-  // =====================================================
-  // ✅ CUSTOM – NEW FIELDS FOR TABLE & SCHEDULE
-  // =====================================================
-
-  /** Table number (for dine-in orders) */
-  tableNo?: string | number;
-
-  /** Whether the order is scheduled for later */
-  orderScheduled?: boolean;
-
+  source?: "WEB" | "POS" | "APP";
   productsCount?: number;
-};
+  notes?: string;
 
+  // =====================================================
+  // AUTOMATION FLAGS
+  // =====================================================
+  printed?: boolean;
+  acknowledged?: boolean;
+};
 
 export type TOrderMaster = {
   id: string;
