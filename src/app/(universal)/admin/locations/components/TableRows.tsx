@@ -25,7 +25,7 @@ function TableRows({ location }: { location: locationType }) {
   }
 
   // const cost = formatCurrencyNumber(
-  //   Number(location.deliveryCost) ?? 0,
+  //   Number(location.deliveryFee) ?? 0,
   //   settings.currency,
   //   settings.locale
   // );
@@ -50,7 +50,7 @@ function TableRows({ location }: { location: locationType }) {
         {location.state}
       </TableCell>
 
-      <TableCell>{location.deliveryCost}</TableCell>
+      <TableCell>{location.deliveryFee}</TableCell>
       <TableCell>{location.minSpend}</TableCell>
 
       <TableCell>

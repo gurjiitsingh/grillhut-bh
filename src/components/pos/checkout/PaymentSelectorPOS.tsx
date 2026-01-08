@@ -14,7 +14,7 @@ const PaymentSelectorPOS = () => {
   const showPayPal = process.env.NEXT_PUBLIC_PAYMENT_PAYPAL_POS === "true";
   const showCOD = process.env.NEXT_PUBLIC_PAYMENT_COD_POS === "true";
 const showDigital = process.env.NEXT_PUBLIC_PAYMENT_DIGITAL_POS === "true";
-  // ✅ Select Cash by default
+  //  Select Cash by default
   useEffect(() => {
     if (showCOD) {
       setSelected("cod");

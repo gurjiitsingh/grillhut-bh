@@ -33,7 +33,7 @@ export default function SchedulePicker({ onChange, schedule }: Props) {
       "0"
     )}`;
 
-  // ✅ Generate next 7 days
+  //  Generate next 7 days
   const getNext7Days = () =>
     Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
@@ -44,7 +44,7 @@ export default function SchedulePicker({ onChange, schedule }: Props) {
       };
     });
 
-  // ✅ Get open/close for selected date
+  //  Get open/close for selected date
   const getOpenClose = () => {
     if (!selectedDate) return { open: "11:00", close: "22:00" }; // fallback
 
@@ -58,7 +58,7 @@ export default function SchedulePicker({ onChange, schedule }: Props) {
     return { open: day.amOpen, close: day.amClose };
   };
 
-  // ✅ Generate 30-min slots
+  //  Generate 30-min slots
   const getSlots = () => {
     const { open, close } = getOpenClose();
     if (!open || !close) return [];
@@ -78,7 +78,7 @@ export default function SchedulePicker({ onChange, schedule }: Props) {
     return slots;
   };
 
-  // ✅ Save selected date & time
+  //  Save selected date & time
   useEffect(() => {
     if (selectedDate && selectedTime) {
       const iso = new Date(`${selectedDate}T${selectedTime}:00`).toISOString();

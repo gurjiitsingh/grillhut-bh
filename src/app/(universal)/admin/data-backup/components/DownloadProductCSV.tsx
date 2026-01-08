@@ -28,7 +28,7 @@ export default function DownloadProductCSV() {
         purchaseSession: p.purchaseSession,
         quantity: p.quantity,
         flavors: p.flavors,
-        status: p.status,
+        publishStatus: p.publishStatus,
 
         // NEW FIELDS
         taxRate: p.taxRate,                  // ⬅️ new

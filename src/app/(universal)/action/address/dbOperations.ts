@@ -10,7 +10,7 @@ import {
 } from "@/lib/types/addressType";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
-// ✅ Add new address (basic)
+//  Add new address (basic)
 export async function addNewAddress(formData: FormData) {
   const receivedData = {
     name: formData.get("name")?.toString(),
@@ -32,7 +32,7 @@ export async function addNewAddress(formData: FormData) {
   });
 }
 
-// ✅ Edit address by email
+//  Edit address by email
 export async function editCustomerAddress(formData: FormData) {
   const receivedData = {
     email: formData.get("email")?.toString(),
@@ -62,7 +62,7 @@ export async function editCustomerAddress(formData: FormData) {
   }
 }
 
-// ✅ Search address by email
+//  Search address by email
 export async function searchAddressEmail(email: string): Promise<addressResType | null> {
   const querySnapshot = await adminDb
     .collection("address")
@@ -122,7 +122,7 @@ export async function findAddressByMob(
 }
 
 
-// ✅ Get address by ID (returns with ID)
+//  Get address by ID (returns with ID)
 export async function searchAddressByAddressId(id: string): Promise<addressWithId> {
   const docSnap = await adminDb.collection("address").doc(id).get();
   if (!docSnap.exists) throw new Error("No such address document");
@@ -142,7 +142,7 @@ export async function searchAddressByAddressId(id: string): Promise<addressWithI
 
 
 
-// ✅ Get order master by ID
+//  Get order master by ID
 export async function fetchOrderMasterById(id: string) {
   const docSnap = await adminDb.collection("orderMaster").doc(id).get();
   if (!docSnap.exists) return null;
@@ -160,7 +160,7 @@ export async function fetchOrderMasterById(id: string) {
   };
 }
 
-// ✅ Search address by userId
+//  Search address by userId
 export const searchAddressByUserId = async (id: string | undefined): Promise<addressResT> => {
   if (!id) return {} as addressResT;
 
@@ -173,7 +173,7 @@ export const searchAddressByUserId = async (id: string | undefined): Promise<add
   return data || ({} as addressResT);
 };
 
-// ✅ Add customer address if not exists
+//  Add customer address if not exists
 export async function addCustomerAddressDirect(formData: FormData) {
   const receivedData = {
     email: formData.get("email")?.toString(),

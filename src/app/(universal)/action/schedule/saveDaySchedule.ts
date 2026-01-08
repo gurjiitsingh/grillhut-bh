@@ -26,7 +26,7 @@ export async function saveDaySchedule(formData: FormData) {
       else schedule[index][field] = value;
     }
 
-    console.log("✅ Parsed Schedule:", schedule);
+    console.log(" Parsed Schedule:", schedule);
 
     // OPTIONAL: validate here
     // schedule.forEach(day => { ... })
@@ -74,7 +74,7 @@ export async function getSchedule(): Promise<DaySchedule[]> {
     return {
       day: doc.id,
 
-      // ✅ defaults (VERY IMPORTANT)
+      //  defaults (VERY IMPORTANT)
       isOpen: data.isOpen ?? false,
       fullDay: data.fullDay ?? false,
       amOpen: data.amOpen ?? "00:00",

@@ -17,17 +17,17 @@ export default function ListView() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ✅ URL state
+  //  URL state
   const urlCategory = searchParams.get("category") || "";
   const urlSearch = searchParams.get("search") || "";
 
-  // ✅ Component state
+  //  Component state
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch product + category only once
+  //  Fetch product + category only once
 useEffect(() => {
   async function loadData() {
     try {
@@ -52,10 +52,10 @@ useEffect(() => {
   }
 
   loadData();
-}, []); // ✅ run once
+}, []); //  run once
 
 
-  // ✅ Filter when URL state or products change
+  //  Filter when URL state or products change
   // useEffect(() => {
   //   let list = [...products];
 
@@ -97,7 +97,7 @@ useEffect(() => {
   setFiltered(list);
 }, [urlCategory, urlSearch, products]);
 
-  // ✅ Update URL without refreshing
+  //  Update URL without refreshing
   function updateURL(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -114,7 +114,7 @@ useEffect(() => {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
 
-        {/* ✅ Category Filter */}
+        {/*  Category Filter */}
         <div className="w-full md:w-1/2">
           <label className="block text-sm font-medium mb-1">Category</label>
           <select
@@ -131,7 +131,7 @@ useEffect(() => {
           </select>
         </div>
 
-        {/* ✅ Search Filter */}
+        {/*  Search Filter */}
         <div className="w-full md:w-1/2">
           <label className="block text-sm font-medium mb-1">Search</label>
           <input

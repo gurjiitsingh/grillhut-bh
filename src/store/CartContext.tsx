@@ -64,11 +64,11 @@ const CartContext = createContext<CartContextType>({
   totalDiscountG: 0,
   setTotalDiscountG: () => {},
 
-  // ✅ scheduling
+  //  scheduling
   scheduledAt: null,
   setScheduledAt: () => {},
 
-  // ✅ MISSING ONES — NOW ADDED
+  //  MISSING ONES — NOW ADDED
   orderType: "DELIVERY", // sensible default
   setOrderType: () => {},
 

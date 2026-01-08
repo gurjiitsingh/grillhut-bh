@@ -60,7 +60,7 @@ const checkout = () => {
   // inside your component
   const [weeklySchedule, setWeeklySchedule] = useState<DaySchedule[]>([]);
 
-  // ✅ Fetch weekly schedule on mount
+  //  Fetch weekly schedule on mount
   useEffect(() => {
     async function fetchSchedule() {
       const data = await getSchedule(); // Firestore fetch

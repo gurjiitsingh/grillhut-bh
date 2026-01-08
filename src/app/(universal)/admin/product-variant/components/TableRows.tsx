@@ -45,7 +45,7 @@ function TableRows({ product }: { product: ProductType }) {
         )
       : "";
 
-  const statusLabel = product.status ?? "draft";
+  const statusLabel = product.publishStatus ?? "draft";
   const statusStyles = {
     published: "bg-green-100 text-green-800",
     draft: "bg-yellow-100 text-yellow-800",

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { editPorductSchema, TeditdeliverySchema } from "@/lib/types/deliveryType";
+import { editProductSchema, TeditdeliverySchema } from "@/lib/types/deliveryType";
 import { editdelivery, fetchdeliveryById } from "@/app/(universal)/action/delivery/dbOperation";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -18,7 +18,7 @@ const PageComp = () => {
     setValue,
     handleSubmit,
   } = useForm<TeditdeliverySchema>({
-    resolver: zodResolver(editPorductSchema),
+    resolver: zodResolver(editProductSchema),
   });
 
   useEffect(() => {
@@ -30,9 +30,9 @@ const PageComp = () => {
       setValue("note", deliveryData.note);
       setValue("minSpend", deliveryData.minSpend.toString());
      
-      setValue("deliveryCost",deliveryData.deliveryCost != null ? deliveryData.deliveryCost.toString() : "");
+      setValue("deliveryFee",deliveryData.deliveryFee != null ? deliveryData.deliveryFee.toString() : "");
       setValue("productCat", deliveryData.productCat);
-      setValue("deliveryCost",deliveryData.deliveryDistance != null ? deliveryData.deliveryDistance.toString() : "");
+      setValue("deliveryFee",deliveryData.deliveryDistance != null ? deliveryData.deliveryDistance.toString() : "");
     
     }
     prefetch();
@@ -42,7 +42,7 @@ const PageComp = () => {
     const formData = new FormData();
     formData.append("id", data.id!);
     formData.append("name", data.name);
-    formData.append("deliveryCost", data.deliveryCost);
+    formData.append("deliveryFee", data.deliveryFee);
     formData.append("productCat", data.productCat);
     formData.append("note", data.note);
     formData.append("minSpend", data.minSpend!);
@@ -85,21 +85,21 @@ const PageComp = () => {
               </div>
             </div>
 
-            {/* deliveryCost & Spend */}
+            {/* deliveryFee & Spend */}
             <div className="flex flex-col gap-3 bg-white rounded-xl p-4 border">
               <h2 className="font-semibold text-gray-700">Pricing Details</h2>
 
               <div className="flex flex-col gap-1">
                 <label className="label-style">
-                  deliveryCost<span className="text-red-500">*</span>
+                  deliveryFee<span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register("deliveryCost")}
+                  {...register("deliveryFee")}
                   className="input-style py-1"
-                  placeholder="Enter deliveryCost"
+                  placeholder="Enter deliveryFee"
                 />
                 <span className="text-[0.8rem] font-medium text-destructive">
-                  {errors.deliveryCost?.message && <>{errors.deliveryCost.message}</>}
+                  {errors.deliveryFee?.message && <>{errors.deliveryFee.message}</>}
                 </span>
               </div>
 

@@ -25,7 +25,7 @@ function TableRows({ delivery }: { delivery: deliveryType }) {
   }
 
   const delivery_price = formatCurrencyNumber(
-      Number(delivery.deliveryCost) ?? 0,
+      Number(delivery.deliveryFee) ?? 0,
       settings.currency as string,
       settings.locale as string
     );

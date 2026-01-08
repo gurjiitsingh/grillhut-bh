@@ -117,7 +117,7 @@ function handleVillageTownCostCheck(value: string) {
 
   if (match) {
     setdeliveryDis({
-      deliveryCost: match.deliveryCost,
+      deliveryFee: match.deliveryFee,
       minSpend: match.minSpend,
       deliveryDistance: match.deliveryDistance,
       note: match.notes ?? "",
@@ -208,6 +208,8 @@ function handleVillageTownCostCheck(value: string) {
         state: data.state ?? "Punjab",
         zipCode: data.zipCode ?? "",
       };
+
+      console.log("cokies fill---------------------", customAddress)
       if (typeof window !== "undefined") {
         localStorage.setItem("customer_address", JSON.stringify(customAddress));
       }
@@ -394,7 +396,7 @@ function handleVillageTownCostCheck(value: string) {
       placeholder="Village / Town"
       autoComplete="off"
       onChange={(e) => {
-        onChange(e); // ✅ REQUIRED: update RHF state
+        onChange(e); //  REQUIRED: update RHF state
 
         const value = e.target.value;
         handleLocationInput(value);        // 🔍 suggestions
@@ -402,7 +404,7 @@ function handleVillageTownCostCheck(value: string) {
       }}
       onFocus={(e) => handleLocationInput(e.target.value)}
       onBlur={(e) => {
-        onBlur(e); // ✅ REQUIRED
+        onBlur(e); //  REQUIRED
         setTimeout(() => setShowSuggestions(false), 200);
       }}
     />
@@ -428,7 +430,7 @@ function handleVillageTownCostCheck(value: string) {
     setValue("city", loc.city || "Jalandhar");
     setValue("state", loc.state || "Punjab");
 
-    handleVillageTownCostCheck(loc.name); // ✅ FINAL lookup
+    handleVillageTownCostCheck(loc.name); //  FINAL lookup
 
     setSuggestions([]);
     setShowSuggestions(false);

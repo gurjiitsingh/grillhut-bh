@@ -31,7 +31,7 @@ const Page = () => {
     formData.append("city", data.city);
     formData.append("state", data.state);
 
-    formData.append("deliveryCost", String(data.deliveryCost));
+    formData.append("deliveryFee", String(data.deliveryFee));
     formData.append("minSpend", String(data.minSpend));
     formData.append("deliveryDistance", String(data.deliveryDistance ?? ""));
     formData.append("notes", data.notes ?? "");
@@ -41,7 +41,7 @@ const Page = () => {
     if (!result?.errors) {
       setValue("name", "");
      // setValue("city", "");
-      // setValue("deliveryCost", 0);
+      // setValue("deliveryFee", 0);
       // setValue("minSpend", 0);
       // setValue("deliveryDistance", 0 );
      // setValue("notes", "");
@@ -121,12 +121,12 @@ const Page = () => {
                 Delivery Cost<span className="text-red-500">*</span>
               </label>
               <input
-                {...register("deliveryCost")}
+                {...register("deliveryFee")}
                 className="input-style py-1"
                 placeholder="Eg: 40"
               />
               <span className="text-[0.8rem] text-destructive">
-                {errors.deliveryCost?.message}
+                {errors.deliveryFee?.message}
               </span>
             </div>
 

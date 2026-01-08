@@ -31,7 +31,7 @@ const [orderData, setOrderData] = useState<orderMasterDataT[]>([]);
 
     const q = query(
   collection(db, 'orderMaster'),
-  orderBy('srno', 'desc'), // ← Sort newest orders first using srno
+  orderBy('srno', 'desc'), // ← Sort newest orders first usingsrno
   limit(ORDERS_PER_PAGE)
 );
 

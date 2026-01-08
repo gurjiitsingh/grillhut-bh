@@ -45,7 +45,7 @@ const EditLocationPage = () => {
       setValue("name", data.name);
       setValue("city", data.city);
       setValue("state", data.state);
-      setValue("deliveryCost", data.deliveryCost);
+      setValue("deliveryFee", data.deliveryFee);
       setValue("minSpend", data.minSpend);
       setValue("deliveryDistance", data.deliveryDistance ?? undefined);
       setValue("notes", data.notes ?? "");
@@ -64,7 +64,7 @@ const EditLocationPage = () => {
     formData.append("name", data.name);
     formData.append("city", data.city);
     formData.append("state", data.state);
-    formData.append("deliveryCost", String(data.deliveryCost));
+    formData.append("deliveryFee", String(data.deliveryFee));
     formData.append("minSpend", String(data.minSpend));
     formData.append("deliveryDistance", String(data.deliveryDistance ?? ""));
     formData.append("notes", data.notes ?? "");
@@ -138,11 +138,11 @@ const EditLocationPage = () => {
             <div className="flex flex-col gap-1">
               <label className="label-style">Delivery Cost *</label>
               <input
-                {...register("deliveryCost")}
+                {...register("deliveryFee")}
                 className="input-style py-1"
               />
               <span className="text-[0.8rem] text-red-500">
-                {errors.deliveryCost?.message}
+                {errors.deliveryFee?.message}
               </span>
             </div>
 

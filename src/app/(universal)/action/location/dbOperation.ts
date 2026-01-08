@@ -15,7 +15,7 @@ export async function addNewLocation(formData: FormData) {
     // 🔥 NORMALIZED SEARCH FIELD
     const searchName = name.toLowerCase().replace(/\s+/g, "");
 
-    const deliveryCost = Number(formData.get("deliveryCost"));
+    const deliveryFee = Number(formData.get("deliveryFee"));
     const minSpend = Number(formData.get("minSpend"));
 
     const deliveryDistanceRaw = formData.get("deliveryDistance");
@@ -31,7 +31,7 @@ export async function addNewLocation(formData: FormData) {
       city: formData.get("city"),
       state: formData.get("state"),
 
-      deliveryCost,
+      deliveryFee,
       minSpend,
       deliveryDistance,
 
@@ -65,12 +65,12 @@ export async function fetchLocations() {
       id: doc.id,
       name: data.name ?? "",
 
-      // ✅ ADD THIS
+      //  ADD THIS
       searchName: data.searchName ?? "",
 
       city: data.city ?? "",
       state: data.state ?? "",
-      deliveryCost: Number(data.deliveryCost ?? 0),
+      deliveryFee: Number(data.deliveryFee ?? 0),
       minSpend: Number(data.minSpend ?? 0),
       deliveryDistance:
         data.deliveryDistance !== undefined
@@ -104,7 +104,7 @@ export async function getLocationById(id: string): Promise<locationType | null> 
     name: data.name,
     city: data.city,
     state: data.state,
-    deliveryCost: Number(data.deliveryCost),
+    deliveryFee: Number(data.deliveryFee),
     minSpend: Number(data.minSpend),
     deliveryDistance: data.deliveryDistance ?? null,
     notes: data.notes ?? "",
@@ -137,7 +137,7 @@ export async function getLocationByName(
     name: data.name,
     city: data.city,
     state: data.state,
-    deliveryCost: Number(data.deliveryCost),
+    deliveryFee: Number(data.deliveryFee),
     minSpend: Number(data.minSpend),
     deliveryDistance:
       data.deliveryDistance !== undefined
@@ -155,7 +155,7 @@ export async function updateLocation(id: string, formData: FormData) {
     name: formData.get("name"),
     city: formData.get("city"),
     state: formData.get("state"),
-    deliveryCost: Number(formData.get("deliveryCost")),
+    deliveryFee: Number(formData.get("deliveryFee")),
     minSpend: Number(formData.get("minSpend")),
     deliveryDistance:
       formData.get("deliveryDistance")

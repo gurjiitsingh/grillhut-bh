@@ -85,7 +85,7 @@ const PaymentSelector = () => {
               )}
             </div>
             <span className="text-slate-700 font-semibold">
-              {TEXT.payment_method_cod || "Cash on Delivery"}
+              {TEXT.payment_method_cod || "cod"}
             </span>
           </div>
         )}

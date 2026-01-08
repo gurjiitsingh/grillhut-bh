@@ -5,7 +5,7 @@ import { z } from "zod";
 export type deliveryType = {
   id: string | undefined;
   name: string;
-  deliveryCost: number;
+  deliveryFee: number;
   minSpend: number;
   note: string;
   productCat: string;
@@ -29,7 +29,7 @@ export const deliverySchema = z.object({
     .max(30, { message: "Delivery name is very long" }),
 
   // 💰 DELIVERY PRICE — store as NUMBER
-  deliveryCost: z
+  deliveryFee: z
     .string()
     .trim()
     .refine(v => /^\d+(\.\d+)?$/.test(v), "Enter a valid delivery price")
@@ -84,10 +84,10 @@ export type TdeliverySchema = z.infer<typeof deliverySchema>;
 
 export type TdeliverySchemaArr = TdeliverySchema[];
 
-export const newPorductSchema = z.object({
+export const newProductSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(4, { message: "delivery name is required" }),
-  deliveryCost: z
+  deliveryFee: z
     .string(),
    // .refine((value) => /^\d+$/.test(value), "Invalid delivery price"), // Refinement
   productCat: z.string().min(1, { message: "Please select category" }),
@@ -109,15 +109,15 @@ export const newPorductSchema = z.object({
   // ),
 });
 
-export type TnewdeliverySchema = z.infer<typeof newPorductSchema>;
+export type TnewdeliverySchema = z.infer<typeof newProductSchema>;
 
 export type TnewdeliverySchemaArr = TnewdeliverySchema[];
 
 
-export const editPorductSchema = z.object({
+export const editProductSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(4, { message: "delivery name is required" }),
-  deliveryCost: z
+  deliveryFee: z
     .string()
     .refine((value) => /^\d+$/.test(value), "Invalid delivery price"), // Refinement
   productCat: z.string().min(1, { message: "Please select category" }),
@@ -138,7 +138,7 @@ export const editPorductSchema = z.object({
   // ),
 });
 
-export type TeditdeliverySchema = z.infer<typeof editPorductSchema>;
+export type TeditdeliverySchema = z.infer<typeof editProductSchema>;
 
 export default deliverySchema;
 

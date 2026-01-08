@@ -48,7 +48,7 @@ export default function DailySalesTable() {
         const createdAt = (data.createdAt as Timestamp)?.toDate();
         const grandTotal = data.grandTotal || 0;
 
-        if (!createdAt || data.status !== 'Completed') return;
+        if (!createdAt ||data.orderStatus !== 'COMPLETED') return;
 
         const dateKey = `${createdAt.getFullYear()}-${String(
           createdAt.getMonth() + 1

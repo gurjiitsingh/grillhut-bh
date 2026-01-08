@@ -116,7 +116,7 @@ function handleVillageTownCostCheck(value: string) {
 
   if (match) {
     setdeliveryDis({
-      deliveryCost: match.deliveryCost,
+      deliveryFee: match.deliveryFee,
       minSpend: match.minSpend,
       deliveryDistance: match.deliveryDistance,
       note: match.notes ?? "",
@@ -394,7 +394,7 @@ function handleVillageTownCostCheck(value: string) {
     setValue("city", loc.city || "Jalandhar");
     setValue("state", loc.state || "Punjab");
 
-    handleVillageTownCostCheck(loc.name); // ✅ FINAL lookup
+    handleVillageTownCostCheck(loc.name); //  FINAL lookup
 
     setSuggestions([]);
     setShowSuggestions(false);

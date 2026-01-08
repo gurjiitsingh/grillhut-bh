@@ -5,7 +5,7 @@ export const newLocationSchema = z.object({
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
 
-  deliveryCost: z.coerce
+  deliveryFee: z.coerce
     .number()
     .min(0, "Delivery Cost is required"),
 
@@ -29,7 +29,7 @@ export type locationType = {
   name: string;
   city: string;
   state: string;
-  deliveryCost: number;
+  deliveryFee: number;
   minSpend: number;
   deliveryDistance?: number | null;
   notes?: string;

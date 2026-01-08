@@ -4,7 +4,7 @@ import { useCartContext } from "@/store/CartContext";
 import { FaChevronDown } from "react-icons/fa";
 import CouponDiscForm from "./CouponDiscForm";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
-import DeliveryCost from "./DeliveryCost";
+import DeliveryFee from "@/components/checkout/DeliveryFee";
 import Pickup from "./Pickup";
 import CouponDisc from "./CouponDisc";
 import { cartProductType, orderDataType } from "@/lib/types/cartDataType";
@@ -21,10 +21,7 @@ type OrderSummaryProps = {
   // scheduledAt?: string | null;
 };
 
-
-export default function OrderSummaryMOB({
-  isStoreOpen
-  }: OrderSummaryProps) {
+export default function OrderSummaryMOB({ isStoreOpen }: OrderSummaryProps) {
   const { TEXT } = useLanguage();
   const {
     couponDisc,
@@ -32,7 +29,7 @@ export default function OrderSummaryMOB({
     paymentType,
     deliveryType,
     customerAddressIsComplete,
-    setDeliveryCost,
+    setdeliveryFee,
     disablePickupCatDiscountIds,
     settings,
   } = UseSiteContext();
@@ -45,10 +42,10 @@ export default function OrderSummaryMOB({
   const [pickUpDiscountPercentL, setPickUpDiscountPercent] = useState(0);
   const [calculatedPickUpDiscountL, setCalculatedPickUpDiscount] = useState(0);
   const [endTotalComma, setEndTotalComma] = useState("");
-  const [deliveryCost, setdeliveryCostL] = useState(0);
-  const [calCouponDiscount, setCalCouponDisscount] = useState(0);
-  const [flatCouponDiscount, setFlatCouponDisscount] = useState(0);
-  const [couponDiscountPercentL, setcouponDiscountPercentL] = useState(0);
+  const [deliveryFee, setdeliveryFeeL] = useState(0);
+  const [calcouponPercent, setCalCouponDisscount] = useState(0);
+  const [flatcouponPercent, setFlatCouponDisscount] = useState(0);
+  const [couponPercentPercentL, setcouponPercentPercentL] = useState(0);
 
   const [orderAmountIsLowForDelivery, seOrderAmountIsLowForDelivery] =
     useState(false);
@@ -139,7 +136,7 @@ export default function OrderSummaryMOB({
 
     if (deliveryType === "pickup") {
       const pickupDiscount =
-        ((itemTotal - flatCouponDiscount - calCouponDiscount) *
+        ((itemTotal - flatcouponPercent - calcouponPercent) *
           pickupDiscountPersent) /
         100;
 
@@ -148,7 +145,7 @@ export default function OrderSummaryMOB({
       ).toFixed(2);
 
       setCalculatedPickUpDiscount(+pickupDiscountRemovedCate);
-      setdeliveryCostL(0);
+      setdeliveryFeeL(0);
       if (parseInt(pickupDiscountRemovedCate) === 0) {
         setPickUpDiscountPercent(0);
       } else {
@@ -156,9 +153,9 @@ export default function OrderSummaryMOB({
       }
     } else if (
       deliveryType === "delivery" &&
-      deliveryDis?.deliveryCost !== undefined
+      deliveryDis?.deliveryFee !== undefined
     ) {
-      setdeliveryCostL(+deliveryDis.deliveryCost);
+      setdeliveryFeeL(+deliveryDis.deliveryFee);
       setPickUpDiscountPercent(0);
       setCalculatedPickUpDiscount(0);
     }
@@ -168,8 +165,8 @@ export default function OrderSummaryMOB({
     deliveryDis,
     pickupDiscountPersent,
     filteredCategoryDiscount,
-    flatCouponDiscount,
-    calCouponDiscount,
+    flatcouponPercent,
+    calcouponPercent,
   ]);
 
   useEffect(() => {
@@ -200,7 +197,7 @@ export default function OrderSummaryMOB({
           const price = +couponDisc.discount;
           setCalCouponDisscount(0);
           setFlatCouponDisscount(price);
-          setcouponDiscountPercentL(
+          setcouponPercentPercentL(
             parseFloat(((price / itemTotal) * 100).toFixed(2))
           );
         } else {
@@ -208,7 +205,7 @@ export default function OrderSummaryMOB({
           const totalDis = parseFloat(((itemTotal * percent) / 100).toFixed(2));
           setCalCouponDisscount(totalDis);
           setFlatCouponDisscount(0);
-          setcouponDiscountPercentL(percent);
+          setcouponPercentPercentL(percent);
         }
       }
     } else if (couponDisc?.discount) {
@@ -218,7 +215,7 @@ export default function OrderSummaryMOB({
       // );
     } else {
       setCalCouponDisscount(0);
-      setcouponDiscountPercentL(0);
+      setcouponPercentPercentL(0);
     }
   }, [couponDisc, itemTotal, cartData, deliveryType]);
 
@@ -228,25 +225,25 @@ export default function OrderSummaryMOB({
     // 💰 Compute numeric total
     const netPay =
       itemTotal +
-      deliveryCost -
+      deliveryFee -
       calculatedPickUpDiscountL -
-      calCouponDiscount -
-      flatCouponDiscount;
+      calcouponPercent -
+      flatcouponPercent;
 
-    const netDiscount = couponDiscountPercentL + pickUpDiscountPercentL;
+    const netDiscount = couponPercentPercentL + pickUpDiscountPercentL;
 
     // Update numeric states
     setEndTotalG(parseFloat(netPay.toFixed(2)));
     setTotalDiscountG(parseFloat(netDiscount.toFixed(2)));
 
     // Also update delivery cost in context
-    setDeliveryCost(deliveryCost);
+    setdeliveryFee(deliveryFee);
   }, [
-    deliveryCost,
-    calCouponDiscount,
+    deliveryFee,
+    calcouponPercent,
     itemTotal,
-    flatCouponDiscount,
-    couponDiscountPercentL,
+    flatcouponPercent,
+    couponPercentPercentL,
     pickUpDiscountPercentL,
     calculatedPickUpDiscountL,
   ]);
@@ -280,13 +277,18 @@ export default function OrderSummaryMOB({
         seOrderAmountIsLowForDelivery(false);
       }
 
-      if (deliveryDis?.deliveryCost !== undefined) {
-        setdeliveryCostL(+deliveryDis.deliveryCost);
+      if (deliveryDis?.deliveryFee !== undefined) {
+        setdeliveryFeeL(+deliveryDis.deliveryFee);
       }
     } else {
-      setdeliveryCostL(0);
+      setdeliveryFeeL(0);
     }
-  }, [deliveryType, deliveryDis?.minSpend, itemTotal, deliveryDis?.deliveryCost]);
+  }, [
+    deliveryType,
+    deliveryDis?.minSpend,
+    itemTotal,
+    deliveryDis?.deliveryFee,
+  ]);
 
   useEffect(() => {
     if (!scheduledAt) return;
@@ -307,13 +309,10 @@ export default function OrderSummaryMOB({
       }
     }
 
-     if ( !isStoreOpen && !scheduledAt) {
-    
-     
-        toast.error("Now store is close, slecet differen time when store open");
-        return;
-    
-    } 
+    if (!isStoreOpen && !scheduledAt) {
+      toast.error("Now store is close, slecet differen time when store open");
+      return;
+    }
 
     setIsLoading(true);
 
@@ -337,12 +336,12 @@ export default function OrderSummaryMOB({
       // =====================================================
 
       if (deliveryType === "delivery") {
-        if (!deliveryDis || deliveryDis.deliveryCost == null) {
+        if (!deliveryDis || deliveryDis.deliveryFee == null) {
           toast.error(TEXT.error_address_not_deliverable);
           return;
         }
 
-        const price = Number(deliveryDis.deliveryCost);
+        const price = Number(deliveryDis.deliveryFee);
         if (Number.isNaN(price)) {
           toast.error(TEXT.error_address_not_deliverable);
           return;
@@ -385,17 +384,28 @@ export default function OrderSummaryMOB({
 
       const userId = localStorage.getItem("order_user_Id") as string;
 
-      const customerName =
-        JSON.parse(localStorage.getItem("customer_name") || '""') || "";
-
       const email =
         JSON.parse(localStorage.getItem("customer_email") || '""') || "";
 
+      const customerAddress = getLS("customer_address", "");
+
+      const customerEmail = customerAddress?.email ?? "";
+      const customerfirstName = customerAddress?.firstName ?? "";
+       const customerlastName = customerAddress?.lastName ?? "";
+      const customerPhone = customerAddress?.mobNo ?? "";
+
+      const addressLine1 = customerAddress?.addressLine1 ?? "";
+      const addressLine2 = customerAddress?.addressLine2 ?? "";
+      const city = customerAddress?.city ?? "";
+      const state = customerAddress?.state ?? "";
+      const zipCode = customerAddress?.zipCode ?? "";
+
+      const customerName = customerfirstName + " " + customerlastName;
       // =====================================================
       // 5️⃣ FINAL SAFETY CHECKS
       // =====================================================
 
-      if (typeof deliveryCost !== "number" || Number.isNaN(deliveryCost)) {
+      if (typeof deliveryFee !== "number" || Number.isNaN(deliveryFee)) {
         toast.error(TEXT.error_unexpected_total);
         return;
       }
@@ -415,42 +425,67 @@ export default function OrderSummaryMOB({
       // =====================================================
 
       const purchaseData: orderDataType = {
+        // ===============================
         // BASIC
+        // ===============================
         userId,
         customerName,
-        email,
-        orderType: "ONLINE", // "DINE_IN" | "TAKEAWAY" | "DELIVERY" | "ONLINE";
-        tableNo: tableNo === "DINE_IN" ? tableNo : null,
+        customerPhone, //  ADDED
+        email:customerEmail,
+
+        orderType: "ONLINE", // "DINE_IN" | "TAKEAWAY" | "DELIVERY" | "ONLINE"
+        tableNo: orderType === "DINE_IN" ? tableNo : null,
         source: "WEB" as const,
+
+        // ===============================
         // CART SNAPSHOT
+        // ===============================
         cartData,
 
-        // TOTALS (client-side preview, server recalculates)
+        // ===============================
+        // TOTALS (client preview)
+        // ===============================
         itemTotal,
-
         totalDiscountG,
 
-        // ADDRESS / DELIVERY
+        // ===============================
+        // ADDRESS / DELIVERY (FLAT)
+        // ===============================
         addressId,
-        deliveryCost,
 
+        deliveryAddressLine1: addressLine1, //  ADDED
+        deliveryAddressLine2: addressLine2, //  ADDED
+        deliveryCity: city, //  ADDED
+        deliveryState: state, //  ADDED
+        deliveryZipcode: zipCode, //  ADDED
+
+        deliveryFee,
+
+        // ===============================
         // PAYMENT
+        // ===============================
         paymentType,
 
+        // ===============================
         // DISCOUNTS
-        flatDiscount: flatCouponDiscount,
-        calCouponDiscount,
+        // ===============================
+        couponFlat: flatcouponPercent,
+        calcouponPercent,
         calculatedPickUpDiscountL,
-        couponDiscountPercentL,
+        couponPercentPercentL,
         couponCode: couponDisc?.code?.trim() || "NA",
         pickUpDiscountPercentL,
 
-        flatCouponDiscount: 0,
+        flatcouponPercent: 0,
+
+        // ===============================
         // FLAGS
+        // ===============================
         noOffers,
 
-        // 🔑 VERY IMPORTANT
-
+        // ===============================
+        // SCHEDULING
+        // ===============================
         scheduledAt,
       };
 
@@ -499,8 +534,9 @@ export default function OrderSummaryMOB({
     <div className="flex flex-col gap-4 w-full ">
       <div className="flex flex-col bg-slate-50 p-5 h-full w-full gap-7 rounded-2xl">
         <div className="flex flex-col gap-2 items-center">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4 w-full text-left"
-          // className="text-xl font-semibold border-b border-slate-200 py-3 w-full uppercase"
+          <h2
+            className="text-sm font-semibold text-gray-700 mb-4 w-full text-left"
+            // className="text-xl font-semibold border-b border-slate-200 py-3 w-full uppercase"
           >
             {TEXT.cart_heading}
           </h2>
@@ -536,7 +572,7 @@ export default function OrderSummaryMOB({
 
           <SetDeliveryType />
 
-          <DeliveryCost />
+          <DeliveryFee />
 
           <Pickup
             pickupDiscountPersent={pickUpDiscountPercentL}
@@ -544,7 +580,7 @@ export default function OrderSummaryMOB({
           />
 
           {onlyItemsWithDisabledCouponCode &&
-            flatCouponDiscount + calCouponDiscount !== 0 && (
+            flatcouponPercent + calcouponPercent !== 0 && (
               <CouponDisc total={itemTotal} />
             )}
 
@@ -621,4 +657,11 @@ export default function OrderSummaryMOB({
       </div>
     </div>
   );
+}
+function getLS(key: string, fallback = "") {
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
 }

@@ -27,7 +27,7 @@ const { setScheduledAt } = useCartContext();
 
   const formatISO = (d: Date) => d.toISOString().split("T")[0];
 
-  // ✅ Only Today → Next 6 days
+  //  Only Today → Next 6 days
   const getDays = () => {
     return Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
@@ -83,7 +83,7 @@ const { setScheduledAt } = useCartContext();
 //   if (selectedDate && selectedTime) {
 //     const value = `${selectedDate} ${selectedTime}`;
 //     onChange(value);
-//     setScheduledAt(value); // ✅ SAVE TO GLOBAL CART
+//     setScheduledAt(value); //  SAVE TO GLOBAL CART
 //   }
 // }, [selectedDate, selectedTime]);
 
@@ -98,7 +98,7 @@ useEffect(() => {
     const iso = new Date(localDateTime).toISOString();
 
     onChange(iso);
-    setScheduledAt(iso); // ✅ STORE ISO STRING
+    setScheduledAt(iso); //  STORE ISO STRING
   }
 }, [selectedDate, selectedTime]);
 

@@ -20,7 +20,7 @@ export default function RootLayout({
         <div translate="no">
           <SiteLayout>{children}</SiteLayout>
 
-          {/* ✅ Toast Notification System */}
+          {/*  Toast Notification System */}
           <Toaster
             position="top-center"
             containerStyle={{ top: "30%" }}

@@ -53,7 +53,7 @@ export default function MonthlySalesTable() {
   const createdAt = (data.createdAt as Timestamp)?.toDate();
   const grandTotal = data.grandTotal || 0;
 
-  if (!createdAt || data.status !== 'Completed') return; // ✅ Filter only completed orders
+  if (!createdAt ||data.orderStatus !== 'COMPLETED') return; //  Filter only completed orders
 
   const monthKey = `${createdAt.getFullYear()}-${(createdAt.getMonth() + 1)
     .toString()

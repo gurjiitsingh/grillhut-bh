@@ -1,9 +1,9 @@
 'use client';
 
-import DownloadCategoryCSV from './conmponets/DownloadCategoryCSV';
-import DownloadProductCSV from './conmponets/DownloadProductCSV';
-import UploadCategoryCSV from './conmponets/UploadCategoryCSV';
-import UploadProductCSV from './conmponets/UploadProductFromCSV';
+import DownloadCategoryCSV from './components/DownloadCategoryCSV';
+import DownloadProductCSV from './components/DownloadProductCSV';
+import UploadCategoryCSV from './components/UploadCategoryCSV';
+import UploadProductCSV from './components/UploadProductFromCSV';
 
 export default function DataBackupPage() {
   return (

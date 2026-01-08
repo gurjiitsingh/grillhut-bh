@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  newPorductSchema,
+  newProductSchema,
   TnewdeliverySchema,
 } from "@/lib/types/deliveryType";
 import { addNewdelivery } from "@/app/(universal)/action/delivery/dbOperation";
@@ -16,7 +16,7 @@ const Page = () => {
     setValue,
     handleSubmit,
   } = useForm<TnewdeliverySchema>({
-    resolver: zodResolver(newPorductSchema),
+    resolver: zodResolver(newProductSchema),
   });
 
   async function onsubmit(data: TnewdeliverySchema) {
@@ -24,7 +24,7 @@ const Page = () => {
 
     const code = data.name.toUpperCase();
     formData.append("name", code);
-    formData.append("deliveryCost", data.deliveryCost);
+    formData.append("deliveryFee", data.deliveryFee);
     formData.append("deliveryDistance", data.deliveryDistance!);
     formData.append("productCat", data.productCat);
     formData.append("note", data.note!);
@@ -35,7 +35,7 @@ const Page = () => {
     if (!result?.errors) {
       setValue("name", "");
       setValue("note", "");
-      setValue("deliveryCost", "");
+      setValue("deliveryFee", "");
       setValue("productCat", "");
       setValue("minSpend", "");
       setValue("deliveryDistance", "");
@@ -89,12 +89,12 @@ const Page = () => {
                 Delivery Cost<span className="text-red-500">*</span>
               </label>
               <input
-                {...register("deliveryCost")}
+                {...register("deliveryFee")}
                 className="input-style py-1"
                 placeholder="Enter delivery cost"
               />
               <span className="text-[0.8rem] text-destructive">
-                {errors.deliveryCost?.message}
+                {errors.deliveryFee?.message}
               </span>
             </div>
 

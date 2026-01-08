@@ -17,8 +17,8 @@ function TableRows({ order }: { order: orderMasterDataT }) {
  
   const { TEXT } = useLanguage();
   const { settings } = UseSiteContext();
-  const flatDiscount = formatCurrencyNumber(
-    Number(order.flatDiscount) ?? 0,
+  const couponFlat = formatCurrencyNumber(
+    Number(order.couponFlat) ?? 0,
     (settings.currency ) as string,
     (settings.locale ) as string
   );
@@ -48,7 +48,7 @@ function TableRows({ order }: { order: orderMasterDataT }) {
             pathname: `/admin/orders/order-detail`,
             query: {
               masterId: order.id,
-              userId: order.userId,
+              userId: order.customerId,
               addressId: order.addressId,
             }
           }}
@@ -61,7 +61,7 @@ function TableRows({ order }: { order: orderMasterDataT }) {
             pathname: `/admin/orders/order-print-auto`,
             query: {
               masterId: order.id,
-              userId: order.userId,
+              userId: order.customerId,
               addressId: order.addressId,
             },
           }}
@@ -103,14 +103,14 @@ function TableRows({ order }: { order: orderMasterDataT }) {
       <TableCell>
         <span
           className={`px-2 py-1 text-xs rounded-full font-semibold ${
-            order.status === "pending"
+            order.orderStatus === "NEW"
               ? "bg-yellow-100 text-yellow-800"
-              : order.status === "Completed"
+              : order.orderStatus === "COMPLETED"
               ? "bg-green-100 text-green-800"
               : "bg-gray-100 text-gray-700"
           }`}
         >
-          {order.status}
+          {order.orderStatus}
         </span>
       </TableCell>
 
@@ -127,10 +127,10 @@ function TableRows({ order }: { order: orderMasterDataT }) {
       </TableCell>
 
       <TableCell className="text-sm text-gray-600">
-        {order.totalDiscountG}%
+        {order.discountTotal}%
       </TableCell>
 
-      <TableCell className="text-sm text-gray-600">{flatDiscount}</TableCell>
+      <TableCell className="text-sm text-gray-600">{couponFlat}</TableCell>
   <TableCell className="text-sm text-gray-600">{order.printed}</TableCell>
       <TableCell>
         <button

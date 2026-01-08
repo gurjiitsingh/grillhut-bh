@@ -37,7 +37,7 @@ export default function POSTableRow({ order }: { order: orderMasterDataT }) {
             pathname: `/pos/orders/order-detail`,
             query: {
               masterId: order.id,
-              userId: order.userId,
+              userId: order.customerId,
               addressId: order.addressId,
             }}}
        // href={`/pos/orders/order-detail?orderId=${order.id}`}
@@ -79,14 +79,14 @@ export default function POSTableRow({ order }: { order: orderMasterDataT }) {
       <TableCell>
         <span
           className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            order.status === "Completed"
+            order.orderStatus === "COMPLETED"
               ? "bg-green-200 text-green-800"
-              : order.status === "pending"
+              : order.orderStatus === "NEW"
               ? "bg-yellow-200 text-yellow-800"
               : "bg-gray-200 text-gray-700"
           }`}
         >
-          {order.status}
+          {order.orderStatus}
         </span>
       </TableCell>
 

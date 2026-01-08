@@ -3,11 +3,11 @@ import { UseSiteContext } from "@/SiteContext/SiteContext";
 import { useLanguage } from "@/store/LanguageContext";
 import React from "react";
 
-export default function DeliveryCost() {
+export default function DeliveryFee() {
   const { TEXT } = useLanguage();
   const { settings, deliveryDis, deliveryType } = UseSiteContext();
 
-  const priceValue = Number(deliveryDis?.deliveryCost);
+  const priceValue = Number(deliveryDis?.deliveryFee);
   const isDeliverable = !isNaN(priceValue);
 
   const delivery_price = isDeliverable
@@ -25,7 +25,7 @@ export default function DeliveryCost() {
           {isDeliverable ? (
             <div className="font-semibold border-b py-3 w-full flex justify-between items-center">
               <button className="text-sm font-semibold py-3 w-full text-left">
-                {TEXT.deliveryCost.title}
+                {TEXT.deliveryFee.title}
               </button>
               <div className="flex gap-1">
                 <span>{delivery_price}</span>
@@ -35,7 +35,7 @@ export default function DeliveryCost() {
             <div className="font-semibold border-b py-3 w-full flex justify-between items-center">
               <div className="flex gap-1 justify-start w-full">
                 <span className="text-sm font-extralight text-red-600">
-                  {TEXT.deliveryCost.notDeliverableAddress}
+                  {TEXT.deliveryFee.notDeliverableAddress}
                 </span>
               </div>
             </div>

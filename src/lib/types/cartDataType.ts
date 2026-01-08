@@ -98,11 +98,14 @@ export type orderDataType = {
   // -----------------------------
   // BASIC INFO
   // -----------------------------
-  userId: string ;
+  userId: string;                  // Customer ID
   customerName: string;
+  customerPhone?: string;          //  NEW (important)
   email: string;
-  tableNo: string | null;     // Only for DINE_IN
+
+  tableNo: string | null;          // Only for DINE_IN
   orderType: "DINE_IN" | "TAKEAWAY" | "DELIVERY" | "ONLINE";
+
   // -----------------------------
   // CART SNAPSHOT (REQUIRED)
   // -----------------------------
@@ -111,33 +114,49 @@ export type orderDataType = {
   // -----------------------------
   // REQUIRED LEGACY TOTALS
   // -----------------------------
-  // endTotalG?: number;          // legacy grand total
   totalDiscountG: number;
-  flatDiscount: number;
+  couponFlat: number;
 
   // -----------------------------
   // ORDER INFO
   // -----------------------------
   addressId: string;
-  paymentType: string;
 
+  // -----------------------------
+  // DELIVERY ADDRESS (FLAT SNAPSHOT)
+  // -----------------------------
+  deliveryAddressLine1?: string;   //  NEW
+  deliveryAddressLine2?: string;   //  NEW
+  deliveryCity?: string;           //  NEW
+  deliveryState?: string;          //  NEW
+  deliveryZipcode?: string;        //  NEW
+
+  // -----------------------------
+  // PAYMENT
+  // -----------------------------
+  paymentType: string;             // CASH | UPI | CARD | ONLINE | PAYPAL | STRIPE
+  paymentStatus?: "PAID" | "UNPAID" | "FAILED";
+
+  // -----------------------------
+  // TOTALS
+  // -----------------------------
   itemTotal: number;
-  deliveryCost: number;
+  deliveryFee: number;
 
   // -----------------------------
-  // ✅ NEW CLEAN TOTALS (OPTIONAL)
+  //  NEW CLEAN TOTALS (OPTIONAL)
   // -----------------------------
-  discountTotal?: number;     // sum of all discounts
-  taxTotal?: number;          // tax after discount
-  subTotal?: number;          // itemTotal - discountTotal
-  grandTotal?: number;        // final payable amount
+  discountTotal?: number;
+  taxTotal?: number;
+  subTotal?: number;
+  grandTotal?: number;
 
   // -----------------------------
   // DISCOUNTS (LEGACY + CLEAN)
   // -----------------------------
-  calCouponDiscount: number;
-  flatCouponDiscount: number;
-  couponDiscountPercentL: number;
+  calcouponPercent: number;
+  flatcouponPercent: number;
+  couponPercentPercentL: number;
   couponCode: string | undefined;
 
   pickUpDiscountPercentL: number;
@@ -149,22 +168,17 @@ export type orderDataType = {
   noOffers: boolean;
 
   // -----------------------------
-  // ✅ SYSTEM / SOURCE (OPTIONAL)
+  // SYSTEM / SOURCE
   // -----------------------------
   source?: "POS" | "WEB";
   orderStatus?: "NEW" | "ACCEPTED" | "COMPLETED" | "CANCELLED";
-  paymentStatus?: "PAID" | "UNPAID" | "FAILED";
   printed?: boolean;
 
-  //remove in future
-  //finalGrandTotal?:number;
-
-  /** Whether order is scheduled for later */
-    isScheduled?: boolean;
-  
-    /** Scheduled execution time (if scheduled order) */
-    //scheduledAt?: Timestamp;
-    scheduledAt: string | null;
+  // -----------------------------
+  // SCHEDULING
+  // -----------------------------
+  isScheduled?: boolean;
+  scheduledAt: string | null;
 };
 
 

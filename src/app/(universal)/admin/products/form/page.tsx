@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { newPorductSchema, TnewProductSchema } from "@/lib/types/productType";
+import { newProductSchema, TnewProductSchema } from "@/lib/types/productType";
 import { categoryType } from "@/lib/types/categoryType";
 import { resizeImage } from "@/utils/resizeImage";
 import { addNewProduct } from "@/app/(universal)/action/products/dbOperation";
@@ -50,13 +50,13 @@ const Page = () => {
     setValue,
     reset,
   } = useForm<TnewProductSchema>({
-    resolver: zodResolver(newPorductSchema),
+    resolver: zodResolver(newProductSchema),
     defaultValues: {
-      status: "published",
+      publishStatus: "published",
       discountPrice: 0,
       stockQty: 0,
       //  sortOrder: 0,
-      //  taxRate: 0, // ✅ default tax 0%
+      //  taxRate: 0, //  default tax 0%
     },
   });
   const selectedCategoryId = watch("categoryId");
@@ -90,9 +90,9 @@ const Page = () => {
     formData.append("sortOrder", String(data.sortOrder ?? 0));
     formData.append("categoryId", data.categoryId || "");
     formData.append("productDesc", data.productDesc || "");
-    formData.append("status", data.status || "published");
+    formData.append("status",data.publishStatus || "published");
     formData.append("isFeatured", data.isFeatured ? "true" : "false");
-    formData.append("taxRate", String(data.taxRate ?? 0)); // ✅ added tax info
+    formData.append("taxRate", String(data.taxRate ?? 0)); //  added tax info
     formData.append("taxType", data.taxType as string);
     if (data.image && data.image[0]) {
       try {
@@ -112,7 +112,7 @@ const Page = () => {
     setIsSubmitting(false);
 
     if (!result?.errors) {
-      //  alert("✅ Product added successfully!");
+      //  alert(" Product added successfully!");
       reset({
         name: "",
         //  price: 0,
@@ -122,8 +122,8 @@ const Page = () => {
         //  categoryId: "",
         productDesc: "",
         isFeatured: false,
-        status: "published",
-        //  taxRate: 0, // ✅ reset tax field
+        publishStatus: "published",
+        //  taxRate: 0, //  reset tax field
       });
     } else {
       console.error("❌ Validation errors:", result.errors);
@@ -209,7 +209,7 @@ const Page = () => {
               </div>
             </div>
 
-            {/* ✅ Added Tax Field */}
+            {/*  Added Tax Field */}
             {/* <div>
               <label className="label-style">Tax Rate (%)</label>
               <input
@@ -339,13 +339,13 @@ const Page = () => {
 
               <div>
                 <label className="label-style">Status</label>
-                <select {...register("status")} className="input-style py-1">
+                <select {...register("publishStatus")} className="input-style py-1">
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
                   <option value="out_of_stock">Out of Stock</option>
                 </select>
                 <p className="text-xs text-destructive">
-                  {errors.status?.message}
+                  {errors.publishStatus?.message}
                 </p>
               </div>
             </div>

@@ -33,7 +33,7 @@ export default function UploadCategoryCSV() {
             await uploadProductFromCSV(row);
           }
 
-          setMessage(`✅ Uploaded ${rows.length} categories successfully.`);
+          setMessage(` Uploaded ${rows.length} categories successfully.`);
         } catch (err) {
           console.error(err);
           setMessage('❌ Upload failed. Check console for details.');

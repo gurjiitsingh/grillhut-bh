@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { editPorductSchema, TeditProductSchema } from "@/lib/types/productType";
+import { editProductSchema, TeditProductSchema } from "@/lib/types/productType";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchCategories } from "@/app/(universal)/action/category/dbOperations";
 import { categoryType } from "@/lib/types/categoryType";
@@ -26,7 +26,7 @@ const EditProduct = () => {
     setValue,
     handleSubmit,
   } = useForm<TeditProductSchema>({
-    resolver: zodResolver(editPorductSchema),
+    resolver: zodResolver(editProductSchema),
   });
 
   useEffect(() => {
@@ -41,7 +41,7 @@ const EditProduct = () => {
       setValue("price", data.price?.toString() ?? "0");
       setValue("discountPrice", data.discountPrice?.toString() ?? "0");
       setValue("stockQty", data.stockQty?.toString() ?? "0");
-      setValue("status", data.status ?? "published");
+      setValue("publishStatus",data.publishStatus ?? "published");
       setValue("sortOrder", data.sortOrder?.toString() ?? "0");
       setValue("categoryId", data.categoryId);
       setValue("isFeatured", data.isFeatured);
@@ -70,7 +70,7 @@ const EditProduct = () => {
     formData.append("categoryId", data.categoryId!);
     formData.append("sortOrder", data.sortOrder);
     formData.append("productDesc", data.productDesc ?? "");
-    formData.append("status", data.status ?? "published");
+    formData.append("status",data.publishStatus ?? "published");
     formData.append("oldImageUrl", data.oldImageUrl ?? "");
     formData.append("isFeatured", data.isFeatured ? "true" : "false");
 
@@ -86,7 +86,7 @@ const EditProduct = () => {
     setIsSubmitting(false);
 
     if (!result?.errors) {
-      //   alert("✅ Product updated successfully!");
+      //   alert(" Product updated successfully!");
       router.push(`/admin/products?productId=${data.id}`);
     } else {
       alert("❌ Something went wrong. Check console for details.");
@@ -241,13 +241,13 @@ const EditProduct = () => {
 
               <div>
                 <label className="label-style">Status</label>
-                <select {...register("status")} className="input-style py-1">
+                <select {...register("publishStatus")} className="input-style py-1">
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
                   <option value="out_of_stock">Out of Stock</option>
                 </select>
                 <p className="text-xs text-destructive">
-                  {errors.status?.message}
+                  {errors.publishStatus?.message}
                 </p>
               </div>
             </div>
