@@ -44,9 +44,19 @@ export default function TableRows({
 
   return (
     <TableRow className="whitespace-nowrap transition rounded-xl text-slate-600 hover:bg-green-50">
+       <TableCell>
+        <Button
+          size="sm"
+          disabled={isSaving}
+          onClick={handleSave}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-2"
+        >
+          {isSaving ? "Saving..." : <FaSave />}
+        </Button>
+      </TableCell>
       <TableCell>
         <input
-          className="border rounded-md px-2 py-1 w-24 text-sm"
+          className="border rounded-md px-2 py-1 w-24 text-sm bg-red-50"
           value={editData.searchCode}
           onChange={(e) =>
             setEditData({ ...editData, searchCode: e.target.value })
@@ -57,17 +67,27 @@ export default function TableRows({
       <TableCell>
         <input
           type="number"
-          className="border rounded-md px-2 py-1 w-16 text-sm"
+          className="border rounded-md px-2 py-1 w-10 text-sm "
           value={editData.sortOrder}
           onChange={(e) =>
             setEditData({ ...editData, sortOrder: Number(e.target.value) })
           }
         />
       </TableCell>
+        <TableCell>
+        <input
+          type="number"
+          className="border rounded-md px-2 py-1 w-20 text-sm"
+          value={editData.price}
+          onChange={(e) =>
+            setEditData({ ...editData, price: Number(e.target.value) })
+          }
+        />
+      </TableCell>
 
       <TableCell>
         <input
-          className="border rounded-md px-2 py-1 w-48 text-sm"
+          className="border rounded-md px-2 py-1 w-70 text-sm bg-green-50"
           value={editData.name}
           onChange={(e) =>
             setEditData({ ...editData, name: e.target.value })
@@ -92,16 +112,7 @@ export default function TableRows({
         </select>
       </TableCell>
 
-      <TableCell>
-        <input
-          type="number"
-          className="border rounded-md px-2 py-1 w-20 text-sm"
-          value={editData.price}
-          onChange={(e) =>
-            setEditData({ ...editData, price: Number(e.target.value) })
-          }
-        />
-      </TableCell>
+    
 
       <TableCell>
         <input
@@ -139,16 +150,7 @@ export default function TableRows({
         />
       </TableCell>
 
-      <TableCell>
-        <Button
-          size="sm"
-          disabled={isSaving}
-          onClick={handleSave}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-2"
-        >
-          {isSaving ? "Saving..." : <FaSave />}
-        </Button>
-      </TableCell>
+     
     </TableRow>
   );
 }

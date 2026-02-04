@@ -143,15 +143,18 @@ export default function ListView() {
           <Table>
             <TableHeader>
               <TableRow>
+                   <th>Save</th>
                 <th>Search Code</th>
+               
                 <th>Sort</th>
+                <th>Price</th>
                 <th>Product Name</th>
                 <th>Category</th>
-                <th>Price</th>
+                
                 <th>Discount</th>
                 <th>Qty</th>
                 <th>Tax</th>
-                <th>Save</th>
+              
               </TableRow>
             </TableHeader>
 
