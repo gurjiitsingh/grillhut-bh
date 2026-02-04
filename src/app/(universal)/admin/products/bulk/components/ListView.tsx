@@ -22,24 +22,31 @@ export default function ListView() {
   const [categories, setCategories] = useState<categoryType[]>([]);
   const [products, setProducts] = useState<ProductType[]>([]);
   const [filtered, setFiltered] = useState<ProductType[]>([]);
-  const [loading, setLoading] = useState(true); // start as loading
+  const [loading, setLoading] = useState(true);
 
-  // Load all categories
+  // 🔥 fast typing state
+  const [searchInput, setSearchInput] = useState(urlSearch);
+
+  // sync URL → input
+  useEffect(() => {
+    setSearchInput(urlSearch);
+  }, [urlSearch]);
+
+  // load categories
   useEffect(() => {
     async function loadCategories() {
       try {
         const res = await fetch("/api/categories");
         const json = await res.json();
         setCategories(json ?? []);
-      } catch (err) {
-        console.error(err);
+      } catch {
         setCategories([]);
       }
     }
     loadCategories();
   }, []);
 
-  // Load all products (like old list)
+  // load products
   useEffect(() => {
     async function loadProducts() {
       setLoading(true);
@@ -47,9 +54,6 @@ export default function ListView() {
         const res = await fetch("/api/products");
         const json = await res.json();
         setProducts(json ?? []);
-      } catch (err) {
-        console.error(err);
-        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -57,21 +61,33 @@ export default function ListView() {
     loadProducts();
   }, []);
 
-  // Filter products by category & search
+  // ⏳ delayed URL update (search only)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      updateURL("search", searchInput);
+    }, 500);
+
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  // filter
   useEffect(() => {
     let list = [...products];
 
     if (urlCategory) {
-      list = list.filter((p) => p.categoryId === urlCategory);
+      list = list.filter(p => p.categoryId === urlCategory);
     }
 
     if (urlSearch) {
-      list = list.filter((p) =>
-        (p.name ?? "").toLowerCase().includes(urlSearch.toLowerCase())
+      const q = urlSearch.toLowerCase();
+      list = list.filter(p =>
+        (p.name ?? "").toLowerCase().includes(q)
       );
     }
 
-    list = list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    list.sort(
+      (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+    );
 
     setFiltered(list);
   }, [urlCategory, urlSearch, products]);
@@ -89,7 +105,6 @@ export default function ListView() {
 
   return (
     <div className="mt-2">
-      {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <div className="w-full md:w-1/2">
           <label className="block text-sm font-medium mb-1">Category</label>
@@ -99,7 +114,7 @@ export default function ListView() {
             className="w-full border border-gray-300 rounded px-3 py-2"
           >
             <option value="">All Categories</option>
-            {categories.map((c) => (
+            {categories.map(c => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
@@ -111,8 +126,8 @@ export default function ListView() {
           <label className="block text-sm font-medium mb-1">Search</label>
           <input
             type="text"
-            value={urlSearch}
-            onChange={(e) => updateURL("search", e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by name..."
             className="w-full p-2 border border-gray-300 rounded"
           />
@@ -126,23 +141,22 @@ export default function ListView() {
           <p className="p-4 text-gray-400 italic">No products found</p>
         ) : (
           <Table>
-            <TableHeader className="bg-gray-100 dark:bg-zinc-800">
-              <TableRow className="whitespace-nowrap transition rounded-xl hover:bg-green-50 dark:hover:bg-zinc-700 dark:text-gray-100">
+            <TableHeader>
+              <TableRow>
                 <th>Search Code</th>
-                    <th>Sort</th>
+                <th>Sort</th>
                 <th>Product Name</th>
                 <th>Category</th>
                 <th>Price</th>
                 <th>Discount</th>
                 <th>Qty</th>
                 <th>Tax</th>
-            
                 <th>Save</th>
               </TableRow>
             </TableHeader>
 
             <TableBody>
-              {filtered.map((product) => (
+              {filtered.map(product => (
                 <TableRows
                   key={product.id}
                   product={product}

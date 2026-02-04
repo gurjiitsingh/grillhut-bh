@@ -8,7 +8,7 @@ import { ProductType } from "@/lib/types/productType";
 import { useState } from "react";
 import { categoryType } from "@/lib/types/categoryType";
 
-function TableRows({
+export default function TableRows({
   product,
   categoryData = [],
 }: {
@@ -31,45 +31,19 @@ function TableRows({
 
   async function handleSave() {
     setIsSaving(true);
-
     try {
-      // ✅ Ensure categoryId is always present (even if empty)
-      const payload = {
+      await updateProductField(product.id!, {
         ...editData,
         name: editData.name.trim(),
         categoryId: editData.categoryId || product.categoryId || "",
-      };
-
-      console.log("🟢 Updating:", product.id, payload);
-
-      const result = await updateProductField(product.id!, payload);
-
-      if (!result.success) {
-        alert(result.error || "Failed to update product");
-      } else {
-        console.log("✅ Product updated:", result);
-      }
-    } catch (error) {
-      console.error("❌ Save failed:", error);
-      alert("Error saving product changes");
+      });
     } finally {
       setIsSaving(false);
     }
   }
 
   return (
-    <TableRow
-      key={product.id}
-      className="
-        whitespace-nowrap 
-        transition 
-        rounded-xl 
-        text-slate-600
-        hover:bg-green-50 
-        dark:hover:bg-zinc-100
-      "
-    >
-      {/* 🔹 Search Code */}
+    <TableRow className="whitespace-nowrap transition rounded-xl text-slate-600 hover:bg-green-50">
       <TableCell>
         <input
           className="border rounded-md px-2 py-1 w-24 text-sm"
@@ -80,7 +54,6 @@ function TableRows({
         />
       </TableCell>
 
-      {/* 🔹 Sort Order */}
       <TableCell>
         <input
           type="number"
@@ -92,16 +65,16 @@ function TableRows({
         />
       </TableCell>
 
-      {/* 🔹 Product Name */}
       <TableCell>
         <input
           className="border rounded-md px-2 py-1 w-48 text-sm"
           value={editData.name}
-          onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+          onChange={(e) =>
+            setEditData({ ...editData, name: e.target.value })
+          }
         />
       </TableCell>
 
-      {/* 🔹 Category */}
       <TableCell>
         <select
           className="border rounded-md px-2 py-1 text-sm"
@@ -111,7 +84,7 @@ function TableRows({
           }
         >
           <option value="">Select Category</option>
-          {(categoryData || []).map((cat) => (
+          {categoryData.map(cat => (
             <option key={cat.id} value={cat.id}>
               {cat.name}
             </option>
@@ -119,7 +92,6 @@ function TableRows({
         </select>
       </TableCell>
 
-      {/* 🔹 Price */}
       <TableCell>
         <input
           type="number"
@@ -131,7 +103,6 @@ function TableRows({
         />
       </TableCell>
 
-      {/* 🔹 Discount */}
       <TableCell>
         <input
           type="number"
@@ -146,7 +117,6 @@ function TableRows({
         />
       </TableCell>
 
-      {/* 🔹 Stock Qty */}
       <TableCell>
         <input
           type="number"
@@ -158,46 +128,27 @@ function TableRows({
         />
       </TableCell>
 
-      {/* 🔹 Tax */}
       <TableCell>
-        <div className="flex flex-col">
-          <input
-            type="number"
-            className="border rounded-md px-2 py-1 w-20 text-sm mb-1"
-            value={editData.taxRate}
-            onChange={(e) =>
-              setEditData({ ...editData, taxRate: Number(e.target.value) })
-            }
-          />
-          <select
-            className="border rounded-md px-2 py-1 text-sm"
-            value={editData.taxType ?? "inclusive"}
-            onChange={(e) =>
-              setEditData({
-                ...editData,
-                taxType: e.target.value as "inclusive" | "exclusive",
-              })
-            }
-          >
-            <option value="inclusive">Inclusive</option>
-            <option value="exclusive">Exclusive</option>
-          </select>
-        </div>
+        <input
+          type="number"
+          className="border rounded-md px-2 py-1 w-20 text-sm"
+          value={editData.taxRate}
+          onChange={(e) =>
+            setEditData({ ...editData, taxRate: Number(e.target.value) })
+          }
+        />
       </TableCell>
 
-      {/* 🔹 Save Button */}
       <TableCell>
         <Button
           size="sm"
           disabled={isSaving}
           onClick={handleSave}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-0 transition"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-2"
         >
-          {isSaving ? "Saving..." : <FaSave size={16} />}
+          {isSaving ? "Saving..." : <FaSave />}
         </Button>
       </TableCell>
     </TableRow>
   );
 }
-
-export default TableRows;
