@@ -402,6 +402,26 @@ export async function deleteProduct(id: string, oldImageUrl: string) {
   }
 }
 
+export async function deleteProductBulk(id: string) {
+  const docRef = adminDb.collection("products").doc(id);
+
+  try {
+    // Delete Firestore product only
+    await docRef.delete();
+    console.log("Product deleted from Firestore:", id);
+
+    // revalidate cache
+    revalidateTag("products", "max");
+    revalidateTag("featured-products", "max");
+
+    return { message: "Product deleted successfully." };
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return { errors: "Failed to delete product." };
+  }
+}
+
+
 //* addition */
 export async function fetchAllProducts(): Promise<ProductType[]> {
   const snapshot = await adminDb.collection("products").get();
