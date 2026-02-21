@@ -54,7 +54,7 @@ export async function saveOutlet(input: any) {
   setOrDelete("taxType", data.taxType);
   setOrDelete("gstVatNumber", data.gstVatNumber);
   setOrDelete("footerNote", data.footerNote);
-  setOrDelete("defaultCurrency", data.footerNote);
+  setOrDelete("defaultCurrency", data.defaultCurrency);
 
   try {
     if (outletId) {
