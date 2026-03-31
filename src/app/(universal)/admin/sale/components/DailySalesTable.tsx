@@ -59,7 +59,7 @@ export default function DailySalesTable() {
 
   const fetchDailySales = async () => {
     try {
-      const ref = collection(db, 'orderMaster');
+      const ref = collection(db, 'orderMaster1');
       const q = query(ref, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
 
