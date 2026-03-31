@@ -59,7 +59,7 @@ export default function DailySalesTable() {
 
   const fetchDailySales = async () => {
     try {
-      const ref = collection(db, 'orderMaster1');
+      const ref = collection(db, 'orderMaster');
       const q = query(ref, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
 
@@ -68,7 +68,8 @@ export default function DailySalesTable() {
       snapshot.docs.forEach((doc) => {
         const data = doc.data() as orderMasterDataT;
        const createdAt = getCreatedAtDate(data.createdAt);
-        const grandTotal = data.grandTotal || 0;
+       const discount = data.discountTotal || 0;
+const grandTotal = (data.grandTotal || 0) - discount;
 
         if (!createdAt ||data.orderStatus !== 'COMPLETED') return;
 

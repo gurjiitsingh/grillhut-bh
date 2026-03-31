@@ -72,7 +72,8 @@ export default function MonthlySalesTable() {
 snapshot.docs.forEach((doc) => {
   const data = doc.data() as orderMasterDataT;
   const createdAt = getCreatedAtDate(data.createdAt);
-  const grandTotal = data.grandTotal || 0;
+ const discount = data.discountTotal || 0;
+const grandTotal = (data.grandTotal || 0) - discount;
 
   if (!createdAt || data.orderStatus !== 'COMPLETED') return;
 
