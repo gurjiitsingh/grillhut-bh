@@ -23,9 +23,7 @@ import TableRows from './TableRows';
 
 type DailySales = {
   date: string;
-  totalSales: number;          // AFTER discount (final)
-  totalSalesBeforeDiscount: number; // BEFORE discount
-  totalDiscount: number;       // total discount
+  totalSales: number;
   orderCount: number;
 };
 
@@ -67,36 +65,28 @@ export default function DailySalesTable() {
 
       const salesMap: Record<string, DailySales> = {};
 
-     snapshot.docs.forEach((doc) => {
-  const data = doc.data() as orderMasterDataT;
-  const createdAt = getCreatedAtDate(data.createdAt);
+      snapshot.docs.forEach((doc) => {
+        const data = doc.data() as orderMasterDataT;
+       const createdAt = getCreatedAtDate(data.createdAt);
+        const grandTotal = data.grandTotal || 0;
 
-  if (!createdAt || data.orderStatus !== 'COMPLETED') return;
+        if (!createdAt ||data.orderStatus !== 'COMPLETED') return;
 
-  const discount = data.discountTotal || 0;
+        const dateKey = `${createdAt.getFullYear()}-${String(
+          createdAt.getMonth() + 1
+        ).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`;
 
-  const saleWithDiscount = data.grandTotal || 0; // final paid
-  const saleWithoutDiscount = saleWithDiscount + discount; // original price
+        if (!salesMap[dateKey]) {
+          salesMap[dateKey] = {
+            date: dateKey,
+            totalSales: 0,
+            orderCount: 0,
+          };
+        }
 
-  const dateKey = `${createdAt.getFullYear()}-${String(
-    createdAt.getMonth() + 1
-  ).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`;
-
-  if (!salesMap[dateKey]) {
-    salesMap[dateKey] = {
-      date: dateKey,
-      totalSales: 0,
-      totalSalesBeforeDiscount: 0,
-      totalDiscount: 0,
-      orderCount: 0,
-    };
-  }
-
-  salesMap[dateKey].totalSales += saleWithDiscount;
-  salesMap[dateKey].totalSalesBeforeDiscount += saleWithoutDiscount;
-  salesMap[dateKey].totalDiscount += discount;
-  salesMap[dateKey].orderCount += 1;
-});
+        salesMap[dateKey].totalSales += grandTotal;
+        salesMap[dateKey].orderCount += 1;
+      });
 
       const sorted = Object.values(salesMap).sort((a, b) =>
         a.date < b.date ? 1 : -1
@@ -134,26 +124,22 @@ export default function DailySalesTable() {
           {/* Table */}
           <table className="min-w-full border border-gray-300 text-sm">
             <thead className="bg-gray-100">
-  <tr>
-    <th className="border px-4 py-2 text-left">Date</th>
-    <th className="border px-4 py-2 text-left">Orders</th>
-    <th className="border px-4 py-2 text-left">Sales (Final)</th>
-    <th className="border px-4 py-2 text-left">Sales (Before Discount)</th>
-    <th className="border px-4 py-2 text-left">Total Discount</th>
-  </tr>
-</thead>
+              <tr>
+                <th className="border px-4 py-2 text-left">Date</th>
+                <th className="border px-4 py-2 text-left">Total Orders</th>
+                <th className="border px-4 py-2 text-left">Total Sales</th>
+              </tr>
+            </thead>
             <tbody>
              {dailySales.map((row, i) => (
- <TableRows
-  key={i}
-  row={{
-    label: row.date,
-    orderCount: row.orderCount,
-    totalSales: row.totalSales,
-    totalSalesBeforeDiscount: row.totalSalesBeforeDiscount,
-    totalDiscount: row.totalDiscount,
-  }}
-/>
+  <TableRows
+    key={i}
+    row={{
+      label: row.date,
+      orderCount: row.orderCount,
+      totalSales: row.totalSales,
+    }}
+  />
 ))}
             </tbody>
           </table>

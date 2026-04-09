@@ -13,7 +13,6 @@ interface ProductListProps {
 const ProductList: React.FC<ProductListProps> = ({ item }) => {
   const { settings } = UseSiteContext();
 
-  console.log("item------------------", item)
   //const total = (parseInt(item.quantity.toString()) * parseFloat(item.price.toString())).toFixed(2);
 const total =
   ((Number(item.quantity) || 0) * (Number(item.price) || 0)).toFixed(2);
