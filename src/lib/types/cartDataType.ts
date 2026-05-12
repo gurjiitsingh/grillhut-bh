@@ -3,23 +3,57 @@ import { ProductType } from "./productType";
 
 
 
+export type cartModifierItem = {
+  id: string;
+  name: string;
+  price: number;
+  groupId: string;
+  groupName: string;
+};
 
 export type cartProductType = {
-  id: string ;
+  id: string; // selected product (variant or normal)
+  uniqueKey?: string;
   price: number;
+  basePrice?: number;
+ 
   quantity: number;
   stockQty: number | null;
+
   categoryId: string;
   productCat: string;
+
   name: string;
   image: string;
+
   taxRate: number | undefined;
   taxType: "inclusive" | "exclusive" | undefined;
 
-// variantId?: string;
-// variantName?: string;
-// notes?: string;
+  // ✅ OPTIONAL but useful
+  parentProductId?: string; // main pizza id
+
+  modifiers?: cartModifierItem[];
+
+  note?: string;
 };
+
+
+// export type cartProductType = {
+//   id: string ;
+//   price: number;
+//   quantity: number;
+//   stockQty: number | null;
+//   categoryId: string;
+//   productCat: string;
+//   name: string;
+//   image: string;
+//   taxRate: number | undefined;
+//   taxType: "inclusive" | "exclusive" | undefined;
+
+// // variantId?: string;
+// // variantName?: string;
+// // notes?: string;
+// };
 
 export type newOrderConditionType = {
   success: boolean;
@@ -32,13 +66,15 @@ export type CartItem = {
   price: number;
   quantity: number;
   stockQty: number | null;
-
   // category + tax info copied from product
   categoryId: string;
   productCat: string;
   taxRate?: number;
   taxType?: 'inclusive' | 'exclusive';
   image: string;
+
+  modifiers?: cartModifierItem[];
+  note?: string; 
 };
 
 export type CartItemWithTax = CartItem & {
@@ -56,7 +92,12 @@ export type cartDataT = {
   image: string;
   isFeatured: boolean;
   name: string;
-  price: string;
+  uniqueKey: string;
+  modifiers?: cartModifierItem[];
+
+  note?: string;
+  price: number;
+  basePrice: number;
   purchaseSession: string | null;
   quantity: number;
   status: string;

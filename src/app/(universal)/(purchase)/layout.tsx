@@ -15,8 +15,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="de" translate="no">
-      <body>
+   
         <div translate="no">
           <SiteLayout>{children}</SiteLayout>
 
@@ -38,7 +37,6 @@ export default function RootLayout({
             reverseOrder={false}
           />
         </div>
-      </body>
-    </html>
+    
   );
 }
