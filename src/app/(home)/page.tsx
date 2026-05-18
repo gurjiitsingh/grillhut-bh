@@ -13,6 +13,7 @@ import CategorySliderSm2 from "@/components/level-1/CategorySliderSm2";
 import Products from "@/components/level-1/Products";
 import CategorySliderLight from "@/components/level-1/CategorySliderLight";
 import BestOfMonth from "@/custom/cus-components/BestOfMonth";
+import ProductsWrapper from "@/components/ProductsWrapper";
 
 
 // import MenuPreview from "@/components/MenuPreview";
@@ -33,7 +34,7 @@ export default function Page() {
  <BestOfMonth />
    <CategorySliderLight />
    
-      <Products />
+     <ProductsWrapper />
      
      
 
