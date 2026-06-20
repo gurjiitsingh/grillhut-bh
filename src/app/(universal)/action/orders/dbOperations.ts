@@ -121,10 +121,12 @@ import { calculateTaxForCart } from "@/lib/tax/calculateTaxForCart-withRounding"
 import { calculateOrderTotals } from "@/lib/orderAmount/calculateOrderTotals";
 import { toTimestamp } from "@/utils/toTimestamp";
 import { toAdminTimestamp } from "@/utils/toAdminTimestamp";
+import { processSaleInventory } from "../inventory/processSaleInventory";
+import { checkStockAvailabilityV2 } from "../inventory/checkStockAvailabilityV2";
 
 export async function createNewOrder(purchaseData: orderDataType) {
 
-  console.log("addreas full oredr masrer---------------",purchaseData)
+ // console.log("addreas full oredr masrer---------------",purchaseData)
   const {
     // -----------------------------
     // BASIC
@@ -193,7 +195,7 @@ export async function createNewOrder(purchaseData: orderDataType) {
   // 1️⃣ STOCK CHECK (BEFORE ANY CALCULATION)
   // =====================================================
   if (SHOULD_MAINTAIN_STOCK) {
-    const stockCheck = await checkStockAvailability(cartData);
+    const stockCheck = await checkStockAvailabilityV2(cartData);
     if (!stockCheck.success) {
       return { success: false, message: stockCheck.message };
     }
@@ -404,6 +406,21 @@ const orderMasterData: orderMasterDataT = {
   for (const product of cartWithTax) {
     await addProductDraft(product, userId!, orderMasterId!);
   }
+
+  // ===================================================
+// 9.5️⃣ PROCESS INVENTORY
+// =====================================================
+await processSaleInventory(
+  "kjliiuwe",//orderMasterId,
+  cartWithTax.map((item) => ({
+    productId: item.id,
+    quantity: item.quantity || 1,
+    name: item.name,
+
+    // NEW
+    productMode: item.productMode,
+  }))
+);
 
   // =====================================================
   // 🔟 MARKETING DATA
@@ -832,7 +849,7 @@ Fetches each product individually.
 
 Checks for insufficient stock before decrementing.
 
-Also updates product status → "out_of_stock" when stockQty = 0.
+Also updates product status → "out_of_stock" when currentStock = 0.
 
 Returns detailed error messages per product.
 
@@ -882,7 +899,7 @@ export async function decreaseProductStock(orderMasterId: string) {
       }
 
       const product = productSnap.data() as ProductType;
-      const currentStock = product.stockQty ?? 0;
+      const currentStock = product.currentStock ?? 0;
       const quantityOrdered = item.quantity ?? 0;
 
       //  Check stock
@@ -895,7 +912,7 @@ export async function decreaseProductStock(orderMasterId: string) {
 
       //  Add to batch
       batch.update(productRef, {
-        stockQty: newStock,
+        currentStock: newStock,
         status: newStock === 0 ? "out_of_stock" : product.stockStatus,
       });
     }
@@ -985,11 +1002,11 @@ export async function decreaseProductStockFromOrder(orderMasterId: string) {
       }
 
       const productData = productSnap.data();
-      const currentStock = productData?.stockQty ?? 0;
+      const currentStock = productData?.currentStock ?? 0;
       const newStock = Math.max(currentStock - orderQty, 0);
 
       batch.update(productRef, {
-        stockQty: newStock,
+        currentStock: newStock,
         status:
           newStock === 0 ? "out_of_stock" : productData?.orderStatus ?? "published",
       });

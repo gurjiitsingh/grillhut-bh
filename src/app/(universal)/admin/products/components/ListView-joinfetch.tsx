@@ -109,7 +109,7 @@ export default function ListView() {
 
       <div className="bg-slate-50 rounded-lg p-1 overflow-x-auto">
         <Table>
-          <TableHeader className="bg-gray-100 dark:bg-zinc-800">
+          <TableHeader className="bg-gray-100 dark:border-zinc-200">
             <TableRow>
               <TableHead>Image</TableHead>
               <TableHead>Name</TableHead>
@@ -124,11 +124,11 @@ export default function ListView() {
             </TableRow>
           </TableHeader>
 
-          <TableBody>
+          {/* <TableBody>
             {filtered.map((product) => (
               <TableRows key={product.id} product={product} />
             ))}
-          </TableBody>
+          </TableBody> */}
         </Table>
       </div>
     </div>
