@@ -168,7 +168,7 @@ const Outlet = () => {
           />
 
           <input
-            {...register("country")}
+            {...register("countryName")}
             placeholder="Country (optional)"
             className="input-style"
           />

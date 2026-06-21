@@ -210,7 +210,7 @@ export default function OutletPage() {
           />
 
           <Row
-            label="Country"
+            label="countryName"
             value={data.countryName || data.country}
           />
 
