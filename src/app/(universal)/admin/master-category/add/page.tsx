@@ -66,8 +66,9 @@ const Form = () => {
         const compressedFile =
           await imageCompression(data.image[0], {
             maxWidthOrHeight: 500,
-            useWebWorker: true,
+            maxSizeMB: 0.2,
             initialQuality: 0.8,
+            useWebWorker: true,
           });
 
         formData.append("image", compressedFile);

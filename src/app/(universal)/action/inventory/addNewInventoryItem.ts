@@ -11,10 +11,7 @@ import { newInventoryItemAndTransaction } from "./newInvetoryItemTransactions";
 export async function addNewInventoryItem(
   formData: FormData
 ) {
-  console.log(
-    "inventory save-------------",
-    formData
-  );
+ 
 
   try {
     // FORM VALUES
@@ -95,7 +92,7 @@ export async function addNewInventoryItem(
         minStock * conversionFactor;
     }
 
-console.log("currentStock--------------", currentStock)
+console.log("currentStock--------------",  minStock, conversionFactor)
 
     // VALIDATION OBJECT
  const receivedData = {
@@ -125,24 +122,28 @@ console.log("currentStock--------------", currentStock)
         receivedData
       );
 
-    if (!result.success) {
-      const zodErrors: Record<
-        string,
-        string
-      > = {};
+      if (!result.success) {
+  console.log(result.error.issues);
+}
 
-      result.error.issues.forEach(
-        (issue) => {
-          zodErrors[
-            issue.path[0] as string
-          ] = issue.message;
-        }
-      );
+    // if (!result.success) {
+    //   const zodErrors: Record<
+    //     string,
+    //     string
+    //   > = {};
 
-      return {
-        errors: zodErrors,
-      };
-    }
+    //   result.error.issues.forEach(
+    //     (issue) => {
+    //       zodErrors[
+    //         issue.path[0] as string
+    //       ] = issue.message;
+    //     }
+    //   );
+
+    //   return {
+    //     errors: zodErrors,
+    //   };
+    // }
 
     // NORMALIZED NAME
     const normalizedName =

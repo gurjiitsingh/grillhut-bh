@@ -42,7 +42,7 @@ export default function ProductCardHorizontical({
   const shouldOpenPopup =
     product.hasVariants || product.hasModifier;
 
-    console.log("hasvariant  modifier---------",product)
+   
 
 
   const [simpleNoteOpen, setSimpleNoteOpen] = useState(false);
@@ -121,7 +121,7 @@ export default function ProductCardHorizontical({
       (quickNote?.trim() || ""),
     note: quickNote,
     quantity: 1,
-    currentStock: product.currentStock!!,
+    currentStock: product.currentStock!,
     price: priceTarget,
     basePrice: priceTarget,
     name: product.name,
@@ -403,7 +403,7 @@ export default function ProductCardHorizontical({
                     name: selectedVariant?.name ?? product.name,
 
                     quantity: 1,
-                    currentStock: selectedVariant?.currentStock ?? product.currentStock!,
+                    currentStock: selectedVariant?.currentStock?? product.currentStock!,
 
                     image: product.image,
                     categoryId: product.categoryId,

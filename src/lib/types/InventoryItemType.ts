@@ -5,6 +5,8 @@ import {
   FieldValue,
 } from "firebase/firestore";
 
+
+
 export const inventoryUnits = [
   "pcs",
   "kg",
@@ -24,8 +26,9 @@ export const inventoryUnits = [
   "tray",
 ] as const;
 
-export type InventoryUnit =
-  (typeof inventoryUnits)[number];
+
+
+export type InventoryUnit = string;
 
 /* -------------------------------- */
 /* UNIT PAIRS */
@@ -143,11 +146,21 @@ export const newInventorySchema =
       supplierId:
         z.string().optional(),
 
-      purchaseUnit:
-        z.enum(inventoryUnits),
+      // purchaseUnit:
+      //   z.enum(inventoryUnits),
 
-      consumptionUnit:
-        z.enum(inventoryUnits),
+      // consumptionUnit:
+      //   z.enum(inventoryUnits),
+
+      purchaseUnit: z
+        .string()
+        .trim()
+        .min(1, "Purchase unit required"),
+
+      consumptionUnit: z
+        .string()
+        .trim()
+        .min(1, "Consumption unit required"),
 
       conversionFactor:
         z.coerce
@@ -158,7 +171,7 @@ export const newInventorySchema =
           ),
 
 
-           minStock:
+      minStock:
         z.coerce
           .number()
           .min(
@@ -166,51 +179,30 @@ export const newInventorySchema =
             "Minimum stock cannot be negative"
           ),
 
-currentStock: z.coerce
-  .number()
-  .min(
-    0,
-    "Stock cannot be negative"
-  )
-  .optional(),
+      currentStock: z.coerce
+        .number()
+        .min(
+          0,
+          "Stock cannot be negative"
+        )
+        .optional(),
 
-costPrice: z.coerce
-  .number()
-  .min(
-    0,
-    "Cost price cannot be negative"
-  )
-  .optional(),
+      costPrice: z.coerce
+        .number()
+        .min(
+          0,
+          "Cost price cannot be negative"
+        )
+        .optional(),
 
-sellingPrice: z.coerce
-  .number()
-  .min(
-    0,
-    "Selling price cannot be negative"
-  )
-  .optional(),
-      // currentStock:
-      //   z.coerce
-      //     .number()
-      //     .min(
-      //       0,
-      //       "Stock cannot be negative"
-      //     ),     
-
-      // costPrice:
-      //   z.coerce
-      //     .number()
-      //     .min(
-      //       0,
-      //       "Cost price is required"
-      //     ),
-
-      // sellingPrice:
-      //   z.coerce
-      //     .number()
-      //     .min(0)
-      //     .optional(),
-
+      sellingPrice: z.coerce
+        .number()
+        .min(
+          0,
+          "Selling price cannot be negative"
+        )
+        .optional(),
+    
       categoryId:
         z.string().optional(),
 
@@ -224,49 +216,7 @@ sellingPrice: z.coerce
         ),
     })
 
-    .superRefine(
-      (data, ctx) => {
-        const pairs =
-          UNIT_PAIRS[
-            data.purchaseUnit
-          ] || [];
-
-        const validPair =
-          pairs.find(
-            (item) =>
-              item.unit ===
-              data.consumptionUnit
-          );
-
-        // INVALID PAIR
-        if (!validPair) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message:
-              "Invalid unit combination",
-            path: [
-              "consumptionUnit",
-            ],
-          });
-
-          return;
-        }
-
-        // INVALID FACTOR
-        if (
-          data.conversionFactor !==
-          validPair.factor
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Conversion factor must be ${validPair.factor}`,
-            path: [
-              "conversionFactor",
-            ],
-          });
-        }
-      }
-    );
+    
 
 export type TnewInventorySchema =
   z.infer<
@@ -277,7 +227,7 @@ export type InventoryItemType = {
   id: string;
 
   name: string;
-nameLower?: string;
+  nameLower?: string;
   categoryName?: string;
   supplierName?: string;
 

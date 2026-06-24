@@ -113,29 +113,12 @@ type Props = {
 
 export default function NewInventoryForm({
   categories,
-  suppliers
+  suppliers 
 }: Props) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const inventoryUnits = [
-  "pcs",
-  "kg",
-  "gm",
-  "ltr",
-  "ml",
-  "dozen",
-  "pair",
-  "box",
-  "pack",
-  "carton",
-  "bag",
-  "bottle",
-  "can",
-  "jar",
-  "roll",
-  "tray",
-] as const;
+
 
   const {
     register,
@@ -437,28 +420,21 @@ export default function NewInventoryForm({
                   Consumption Unit
                 </label>
 
-                <select
-                  {...register("consumptionUnit")}
-                  className="input-style-4 mt-1"
-                >
-                  <option value="kg">Kilogram (kg)</option>
-                  <option value="gm">Gram (gm)</option>
-                  <option value="ltr">Liter (ltr)</option>
-                  <option value="ml">Milliliter (ml)</option>
-                  <option value="pcs">Pieces (pcs)</option>
-                  <option value="dozen">Dozen</option>
-                  <option value="pair">Pair</option>
-                  <option value="box">Box</option>
-                  <option value="pack">Pack</option>
-                  <option value="carton">Carton</option>
-                  <option value="bag">Bag</option>
-                  <option value="bottle">Bottle</option>
-                  <option value="can">Can</option>
-                  <option value="jar">Jar</option>
-                  <option value="roll">Roll</option>
-                  <option value="tray">Tray</option>
-                </select>
-
+             <select
+  {...register("consumptionUnit")}
+  className="input-style-4 mt-1"
+>
+  {(UNIT_PAIRS[purchaseUnit] || []).map(
+    (item) => (
+      <option
+        key={item.unit}
+        value={item.unit}
+      >
+        {item.unit}
+      </option>
+    )
+  )}
+</select>
                 <p className="text-xs text-gray-500 mt-1">
                   Unit used in recipes
                 </p>

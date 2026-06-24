@@ -4,30 +4,27 @@
 
 import { adminDb } from "@/lib/firebaseAdmin";
 
-export async function findCustomer(
-  identifier: string
-) {
-  const usersRef =
-    adminDb.collection("users");
+export async function findCustomer(identifier: string) {
+  const value = identifier.trim();
+  console.log("value----------------", value)
+  const usersRef = adminDb.collection("users");
 
-  const isEmail =
-    identifier.includes("@");
+  const field = value.includes("@") ? "email" : "phone";
 
   const snap = await usersRef
-    .where(
-      isEmail ? "email" : "phone",
-      "==",
-      identifier
-    )
-    .limit(1)
-    .get();
-
+  .where("mobNo", "==", value)
+  .limit(1)
+  .get();
   if (snap.empty) {
+    console.log("not find----------------")
     return null;
   }
 
-  return {
-    id: snap.docs[0].id,
-    ...snap.docs[0].data(),
-  };
+  const data = snap.docs[0].data();
+
+return {
+  id: snap.docs[0].id,
+  ...data,
+  createdAt: data.createdAt?.toDate().toISOString() ?? null,
+};
 }
