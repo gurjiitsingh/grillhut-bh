@@ -1,15 +1,5 @@
 
-import React from 'react';
-  
-  const Checkout = () =>  {
-	return (
-	  <div>
-	  </div>
-	);
-  }
-  
-  export default Checkout;
-  
+"use client";
 import {
     PayPalButtons,
    
@@ -18,7 +8,8 @@ import {
 
   
   
-  import { useRouter, useSearchParams } from "next/navigation";
+  import { 
+    useRouter, useSearchParams } from "next/navigation";
   import { useCartContext } from "@/store/CartContext";
 
 export default function Checkout(){
