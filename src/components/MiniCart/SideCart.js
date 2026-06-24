@@ -1,4 +1,14 @@
-"use client";
+import React from 'react';
+  
+  const SideCart = () =>  {
+	return (
+	  <div>
+	  </div>
+	);
+  }
+  
+  export default SideCart;
+  "use client";
 
 import { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";

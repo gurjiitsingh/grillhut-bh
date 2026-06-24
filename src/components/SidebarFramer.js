@@ -1,4 +1,14 @@
-import { useRef, useState } from 'react'
+import React from 'react';
+  
+  const SidebarFramer = () =>  {
+	return (
+	  <div>
+	  </div>
+	);
+  }
+  
+  export default SidebarFramer;
+  import { useRef, useState } from 'react'
 import { GiHamburgerMenu } from 'react-icons/gi'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useClickAway } from 'react-use'

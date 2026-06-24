@@ -1,4 +1,14 @@
-import { v2 as cloudinary } from 'cloudinary';
+import React from 'react';
+  
+  const Cloudinary = () =>  {
+	return (
+	  <div>
+	  </div>
+	);
+  }
+  
+  export default Cloudinary;
+  import { v2 as cloudinary } from 'cloudinary';
 
 if (!process.env.CLOUDINARY_CLOUD_NAME) {
   throw new Error('CLOUDINARY_CLOUD_NAME is not set');

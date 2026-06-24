@@ -1,4 +1,15 @@
-import { useState, useEffect } from "react";
+
+import React from 'react';
+  
+  const UseWindowDimensions = () =>  {
+	return (
+	  <div>
+	  </div>
+	);
+  }
+  
+  export default UseWindowDimensions;
+  import { useState, useEffect } from "react";
 
 export const useWindowDimensions = () => {
   const [dimensions, setDimensions] = useState({

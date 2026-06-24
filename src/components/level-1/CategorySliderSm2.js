@@ -1,4 +1,14 @@
-"use client";
+import React from 'react';
+  
+  const CategorySliderSm2 = () =>  {
+	return (
+	  <div>
+	  </div>
+	);
+  }
+  
+  export default CategorySliderSm2;
+  "use client";
 
 import { useEffect, useState, useMemo } from "react";
 import Slider from "react-slick";

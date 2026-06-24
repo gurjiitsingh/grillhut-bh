@@ -1,4 +1,15 @@
-'use server';
+import React from 'react';
+  
+  const ActionStripe = () =>  {
+	return (
+	  <div>
+	  </div>
+    
+	);
+  }
+  
+  export default ActionStripe;
+  'use server';
 
 import Stripe from 'stripe';
 
