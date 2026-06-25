@@ -1,14 +1,4 @@
-import React from 'react';
-  
-  const Newfile = () =>  {
-	return (
-	  <div>
-	  </div>
-	);
-  }
-  
-  export default Newfile;
-  "use server";
+"use server";
 import fs from "fs";
 
 export async function createNewOrderFile(

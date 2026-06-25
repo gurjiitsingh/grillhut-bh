@@ -65,6 +65,7 @@ export async function updateFinishedItemStock({
         direction,
 
         quantity,
+        unitPrice:0,
         transactionUnit,
 
         note,
@@ -106,36 +107,36 @@ export async function updateFinishedItemStock({
           )
           .get();
 
-      for (const doc of recipesSnapshot.docs) {
-        const recipe = doc.data();
+      // for (const doc of recipesSnapshot.docs) {
+      //   const recipe = doc.data();
 
-        await applyInventoryMovement({
-          inventoryItemId:
-            recipe.inventoryItemId,
+        // await applyInventoryMovement({
+        //   inventoryItemId:
+        //     recipe.inventoryItemId,
 
-          type: "CONSUMPTION",
+        //   type: "CONSUMPTION",
 
-          direction: "OUT",
+        //   direction: "OUT",
 
-          quantity:
-            (Number(
-              recipe.quantity
-            ) || 0) * quantity,
+        //   quantity:
+        //     (Number(
+        //       recipe.quantity
+        //     ) || 0) * quantity,
 
-          note: `Used for production of ${productData?.name}`,
+        //   note: `Used for production of ${productData?.name}`,
 
-          referenceId:
-            "movement.transactionId",
+        //   referenceId:
+        //     "movement.transactionId",
 
-          referenceType:
-            "PRODUCTION",
+        //   referenceType:
+        //     "PRODUCTION",
 
-          createdBy:
-            createdBy || "system",
+        //   createdBy:
+        //     createdBy || "system",
 
-          source: "ADMIN",
-        });
-      }
+        //   source: "ADMIN",
+        // });
+     // }
     }
 
     // =========================================================

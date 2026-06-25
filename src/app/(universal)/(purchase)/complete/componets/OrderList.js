@@ -1,14 +1,4 @@
-import React from 'react';
-  
-  const OrderList = () =>  {
-	return (
-	  <div>
-	  </div>
-	);
-  }
-  
-  export default OrderList;
-  "use client";
+"use client";
 import React, { useContext } from "react";
 import CartContext from "@/store/CartContext";
 import Image from "next/image";

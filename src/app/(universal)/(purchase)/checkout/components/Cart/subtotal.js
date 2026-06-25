@@ -1,14 +1,4 @@
-import React from 'react';
-  
-  const Subtotal = () =>  {
-	return (
-	  <div>
-	  </div>
-	);
-  }
-  
-  export default Subtotal;
-  'use client'
+'use client'
 
 import React, { useContext } from 'react'
 import CartContext from '@/store/cartcontext'
