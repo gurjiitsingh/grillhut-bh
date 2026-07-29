@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
+ 
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -12,389 +12,316 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-import {
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-
-import {
-  formatPrice,
-  formatPriceS,
-} from "@/utils/inventory/formatPrice";
-
-import { formatQuantity } from "@/utils/inventory/formatQty";
+import { displayStock } from "@/utils/inventory/displayStock";
+import { displayStock_1 } from "@/utils/inventory/displayStock_1";
 
 type Props = {
-  transactions?: any[];
-
-  currentPage: number;
-
-  hasMore: boolean;
+  initialTransactions?: any[];
 };
+
 const financialTypes = [
   "SALE",
   "PURCHASE",
   "CUSTOMER_RETURN",
+  "SUPPLIER_RETURN",
   "RETURN",
 ];
 
 export default function InventoryTransactionTable({
-  transactions = [],
-  currentPage,
-  hasMore,
+  initialTransactions: initialTransactions = [],
 }: Props) {
 
-  const router = useRouter();
+  console.log("traaction---------------",initialTransactions)
+  const [transactions, setTransactions] = useState<any[]>(
+    initialTransactions
+  );
+ 
+  const [loading, setLoading] = useState(false);
 
-  function goToPage(page: number) {
-    router.push(
-      `/admin/inventory/transactions?page=${page}`
+  const [type, setType] =
+    useState("PURCHASE");
+
+  const [search, setSearch] =
+    useState("");
+
+  const [date, setDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+
+  console.log("initialTransactions", initialTransactions);
+console.log("transactions", transactions);
+
+
+async function loadTransactions() {
+  setLoading(true);
+
+  try {
+    const params = new URLSearchParams();
+
+    if (date) {
+      params.append("date", date);
+    }
+
+    if (type) {
+      params.append("type", type);
+    }
+
+    const res = await fetch(
+      `/api/inventory/inventory-transactions?${params.toString()}`,
+      {
+        method: "GET",
+        cache: "no-store",
+      }
     );
+
+    if (!res.ok) {
+      throw new Error("Failed to load transactions");
+    }
+
+    const json = await res.json();
+
+    setTransactions(json.data ?? []);
+  } catch (err) {
+    console.error("Load transactions error:", err);
+    setTransactions([]);
+  } finally {
+    setLoading(false);
+  }
+}
+
+  const firstLoad = useRef(true);
+
+useEffect(() => {
+  if (firstLoad.current) {
+    firstLoad.current = false;
+    return;
   }
 
-  return (
-    <div className="rounded-2xl overflow-hidden border border-gray-100 bg-white">
+  loadTransactions();
+}, [date, type]);
 
-      {/* ===================================================== */}
-      {/* TABLE */}
-      {/* ===================================================== */}
 
-      <Table className="text-sm">
+useEffect(() => {
+  setTransactions(initialTransactions);
+}, [initialTransactions]);
 
-        <TableHeader className="bg-zinc-200">
-          <TableRow>
+const filteredTransactions = useMemo(() => {
+  if (!search.trim()) {
+    return transactions;
+  }
 
-            <TableHead>
-              Item
-            </TableHead>
+  const q = search.trim().toLowerCase();
 
-            <TableHead>
-              Type
-            </TableHead>
+  return transactions.filter((tx) =>
+    [
+      tx.inventoryItemName,
+      tx.partyName,
+      tx.partyType,
+      tx.type,
+      tx.direction,
+      tx.createdBy,
+    ]
+      .filter(Boolean)
+      .some((value) =>
+        String(value)
+          .toLowerCase()
+          .includes(q)
+      )
+  );
+}, [transactions, search]);
 
-            <TableHead>
-              Supplier
-            </TableHead>
+console.log("filteredTransactions---------------", filteredTransactions);
+return (
+  <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+    {/* ===================================================== */}
+    {/* FILTERS */}
+    {/* ===================================================== */}
 
-            <TableHead>
-              Direction
-            </TableHead>
+    <div className="border-b border-gray-200 bg-white p-4">
+      <div className="grid gap-4 md:grid-cols-4">
+        {/* Date */}
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            Date
+          </label>
 
-            <TableHead>
-              Price
-            </TableHead>
-
-            <TableHead>
-              Qty
-            </TableHead>
-
-            <TableHead>
-              Order Amount
-            </TableHead>
-
-            <TableHead>
-              Before
-            </TableHead>
-
-            <TableHead>
-              After
-            </TableHead>
-
-            <TableHead>
-              User
-            </TableHead>
-
-            <TableHead>
-              Date
-            </TableHead>
-
-          </TableRow>
-        </TableHeader>
-
-     
-
-          <TableBody>
-  {transactions.map((tx) => {
-    const showFinancial = financialTypes.includes(tx.type);
-
-    return (
-           <TableRow
-              key={tx.id}
-              className="
-                whitespace-nowrap
-                transition-colors
-                odd:bg-zinc-50
-                even:bg-zinc-100
-                hover:bg-blue-50
-                border-b border-zinc-200
-              "
-            >
-
-              {/* ITEM */}
-
-              <TableCell className="font-medium">
-                {tx.inventoryItemName}
-              </TableCell>
-
-              {/* TYPE */}
-
-              <TableCell>
-                {tx.type}
-              </TableCell>
-
-              {/* SUPPLIER */}
-
-              <TableCell>
-                {tx.supplierName || "-"}
-              </TableCell>
-
-              {/* DIRECTION */}
-
-              <TableCell>
-                <span
-                  className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    tx.direction === "IN"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {tx.direction}
-                </span>
-              </TableCell>
-
-              {/* PRICE */}
-
-         <TableCell>
-  {showFinancial ? (
-    <div className="flex flex-col">
-
-      {tx.purchaseUnit &&
-      tx.purchaseUnit !== tx.unit &&
-      tx.conversionFactor ? (
-        <>
-          <span className="font-medium">
-            {tx.unitCost != null
-              ? `${formatPrice(
-                  tx.unitCost * tx.conversionFactor
-                )} / ${tx.purchaseUnit}`
-              : "-"}
-          </span>
-
-          <span className="text-xs text-gray-500">
-            {tx.unitCost != null
-              ? `${formatPriceS(tx.unitCost)} / ${tx.unit}`
-              : "-"}
-          </span>
-        </>
-      ) : (
-        <span className="font-medium">
-          {tx.unitCost != null
-            ? `${formatPrice(tx.unitCost)} / ${tx.unit}`
-            : "-"}
-        </span>
-      )}
-
-    </div>
-  ) : (
-    "-"
-  )}
-</TableCell>
-
-              {/* QUANTITY */}
-
-              <TableCell>
-                <div className="flex flex-col">
-
-                  {tx.purchaseUnit &&
-                  tx.purchaseUnit !== tx.unit &&
-                  tx.conversionFactor ? (
-                    <>
-                      <span className="font-medium">
-                        {formatQuantity(
-                          tx.quantity /
-                            tx.conversionFactor,
-                          tx.purchaseUnit
-                        )}{" "}
-                        {tx.purchaseUnit}
-                      </span>
-
-                      <span className="text-xs text-gray-500">
-                        {formatQuantity(
-                          tx.quantity,
-                          tx.unit
-                        )}{" "}
-                        {tx.unit}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="font-medium">
-                      {formatQuantity(
-                        tx.quantity,
-                        tx.unit
-                      )}{" "}
-                      {tx.unit}
-                    </span>
-                  )}
-
-                </div>
-              </TableCell>
-
-              {/* TOTAL */}
-
-              <TableCell>
-                {showFinancial
-    ? formatPrice(tx.totalAmount)
-    : "-"}
-              </TableCell>
-
-              {/* BEFORE */}
-
-              <TableCell>
-                <div className="flex flex-col">
-
-                  {tx.purchaseUnit &&
-                  tx.purchaseUnit !== tx.unit &&
-                  tx.conversionFactor ? (
-                    <>
-                      <span className="font-medium">
-                        {formatQuantity(
-                          tx.beforeStock /
-                            tx.conversionFactor,
-                          tx.purchaseUnit
-                        )}{" "}
-                        {tx.purchaseUnit}
-                      </span>
-
-                      <span className="text-xs text-gray-500">
-                        {formatQuantity(
-                          tx.beforeStock,
-                          tx.unit
-                        )}{" "}
-                        {tx.unit}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="font-medium">
-                      {formatQuantity(
-                        tx.beforeStock,
-                        tx.unit
-                      )}{" "}
-                      {tx.unit}
-                    </span>
-                  )}
-
-                </div>
-              </TableCell>
-
-              {/* AFTER */}
-
-              <TableCell>
-                <div className="flex flex-col">
-
-                  {tx.purchaseUnit &&
-                  tx.purchaseUnit !== tx.unit &&
-                  tx.conversionFactor ? (
-                    <>
-                      <span className="font-medium">
-                        {formatQuantity(
-                          tx.afterStock /
-                            tx.conversionFactor,
-                          tx.purchaseUnit
-                        )}{" "}
-                        {tx.purchaseUnit}
-                      </span>
-
-                      <span className="text-xs text-gray-500">
-                        {formatQuantity(
-                          tx.afterStock,
-                          tx.unit
-                        )}{" "}
-                        {tx.unit}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="font-medium">
-                      {formatQuantity(
-                        tx.afterStock,
-                        tx.unit
-                      )}{" "}
-                      {tx.unit}
-                    </span>
-                  )}
-
-                </div>
-              </TableCell>
-
-              {/* USER */}
-
-              <TableCell>
-                {tx.createdBy}
-              </TableCell>
-
-              {/* DATE */}
-
-              <TableCell>
-                {tx.createdAt
-                  ? new Date(
-                      tx.createdAt
-                    ).toLocaleString()
-                  : "-"}
-              </TableCell>
-
-            </TableRow>
-    );
-  })}
-</TableBody>
-
-     
-    
-      </Table>
-
-      {/* ===================================================== */}
-      {/* PAGINATION */}
-      {/* ===================================================== */}
-
-      <div className="flex items-center justify-between p-4 border-t bg-white">
-
-        <div className="text-sm text-gray-500">
-          Page {currentPage}
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) =>
+              setDate(e.target.value)
+            }
+          />
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Transaction Type */}
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            Transaction Type
+          </label>
 
-          <Button
-            type="button"
-            variant="outline"
-            disabled={currentPage <= 1}
-            onClick={() =>
-              goToPage(currentPage - 1)
+          <select
+            value={type}
+            onChange={(e) =>
+              setType(e.target.value)
             }
+            className="h-10 w-full rounded-md border border-gray-300 bg-white px-3"
           >
-            <ChevronLeft
-              size={16}
-              className="mr-1"
-            />
-            Previous
-          </Button>
+            <option value="PURCHASE">
+             PURCHASE
+            </option>
+ <option value="STROE TO DPT">
+              ISSUE TO DPT
+            </option>
+            <option value="DPT RETURN">
+              DPT RETURN
+            </option>
+           
 
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!hasMore}
-            onClick={() =>
-              goToPage(currentPage + 1)
+          
+
+            <option value="SUPPLIER_RETURN">
+             SUPPLIER RETURN
+            </option>
+
+            {/* <option value="PRODUCTION">
+              Production
+            </option> */}
+
+            <option value="OPENING_STOCK">
+             OPENING STOCK
+            </option>
+
+            <option value="ADJUSTMENT">
+               ADJUSTMENT
+            </option>
+
+            <option value="ALL">
+              ALL
+            </option>
+          </select>
+        </div>
+
+        {/* Search */}
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            Search
+          </label>
+
+          <Input
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
             }
-          >
-            Next
-            <ChevronRight
-              size={16}
-              className="ml-1"
-            />
-          </Button>
+            placeholder="Item, supplier, user..."
+          />
+        </div>
 
+        {/* Refresh */}
+        <div className="flex items-end">
+          <Button
+            className="w-full"
+            onClick={loadTransactions}
+          >
+            Refresh
+          </Button>
         </div>
       </div>
     </div>
-  );
+
+    {/* ===================================================== */}
+    {/* TABLE */}
+    {/* ===================================================== */}
+
+    <Table className="text-sm">
+      <TableHeader className="bg-zinc-200">
+        <TableRow>
+          <TableHead>Item</TableHead>
+          <TableHead>Type</TableHead>
+          <TableHead>Party</TableHead>
+          <TableHead>Price</TableHead>
+          <TableHead>Qty</TableHead>
+          <TableHead>Amount</TableHead>
+          <TableHead>Before</TableHead>
+          <TableHead>After</TableHead>
+          <TableHead>User</TableHead>
+          <TableHead>Date</TableHead>
+        </TableRow>
+      </TableHeader>
+
+      <TableBody>
+        {loading ? (
+          <TableRow>
+            <TableCell
+              colSpan={10}
+              className="py-10 text-center"
+            >
+              Loading...
+            </TableCell>
+          </TableRow>
+        ) : filteredTransactions.map((tx) => (
+  <TableRow
+    key={tx.id}
+    className="
+      whitespace-nowrap
+      odd:bg-zinc-50
+      even:bg-zinc-100
+      hover:bg-blue-50
+      border-b border-zinc-200
+    "
+  >
+    <TableCell>{tx.inventoryItemName}</TableCell>
+    <TableCell>{tx.type}</TableCell>
+    <TableCell>{tx.partyName}</TableCell>
+    <TableCell>{tx.purchaseUnitCost}</TableCell>
+    <TableCell>
+      {/* {tx.quantity} */}
+      
+
+      {displayStock_1(
+                            tx.quantity,
+                            tx.purchaseUnit,
+                            tx.consumptionUnit,
+                            tx.conversionFactor
+                          )}
+    </TableCell>
+    <TableCell>
+      {(tx.purchaseQuantity * tx.purchaseUnitCost).toFixed(2)}
+    </TableCell>
+    <TableCell>{tx.beforeStock}</TableCell>
+    <TableCell>{tx.afterStock}</TableCell>
+    <TableCell>{tx.createdBy}</TableCell>
+    <TableCell>
+      {tx.createdAt
+        ? new Date(tx.createdAt).toLocaleString()
+        : "-"}
+    </TableCell>
+  </TableRow>
+)
+        )}
+      </TableBody>
+    </Table>
+
+    {/* ===================================================== */}
+    {/* FOOTER */}
+    {/* ===================================================== */}
+
+    <div className="flex items-center justify-between border-t bg-gray-50 px-4 py-3">
+      <span className="text-sm text-gray-600">
+        Total Transactions:{" "}
+        <span className="font-semibold">
+          {filteredTransactions.length}
+        </span>
+      </span>
+
+      {loading && (
+        <span className="text-sm text-blue-600">
+          Loading...
+        </span>
+      )}
+    </div>
+  </div>
+);
 }

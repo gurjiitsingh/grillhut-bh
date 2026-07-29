@@ -1,32 +1,14 @@
-import { getInventoryTransactions } from "@/app/(universal)/action/inventory/getInventoryTransactions";
+import { getInventoryTransactionsSelected } from "@/app/(universal)/action/inventory/getInventoryTransactionsSelected";
 
 import InventoryTransactionTable from "../components/InventoryTransactionTable";
 
-type Props = {
-  searchParams: Promise<{
-    page?: string;
-  }>;
-};
-
-export default async function Page({
-  searchParams,
-}: Props) {
-
-  const params =
-    await searchParams;
-
-  // ✅ convert properly
-  const currentPage =
-    Number(params.page || "1");
-
+export default async function Page() {
   const result =
-    await getInventoryTransactions({
-      page: currentPage,
-    });
+    await getInventoryTransactionsSelected();
+    
 
   return (
     <div className="p-4 md:p-6">
-
       {/* HEADER */}
 
       <div className="mb-6">
@@ -42,11 +24,8 @@ export default async function Page({
       {/* TABLE */}
 
       <InventoryTransactionTable
-        transactions={result.data}
-        currentPage={currentPage}
-        hasMore={result.hasMore}
+        initialTransactions={result.data}
       />
-
     </div>
   );
 }

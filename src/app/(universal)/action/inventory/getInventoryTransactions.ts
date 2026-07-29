@@ -1,6 +1,7 @@
 "use server";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import { InventoryLedgerType } from "@/lib/types/inventory/InventoryLedgerType";
 
 type Props = {
   page?: number;
@@ -11,14 +12,9 @@ const PAGE_SIZE = 14;
 export async function getInventoryTransactions({
   page = 1,
 }: Props = {}) {
-
-  console.log("page----------------", page);
-
   try {
-//
     const snapshot = await adminDb
-      //  .collection("inventoryTransactions")
-        .collection("stockLedgerInventory")
+      .collection("stockLedgerInventory")
       .orderBy("createdAt", "desc")
       .offset((page - 1) * PAGE_SIZE)
       .limit(PAGE_SIZE + 1)
@@ -28,60 +24,71 @@ export async function getInventoryTransactions({
 
     const hasMore = docs.length > PAGE_SIZE;
 
-    const trimmedDocs =
-      hasMore
-        ? docs.slice(0, PAGE_SIZE)
-        : docs;
+    const trimmedDocs = hasMore
+      ? docs.slice(0, PAGE_SIZE)
+      : docs;
 
     const transactions = trimmedDocs.map((doc) => {
-
-      const data = doc.data();
+      const data = doc.data() as InventoryLedgerType;
 
       return {
         id: doc.id,
 
-        inventoryItemName:
-          data.inventoryItemName || "",
+        // =====================================================
+        // ITEM
+        // =====================================================
+        inventoryItemName: data.inventoryItemName,
 
-        type:
-          data.type || "",
+        // =====================================================
+        // TRANSACTION
+        // =====================================================
+        type: data.type,
+        direction: data.direction,
 
-        supplierName:
-          data.supplierName || "",
+        // =====================================================
+        // PARTY (renamed)
+        // =====================================================
+        partyName: data.partyName,
+        partyType: data.partyType,
 
-        direction:
-          data.direction || "",
+        // =====================================================
+        // MOVEMENT (renamed)
+        // =====================================================
+        quantity: data.quantity,
+        unit: data.transactionUnit,
+        unitCost: data.transactionUnitCost,
 
-        quantity:
-          data.quantity || 0,
+        // =====================================================
+        // PURCHASE
+        // =====================================================
+        purchaseQuantity: data.purchaseQuantity,
+        purchaseUnit: data.purchaseUnit,
+        purchaseUnitCost: data.purchaseUnitCost,
+        conversionFactor: data.conversionFactor,
 
-        unit:
-          data.unit || "",
+        // =====================================================
+        // STOCK
+        // =====================================================
+        beforeStock: data.beforeStock,
+        afterStock: data.afterStock,
 
-        unitCost:
-          data.unitCost || 0,
+        // =====================================================
+        // VALUE
+        // =====================================================
+        totalAmount: data.totalAmount,
 
-        totalAmount:
-          data.totalAmount || 0,
-
-        beforeStock:
-          data.beforeStock || 0,
-
-        afterStock:
-          data.afterStock || 0,
-
-        purchaseUnit:
-          data.purchaseUnit || "",
-
-        conversionFactor:
-          data.conversionFactor || 1,
-
-        createdBy:
-          data.createdBy || "",
+        // =====================================================
+        // AUDIT
+        // =====================================================
+        createdBy: data.createdByName ?? data.createdById,
 
         createdAt:
-          data.createdAt?._seconds
-            ? data.createdAt._seconds * 1000
+          data.createdAt instanceof Date
+            ? data.createdAt.getTime()
+            : "seconds" in data.createdAt
+            ? data.createdAt.seconds * 1000
+            : "_seconds" in (data.createdAt as any)
+            ? (data.createdAt as any)._seconds * 1000
             : null,
       };
     });
@@ -91,9 +98,7 @@ export async function getInventoryTransactions({
       data: transactions,
       hasMore,
     };
-
   } catch (error) {
-
     console.error(error);
 
     return {

@@ -35,7 +35,8 @@ const financialTypes = [
   "SALE",
   "PURCHASE",
   "CUSTOMER_RETURN",
-  "RETURN"
+  "RETURN",
+  "PRODUCTION"
 ];
 
 export default function InventoryTransactionTable({
@@ -60,17 +61,16 @@ export default function InventoryTransactionTable({
           <TableRow>
             <TableHead>Item</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead>Supplier</TableHead>
-            <TableHead>Direction</TableHead>
-            <TableHead>Price</TableHead>
+            <TableHead>Supp/Cus/Mana</TableHead>
+            <TableHead>Avg Cost/Price</TableHead>
             <TableHead>Qty</TableHead>
-            <TableHead>Order Amount</TableHead>
+            <TableHead>Amount/Value</TableHead>
             <TableHead>Before</TableHead>
             <TableHead>After</TableHead>
             <TableHead>User</TableHead>
             <TableHead>Date</TableHead>
           </TableRow>
-        </TableHeader>
+        </TableHeader> 
 
      <TableBody>
   {transactions.map((tx) => {
@@ -92,7 +92,16 @@ export default function InventoryTransactionTable({
         {/* ITEM */}
 
         <TableCell className="font-medium">
-          {tx.productName}
+        <span className="mr-2"> {tx.productName}</span> 
+            <span
+            className={`text-xs px-2 py-1 rounded-full font-medium ${
+              tx.direction === "IN"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {tx.direction}
+          </span>
         </TableCell>
 
         {/* TYPE */}
@@ -107,23 +116,12 @@ export default function InventoryTransactionTable({
           {tx.customerName || "-"}
         </TableCell>
 
-        {/* DIRECTION */}
-
-        <TableCell>
-          <span
-            className={`text-xs px-2 py-1 rounded-full font-medium ${
-              tx.direction === "IN"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {tx.direction}
-          </span>
-        </TableCell>
+    
 
         {/* UNIT PRICE */}
 
         <TableCell>
+        
           {showFinancial ? (
             <span className="font-medium">
               {formatPrice(tx.unitPrice)} /{" "}
@@ -146,6 +144,7 @@ export default function InventoryTransactionTable({
         {/* TOTAL */}
 
         <TableCell>
+          
           {showFinancial
             ? formatPrice(tx.totalAmount)
             : "-"}

@@ -39,6 +39,11 @@ export type ProductSearchType = {
 //  Cached version — reduces Firestore reads massively
 
 import { unstable_cache } from "next/cache";
+import { deleteRecipesByProductId } from "../productRecipes/deleteRecipesByProductId";
+import { addProductStock } from "./addProductsStock";
+import { updateProductStockOnEdit } from "./updateProductStockOnEdit";
+import { deleteProductStock } from "./deleteProductStock";
+
 
 export const fetchProducts = unstable_cache(
   async (): Promise<ProductType[]> => {
@@ -181,7 +186,7 @@ export const fetchProducts = unstable_cache(
 
 
 export async function addNewProduct(formData: FormData) {
-  console.log("data-------------------", formData)
+
   try {
     const rawHasVariants = formData.get("hasVariants");
 
@@ -214,14 +219,24 @@ export async function addNewProduct(formData: FormData) {
     const sortOrderN = parseInt(sortOrder || "0", 10);
     const taxRate = taxRateRaw ? parseFloat(taxRateRaw) : null;
     const masterCategoryId = formData.get("masterCategoryId") as string | null;
+    const productMode =
+      (formData.get("productMode") as string) || "finished_stock";
 
-    const masterCategoryDoc = await adminDb
-      .collection("masterCategories")
-      .doc(masterCategoryId!)
-      .get();
+    const sellingUnit =
+      (formData.get("sellingUnit") as string) || "kg";
 
-    const masterCategoryName =
-      masterCategoryDoc.data()?.name || "";
+
+    let masterCategoryName = "";
+
+    if (masterCategoryId) {
+      const masterCategoryDoc = await adminDb
+        .collection("masterCategories")
+        .doc(masterCategoryId)
+        .get();
+
+      masterCategoryName =
+        masterCategoryDoc.data()?.name || "";
+    }
 
     const receivedData = {
       name,
@@ -303,6 +318,27 @@ export async function addNewProduct(formData: FormData) {
 
     const docRef = await adminDb.collection("products").add(data);
 
+
+
+    await addProductStock({
+      id: docRef.id, // ✅ SAME ID
+
+      name,
+      productMode: productMode as
+        | "raw_stock"
+        | "finished_stock"
+        | "simple",
+
+      sellingPrice: priceF,
+      costPrice: priceF, // default
+
+      sellingUnit,
+
+      categoryId,
+      categoryName: productCat,
+    });
+
+
     revalidateTag("products", "max");
     revalidateTag("featured-products", "max");
     revalidateTag("stock-products-updated", "max");
@@ -318,7 +354,7 @@ export async function addNewProduct(formData: FormData) {
       updateProductType(parentId, "parent", true);
     }
 
-    return {
+    return { 
       success: true,
       message: "Product saved successfully",
       id: docRef.id,
@@ -331,233 +367,6 @@ export async function addNewProduct(formData: FormData) {
 
 
 
-export async function editProduct(formData: FormData) {
-  const id = formData.get("id") as string;
-  const name = formData.get("name");
-  const type = formData.get("type") as string;
-  const priceRaw = formData.get("price") as string;
-  const discountPriceRaw = formData.get("discountPrice") as string;
-  const currentStockS = formData.get("currentStock") as string;
-  const sortOrderRaw = formData.get("sortOrder") as string;
-  let categoryId = formData.get("categoryId") as string;
-  const masterCategoryId =
-    formData.get("masterCategoryId") as string;
-  const productDesc = formData.get("productDesc");
-  const oldImageUrl = formData.get("oldImageUrl") as string;
-  const image = formData.get("image");
-  const status = formData.get("status") || "published";
-  const searchCode = formData.get("searchCode") as string | null;
-  //  isFeatured now correctly handled
-  const isFeaturedRaw = formData.get("isFeatured");
-  const isFeatured =
-    isFeaturedRaw === null
-      ? undefined // means: not sent → don’t overwrite
-      : isFeaturedRaw === "true";
-
-  //  GST / tax fields
-  const taxRateRaw = formData.get("taxRate") as string | null;
-  const taxType = (formData.get("taxType") as string | null) ?? null;
-
-
-  console.log("product data-------------")
-  const publishStatus = (formData.get("status") as string) || "published";
-
-
-  //  Validate received data
-  const receivedData = {
-    name,
-    //searchCode,
-    price: priceRaw,
-    discountPrice: discountPriceRaw,
-    currentStock: currentStockS,
-    sortOrder: sortOrderRaw,
-    categoryId,
-    masterCategoryId,
-    productDesc,
-    image,
-    publishStatus: "published",
-  };
-
-  const result = editProductSchema.safeParse(receivedData);
-
-  if (!result.success) {
-    console.log("❌ ZOD VALIDATION FAILED");
-
-    // 🔍 Show full incoming data
-  //  console.log("📦 Received Data:", receivedData);
-
-    // 🔍 Show formatted errors (clean)
-  //  console.log("🧾 Flattened Errors:", result.error.flatten());
-
-    // 🔍 Show detailed issues (best for debugging)
-    result.error.issues.forEach((issue, index) => {
-      console.log(`🔴 Issue ${index + 1}:`);
-      console.log("Field:", issue.path.join("."));
-      console.log("Message:", issue.message);
-      //  console.log("Received Value:", issue.path.reduce((obj, key) => obj?.[key], receivedData));
-    });
-
-    const zodErrors: Record<string, string> = {};
-    result.error.issues.forEach((issue) => {
-      zodErrors[issue.path[0]] = issue.message;
-    });
-
-    return { errors: zodErrors };
-  }
-
-  // 🔹 Fetch existing product
-
-  const productRef = adminDb.collection("products").doc(id);
-  const productSnap = await productRef.get();
-  if (!productSnap.exists) {
-    return { errors: "Product not found" };
-  }
-
-  const existingProduct = productSnap.data();
-
-  // 🔸 Handle image upload
-  // let imageUrl = oldImageUrl;
-  // if (image && image !== "undefined") {
-  //   try {
-  //     imageUrl = await upload(image);
-  //   } catch (error) {
-  //     console.error("Image upload failed:", error);
-  //     return { errors: "Image could not be uploaded" };
-  //   }
-  // } else {
-  //   imageUrl = existingProduct?.image || oldImageUrl;
-  // }
-
-  // 🔸 Handle image upload + delete old image
-  let imageUrl = oldImageUrl;
-
-  if (image && image !== "undefined") {
-    try {
-      //  Upload new image
-      imageUrl = await upload(image);
-
-      //  Delete old Cloudinary image (skip if default image)
-      if (oldImageUrl && !oldImageUrl.includes("/com.jpg")) {
-        const oldParts = oldImageUrl.split("/");
-        const publicId = oldParts.slice(-2).join("/").split(".")[0];
-        // ex: anjana-bhog/xyz123
-
-        try {
-          await deleteImage(publicId);
-          console.log(" Old Cloudinary image deleted:", publicId);
-        } catch (err) {
-          console.error("❌ Failed to delete old image:", err);
-        }
-      }
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      return { errors: "Image could not be uploaded" };
-    }
-  } else {
-    //  Keep old image if no new image uploaded
-    imageUrl = existingProduct?.image || oldImageUrl;
-  }
-
-  // 🔸 Handle category (keep same if not changed)
-  if (categoryId === "0" || !categoryId) {
-    categoryId = existingProduct?.categoryId || "";
-  }
-  // Handle master category
-let masterCategoryName =
-  existingProduct?.masterCategoryName || "";
-
-if (masterCategoryId) {
-  try {
-    const masterCategoryDoc = await adminDb
-      .collection("masterCategories")
-      .doc(masterCategoryId)
-      .get();
-
-    masterCategoryName =
-      masterCategoryDoc.data()?.name || "";
-  } catch (error) {
-    console.error(
-      "Error fetching master category:",
-      error
-    );
-  }
-}
-
-  // 🔹 Fetch category name
-  let productCat = "Uncategorized";
-  try {
-    const categories = await fetchCategories();
-    const matchedCategory = categories.find((cat) => cat.id === categoryId);
-    if (matchedCategory) productCat = matchedCategory.name;
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-  }
-
-  // 🔸 Format numbers
-  const formatPrice = (val: string): string =>
-    Number(parseFloat(val.replace(/,/g, ".")).toFixed(2)).toFixed(2);
-
-  const price = formatPrice(priceRaw);
-  const discountPrice = discountPriceRaw
-    ? formatPrice(discountPriceRaw)
-    : "0.00";
-  const sortOrder = parseInt(sortOrderRaw);
-
-  //  Convert taxRate safely
-  const taxRate = taxRateRaw ? parseFloat(taxRateRaw) || null : null;
-
-  //  Build update data
-  const productData: Record<string, any> = {
-    name,
-    type,
-    searchCode,
-    price,
-    discountPrice,
-    currentStock: Number(currentStockS),
-    flavors: existingProduct?.flavors ?? false,
-    sortOrder,
-    categoryId,
-    productCat,
-      masterCategoryId,
-  masterCategoryName,
-    productDesc,
-    image: imageUrl,
-    status,
-    updatedAt: new Date().toISOString(),
-    taxRate,
-    taxType: taxType ?? existingProduct?.taxType ?? null,
-  };
-
-
-
-  //  Only overwrite isFeatured if explicitly sent
-  if (typeof isFeatured !== "undefined") {
-    productData.isFeatured = isFeatured;
-  } else {
-    productData.isFeatured = existingProduct?.isFeatured ?? false;
-  }
-
-  try {
-    await productRef.update(productData);
-
-    // CLEAR PRODUCT CACHE
-    revalidateTag("products", "max");
-
-    // OPTIONAL FEATURED CACHE
-    revalidateTag("featured-products", "max");
-
-    // OPTIONAL PAGE RELOADS
-    revalidatePath("/");
-    revalidatePath("/products");
-    revalidatePath("/admin/products");
-
-
-    return { message: " Product updated successfully" };
-  } catch (error) {
-    console.error("❌ Failed to update product:", error);
-    return { errors: "Failed to update product" };
-  }
-}
 
 export async function deleteProduct(
   id: string,
@@ -568,15 +377,25 @@ export async function deleteProduct(
     .doc(id);
 
   try {
-    // DELETE FIRESTORE PRODUCT
+    // ✅ 1. DELETE RECIPES FIRST
+    const recipeResult =
+      await deleteRecipesByProductId(id);
+
+    if (!recipeResult.success) {
+      return {
+        errors:
+          "Failed to delete related recipes",
+      };
+    }
+
+    // ✅ 2. DELETE PRODUCT
     await docRef.delete();
 
-    console.log(
-      "Product deleted from Firestore:",
-      id
-    );
 
-    // DELETE IMAGE IF NOT DEFAULT
+    // ✅ 2.5 DELETE PRODUCT STOCK
+    await deleteProductStock(id);
+
+    // ✅ 3. DELETE IMAGE
     if (oldImageUrl !== "/com.jpg") {
       const imagePublicId =
         oldImageUrl
@@ -595,7 +414,19 @@ export async function deleteProduct(
           error
         );
 
-        // STILL REVALIDATE CACHE
+
+
+
+
+
+        //         await adminDb.collection("productStock").doc(id).update({
+        //   isDeleted: true,
+        //   trackInventory: false,
+        //   updatedAt: Date.now(),
+        // });
+
+
+
         revalidateTag("products", "max");
         revalidateTag(
           "featured-products",
@@ -615,30 +446,24 @@ export async function deleteProduct(
       }
     }
 
-    // REVALIDATE CACHE TAGS
+    // ✅ 4. REVALIDATE
     revalidateTag("products", "max");
-
     revalidateTag(
       "featured-products",
       "max"
     );
 
-    // REVALIDATE PAGES
     revalidatePath("/");
-
     revalidatePath("/products");
-
-    revalidatePath(
-      "/admin/products"
-    );
+    revalidatePath("/admin/products");
 
     return {
       message:
-        "Product and image deleted successfully.",
+        "Product, recipes and image deleted successfully.",
     };
   } catch (error) {
     console.error(
-      "Error deleting product from Firestore:",
+      "Error deleting product:",
       error
     );
 
@@ -885,7 +710,7 @@ export async function addNewProduct_without_revalidate(formData: FormData) {
       createdAt: new Date().toISOString(),
     };
 
-    console.log("data---------------", data);
+ 
 
     //  Save to Firestore
     const docRef = await adminDb.collection("products").add(data);
@@ -963,42 +788,42 @@ export async function fetchProductByCategoryId(
       return [];
     }
 
-const products: ProductType[] = querySnapshot.docs.map((doc) => {
-  const data = doc.data();
+    const products: ProductType[] = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
 
-  return {
-    id: doc.id,
-    name: data.name ?? "",
-    price: data.price ?? 0,
-    currentStock: data.currentStock ?? 0,
-    discountPrice: data.discountPrice,
-    categoryId: data.categoryId ?? "",
-    masterCategoryId: data.masterCategoryId ?? "",
-    masterCategoryName: data.masterCategoryName ?? "",
-    productCat: data.productCat,
-    baseProductId: data.baseProductId ?? "",
-    productDesc: data.productDesc ?? "",
-    quantity: 0,
-    sortOrder: data.sortOrder ?? 0,
-    image: data.image ?? "",
-    isFeatured: data.isFeatured ?? false,
-    flavors: data.flavors ?? false,
-    publishStatus: data.publishStatus ?? "draft",
-    stockStatus: data.stockStatus ?? "out_of_stock",
-    searchCode: data.searchCode ?? "",
-    taxRate: data.taxRate,
-    taxType: data.taxType,
-    purchaseSession: data.purchaseSession ?? null, 
+      return {
+        id: doc.id,
+        name: data.name ?? "",
+        price: data.price ?? 0,
+        currentStock: data.currentStock ?? 0,
+        discountPrice: data.discountPrice,
+        categoryId: data.categoryId ?? "",
+        masterCategoryId: data.masterCategoryId ?? "",
+        masterCategoryName: data.masterCategoryName ?? "",
+        productCat: data.productCat,
+        baseProductId: data.baseProductId ?? "",
+        productDesc: data.productDesc ?? "",
+        quantity: 0,
+        sortOrder: data.sortOrder ?? 0,
+        image: data.image ?? "",
+        isFeatured: data.isFeatured ?? false,
+        flavors: data.flavors ?? false,
+        publishStatus: data.publishStatus ?? "draft",
+        stockStatus: data.stockStatus ?? "out_of_stock",
+        searchCode: data.searchCode ?? "",
+        taxRate: data.taxRate,
+        taxType: data.taxType,
+        purchaseSession: data.purchaseSession ?? null,
 
-    sku: data.sku,
-    barcode: data.barcode,
-    minStock: data.minStock,
-    productMode: data.productMode,
-    inventoryItemId: data.inventoryItemId,
-    trackInventory: data.trackInventory,
-    allowNegativeStock: data.allowNegativeStock,
-  };
-});
+        sku: data.sku,
+        barcode: data.barcode,
+        minStock: data.minStock,
+        productMode: data.productMode,
+        inventoryItemId: data.inventoryItemId,
+        trackInventory: data.trackInventory,
+        allowNegativeStock: data.allowNegativeStock,
+      };
+    });
 
     return products;
   } catch (error) {
@@ -1199,15 +1024,15 @@ export async function updateProductField(
 }
 
 
- 
+
 
 export const fetchLatestProducts = unstable_cache(
   async (): Promise<ProductType[]> => {
     try {
       const snapshot = await adminDb
         .collection("products")
-       // .where("publishStatus", "==", "published")
-       // .where("type", "==", "parent")
+        // .where("publishStatus", "==", "published")
+        // .where("type", "==", "parent")
         .orderBy("updatedAt", "desc")
         .limit(4)
         .get();
@@ -1299,7 +1124,7 @@ export const fetchLatestProducts = unstable_cache(
     }
   },
   ["latest-products"],
- {
+  {
     tags: ["products"],
     revalidate: 3600,
   }

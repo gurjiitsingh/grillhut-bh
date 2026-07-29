@@ -12,8 +12,7 @@ import { useForm } from "react-hook-form";
 import { Search, Package2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-
-import { adjustInventoryStock } from "@/app/(universal)/action/inventory/adjustInventoryStock";
+ 
 import { SupplierType } from "@/lib/types/SupplierType";
 
 import {
@@ -23,8 +22,11 @@ import {
 import { InventoryTransactionNameType } from "@/lib/types/InventoryTransactionType";
 import { PaymentStatus } from "@/lib/types/PaymentStatus";
 import { displayStock } from "@/utils/inventory/displayStock";
+import { purchaseStock } from "@/app/(universal)/action/inventory/purchaseStock";
+import { PaymentMethodType } from "@/lib/types/distribution/PaymentMethodType";
+ 
 
-type PaymentMethod = "CASH" | "UPI" | "CARD";
+ 
 
 type FormType = {
   inventoryItemId: string;
@@ -42,9 +44,9 @@ type FormType = {
   unitCost: number;
   totalAmount: number; // NEW
   paymentStatus: PaymentStatus; // 
-  paymentMethod?: PaymentMethod;
+  paymentMethod?: PaymentMethodType;
   paidAmount?: number;          // 
-
+  //dueAmount?: number;
   note: string;
 };
 
@@ -82,6 +84,8 @@ export default function StockPurchaseForm({
     "unitCost" | "totalAmount"
   >("unitCost");
 
+
+
   const linkedSuppliers = supplierMap[selectedInventory?.id || ""] || [];
 
   const {
@@ -92,33 +96,64 @@ export default function StockPurchaseForm({
     reset,
   } = useForm<FormType>({
     defaultValues: {
-      // type: "PURCHASE",
-      // direction: "IN",
-      // quantity: 0,
-      // transactionUnit: "pcs",
-      // note: "",
-
       type: "PURCHASE",
       direction: "IN",
+
       quantity: 0,
+
       unitCost: 0,
       totalAmount: 0,
-      transactionUnit: "pcs",
+
+      transactionUnit: "gm",
+
+      paymentStatus: "PAID",
+      paymentMethod: "CASH",
+      paidAmount: 0,
+
       note: "",
     },
   });
 
-  const type = watch(
-    "type"
+  const type = watch("type", "PURCHASE");
+
+  const quantity = watch("quantity", 0);
+  const unitCost = watch("unitCost", 0);
+  const totalAmount = watch("totalAmount", 0);
+
+  const transactionUnit = watch("transactionUnit", "gm");
+
+  const paymentStatus = watch("paymentStatus", "PAID");
+
+  const paidAmount = Number(
+    watch("paidAmount", 0)
   );
 
-  const quantity = watch("quantity");
-  const unitCost = watch("unitCost");
-  const totalAmount = watch("totalAmount");
 
-  const transactionUnit = watch("transactionUnit");
+  const dueAmount = Math.max(
+    (Number(totalAmount) || 0) - (Number(paidAmount) || 0),
+    0
+  );
 
 
+  useEffect(() => {
+    if (paymentStatus === "PAID") {
+      setValue(
+        "paidAmount",
+        Number(totalAmount || 0)
+      );
+    }
+
+    if (paymentStatus === "CREDIT") {
+      setValue(
+        "paidAmount",
+        0
+      );
+    }
+  }, [
+    paymentStatus,
+    totalAmount,
+    setValue,
+  ]);
 
   // =====================================================
   // AUTO SET STOCK DIRECTION
@@ -291,29 +326,38 @@ export default function StockPurchaseForm({
       Number(data.unitCost);
 
     // Convert purchase unit -> consumption unit
-    if (
-      data.transactionUnit ===
-      selectedInventory.purchaseUnit &&
-      selectedInventory.purchaseUnit !==
-      selectedInventory.consumptionUnit
-    ) {
-      // quantity convert
-      finalQuantity =
-        finalQuantity *
-        selectedInventory.conversionFactor;
+  const mapping =
+  selectedInventory.purchaseMappings.find(
+    (m) =>
+      m.purchaseUnit ===
+      data.transactionUnit
+  );
 
-      // ✅ cost convert
-      finalUnitCost =
-        finalUnitCost /
-        selectedInventory.conversionFactor;
+if (mapping) {
+  finalQuantity =
+    finalQuantity * mapping.factor;
+
+  finalUnitCost =
+    finalUnitCost / mapping.factor;
+}
+
+    if (
+      Number(data.paidAmount || 0) >
+      Number(data.totalAmount)
+    ) {
+      alert(
+        "Paid amount cannot exceed total amount"
+      );
+
+      return;
     }
 
     setIsSubmitting(true);
 
-    console.log("paymentMethod--------------", data)
+
 
     try {
-      const result = await adjustInventoryStock({
+      const result = await purchaseStock({
         inventoryItemId: data.inventoryItemId,
 
         supplierId: data.supplierId,
@@ -325,7 +369,7 @@ export default function StockPurchaseForm({
         type: data.type,
 
         direction: data.direction,
-
+        stockValue: totalAmount,
         // INTERNAL
         quantity: finalQuantity,
 
@@ -338,15 +382,15 @@ export default function StockPurchaseForm({
 
         purchaseUnitCost: originalUnitCost,
 
-        conversionFactor:
-          selectedInventory.conversionFactor,
+       conversionFactor:
+  mapping?.factor || 1,
 
         paymentStatus: data.paymentStatus,
 
         paymentMethod: data.paymentMethod,
 
         paidAmount: Number(data.paidAmount || 0),
-
+        //  dueAmount: Number(data.dueAmount || 0), 
         note: data.note,
 
         createdBy: "admin",
@@ -369,10 +413,22 @@ export default function StockPurchaseForm({
         reset({
           type: "PURCHASE",
           direction: "IN",
-          quantity: 0,
-          note: "",
-          unitCost: 0,
+
           inventoryItemId: selectedInventory.id,
+
+          quantity: 0,
+     transactionUnit:
+  selectedInventory.purchaseMappings?.[0]?.purchaseUnit ??
+  selectedInventory.consumptionUnit,
+
+          unitCost: 0,
+          totalAmount: 0,
+
+          paymentStatus: "PAID",
+          paymentMethod: "CASH",
+          paidAmount: 0,
+
+          note: "",
         });
       } else {
         alert(result.message);
@@ -385,41 +441,40 @@ export default function StockPurchaseForm({
     setIsSubmitting(false);
   }
 
-  useEffect(() => {
-    const qty = Number(quantity || 0);
-    const rate = Number(unitCost || 0);
+  // useEffect(() => {
+  //   const qty = Number(quantity || 0);
+  //   const rate = Number(unitCost || 0);
 
-    if (qty > 0 && rate > 0) {
-      setValue(
-        "totalAmount",
-        Number((qty * rate).toFixed(2))
-      );
-    }
-  }, [quantity, unitCost, setValue]);
+  //   if (qty > 0 && rate > 0) {
+  //     setValue(
+  //       "totalAmount",
+  //       Number((qty * rate).toFixed(2))
+  //     );
+  //   }
+  // }, [quantity, unitCost, setValue]);
 
   const [pricingMode, setPricingMode] = useState<
     "RATE" | "AMOUNT"
   >("RATE");
 
 
-
+console.log(selectedInventory);
 
   return (
-    <div className="min-h-screen bg-[#f6f8fb] p-4 md:p-6">
-      <div className="max-w-3xl">
+    <div className="min-h-screen bg-[#f6f8fb] p-4 md:p-6 w-full  ">
+      <div className="w-full">
 
         {/* ===================================================== */}
         {/* HEADER */}
         {/* ===================================================== */}
 
-        <div className="mb-6">
+        <div className="mb-6  ">
           <h1 className="text-3xl font-bold text-gray-800">
-            Raw Stock Purchase
+            Purchase
           </h1>
 
           <p className="text-sm text-gray-500 mt-1">
-            Purchase inventory
-            stock manually
+            Purchase raw stock
           </p>
         </div>
 
@@ -431,356 +486,462 @@ export default function StockPurchaseForm({
           onSubmit={handleSubmit(
             onSubmit
           )}
-          className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col gap-5"
+          className="flex flex-col xl:flex-row gap-3 w-full"
         >
+          <div className="bg-white flex-[0.45] rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col gap-5">
+            {/* ===================================================== */}
+            {/* INVENTORY SEARCH */}
+            {/* ===================================================== */}
 
-          {/* ===================================================== */}
-          {/* INVENTORY SEARCH */}
-          {/* ===================================================== */}
+            <div className="flex flex-col gap-2">
+              <label className="label-style-4">
+                Inventory Item
+              </label>
 
-          <div className="flex flex-col gap-2">
-            <label className="label-style-4">
-              Inventory Item
-            </label>
+              <div className="relative">
 
-            <div className="relative">
+                {!search.trim() && (
+                  <Search
+                    size={18}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                )}
 
-              {!search.trim() && (
-                <Search
-                  size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(
+                      e.target.value
+                    );
+
+                    setShowDropdown(
+                      true
+                    );
+                  }}
+                  placeholder="Search inventory item..."
+                  className={`input-style-4 pr-4 ${!search.trim()
+                    ? "pl-12"
+                    : "pl-4"
+                    }`}
                 />
-              )}
+
+                {/* DROPDOWN */}
+
+                {showDropdown &&
+                  filteredInventory.length >
+                  0 && (
+                    <div className="absolute z-50 mt-2 w-full max-h-80 overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
+
+                      {filteredInventory.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedInventory(item);
+
+                            setValue(
+                              "inventoryItemId",
+                              item.id
+                            );
+
+                            // default transaction unit
+                          setValue(
+  "transactionUnit",
+  item.purchaseMappings?.[0]?.purchaseUnit ??
+    item.consumptionUnit
+);
+
+                            setSearch(item.name);
+
+                            setShowDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-0"
+                        >
+                          <div className="font-medium text-gray-800">
+                            {item.name}
+                          </div>
+
+                          <div className="text-xs text-gray-400">
+                            Current:{" "}
+                            {item.currentStock}{" "}
+                            {item.consumptionUnit}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+              </div>
 
               <input
-                type="text"
-                value={search}
-                onChange={(e) => {
-                  setSearch(
-                    e.target.value
-                  );
-
-                  setShowDropdown(
-                    true
-                  );
-                }}
-                placeholder="Search inventory item..."
-                className={`input-style-4 pr-4 ${!search.trim()
-                  ? "pl-12"
-                  : "pl-4"
-                  }`}
+                type="hidden"
+                {...register(
+                  "inventoryItemId"
+                )}
               />
+            </div>
 
-              {/* DROPDOWN */}
+            {/* ===================================================== */}
+            {/* CURRENT STOCK */}
+            {/* ===================================================== */}
 
-              {showDropdown &&
-                filteredInventory.length >
-                0 && (
-                  <div className="absolute z-50 mt-2 w-full max-h-80 overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
+            {selectedInventory && (
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 flex items-center justify-between">
 
-                    {filteredInventory.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedInventory(item);
-
-                          setValue(
-                            "inventoryItemId",
-                            item.id
-                          );
-
-                          // default transaction unit
-                          setValue(
-                            "transactionUnit",
-                            item.purchaseUnit
-                          );
-
-                          setSearch(item.name);
-
-                          setShowDropdown(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-0"
-                      >
-                        <div className="font-medium text-gray-800">
-                          {item.name}
-                        </div>
-
-                        <div className="text-xs text-gray-400">
-                          Current:{" "}
-                          {item.currentStock}{" "}
-                          {item.consumptionUnit}
-                        </div>
-                      </button>
-                    ))}
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <Package2
+                      className="text-blue-600"
+                      size={22}
+                    />
                   </div>
-                )}
-            </div>
 
-            <input
-              type="hidden"
-              {...register(
-                "inventoryItemId"
-              )}
-            />
-          </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800">
+                      {
+                        selectedInventory.name
+                      }
+                    </h3>
 
-          {/* ===================================================== */}
-          {/* CURRENT STOCK */}
-          {/* ===================================================== */}
-
-          {selectedInventory && (
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 flex items-center justify-between">
-
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                  <Package2
-                    className="text-blue-600"
-                    size={22}
-                  />
+                    <p className="text-sm text-gray-500">
+                      Current Stock
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-gray-800">
-                    {
-                      selectedInventory.name
-                    }
-                  </h3>
-
-                  <p className="text-sm text-gray-500">
-                    Current Stock
-                  </p>
+                <div className="text-2xl font-bold text-blue-700">
+<div className="text-2xl font-bold text-blue-700">
+  {displayStock(
+    selectedInventory.currentStock!,
+    selectedInventory.purchaseMappings?.[0]?.purchaseUnit ??
+      selectedInventory.consumptionUnit,
+    selectedInventory.consumptionUnit,
+    selectedInventory.purchaseMappings?.[0]?.factor ?? 1
+  )}
+</div>
                 </div>
-              </div>
-
-              <div className="text-2xl font-bold text-blue-700">
-                {displayStock(
-                  selectedInventory.currentStock!,
-                  selectedInventory.purchaseUnit,
-                  selectedInventory.consumptionUnit,
-                  selectedInventory.conversionFactor
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ===================================================== */}
-          {/* TYPE */}
-          {/* ===================================================== */}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-            {type === "PURCHASE" && (
-              <div className="flex flex-col gap-2">
-                <label className="label-style-4">
-                  Supplier
-                </label>
-
-                <select
-                  {...register("supplierId")}
-                  className="input-style-4"
-                >
-                  <option value="">
-                    Select Supplier
-                  </option>
-
-                  {linkedSuppliers.map((supplier) => (
-                    <option key={supplier.id} value={supplier.id}>
-                      {supplier.companyName}
-                    </option>
-                  ))}
-                </select>
               </div>
             )}
 
+            {/* ===================================================== */}
+            {/* TYPE */}
+            {/* ===================================================== */}
 
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-          {/* ===================================================== */}
-          {/* QUANTITY */}
-          {/* ===================================================== */}
-
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-            <div className="flex flex-col gap-2">
-              <label className="label-style-4">
-                Quantity
-              </label>
-
-              <input
-                type="number"
-                step="0.001"
-                {...register("quantity")}
-                className="input-style-4"
-                placeholder="0"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="label-style-4">
-                Unit
-              </label>
-
-              <select
-                {...register("transactionUnit")}
-                className="input-style-4"
-              >
-                {selectedInventory && (
-                  <option value={selectedInventory.purchaseUnit}>
-                    {selectedInventory.purchaseUnit}
-                  </option>
-                )}
-
-                {/* OPTIONAL: allow consumption unit */}
-                {selectedInventory &&
-                  selectedInventory.consumptionUnit !==
-                  selectedInventory.purchaseUnit && (
-                    <option value={selectedInventory.consumptionUnit}>
-                      {selectedInventory.consumptionUnit}
-                    </option>
-                  )}
-              </select>
-
-
-
-
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="label-style-4">
-                Total Amount
-              </label>
-
-
-              <input
-                type="number"
-                step="0.01"
-                value={totalAmount || ""}
-                onChange={(e) => {
-                  setLastEdited("totalAmount");
-
-                  setValue(
-                    "totalAmount",
-                    Number(e.target.value || 0)
-                  );
-                }}
-                className="input-style-4"
-                placeholder="Total invoice amount"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="label-style-4">
-                Price per {transactionUnit}
-              </label>
-
-              <input
-                type="number"
-                step="0.0001"
-                value={unitCost || ""}
-                onChange={(e) => {
-                  setLastEdited("unitCost");
-
-                  setValue(
-                    "unitCost",
-                    Number(e.target.value || 0)
-                  );
-                }}
-                className="input-style-4"
-                placeholder={`Cost per ${transactionUnit}`}
-              />
-
-            </div>
-
-
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              {/* PAYMENT STATUS */}
-              <div className="flex flex-col gap-2">
-                <label className="label-style-4">
-                  Payment Type
-                </label>
-
-                <select
-                  {...register("paymentStatus")}
-                  className="input-style-4"
-                >
-                  <option value="PAID">Paid</option>
-                  <option value="CREDIT">Credit (Pay Later)</option>
-                </select>
-              </div>
-
-              {/* OPTIONAL PAID AMOUNT */}
-              {watch("paymentStatus") === "DUE" && (
+              {type === "PURCHASE" && (
                 <div className="flex flex-col gap-2">
                   <label className="label-style-4">
-                    Paid Amount (Optional)
+                    Supplier
+                  </label>
+
+                  <select
+                    {...register("supplierId")}
+                    className="input-style-4"
+                  >
+                    <option value="">
+                      Select Supplier
+                    </option>
+
+                    {linkedSuppliers.map((supplier) => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.companyName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+
+            </div>
+
+
+            {/* ===================================================== */}
+            {/* QUANTITY */}
+            {/* ===================================================== */}
+
+            <div className="rounded-2xl border border-gray-200 p-5 space-y-4">
+
+              <h3 className="font-semibold text-lg">
+                Purchase Details
+              </h3>
+
+              {/* ====================================================== */}
+              {/* PURCHASE DETAILS */}
+              {/* ====================================================== */}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Quantity */}
+                <div className="flex flex-col gap-2">
+                  <label className="label-style-4">
+                    Quantity
+                  </label>
+
+                  <input
+                    type="number"
+                    step="0.001"
+                    {...register("quantity")}
+                    onFocus={(e) => {
+                      if (e.target.value === "0") {
+                        e.target.value = "";
+                      }
+                    }}
+                    className="input-style-4"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Unit */}
+                <div className="flex flex-col gap-2">
+                  <label className="label-style-4">
+                    Unit
+                  </label>
+
+      <select
+  {...register("transactionUnit")}
+  className="input-style-4"
+>
+{selectedInventory?.purchaseMappings?.map((mapping) => (
+    <option
+      key={mapping.purchaseUnit}
+      value={mapping.purchaseUnit}
+    >
+      {mapping.purchaseUnit}
+    </option>
+  ))}
+
+  {!(
+  selectedInventory?.purchaseMappings?.some(
+    (m) => m.purchaseUnit === selectedInventory.consumptionUnit
+  )
+
+  ) && (
+    <option
+      value={selectedInventory?.consumptionUnit}
+    >
+      {selectedInventory?.consumptionUnit}
+    </option>
+  )}
+</select>
+                </div>
+
+                {/* Total Amount */}
+                <div className="flex flex-col gap-2">
+                  <label className="label-style-4">
+                    Total Amount
                   </label>
 
                   <input
                     type="number"
                     step="0.01"
+                    value={totalAmount || ""}
+                    onChange={(e) => {
+                      setLastEdited("totalAmount");
+
+                      setValue(
+                        "totalAmount",
+                        Number(e.target.value || 0)
+                      );
+                    }}
+                    className="input-style-4"
+                    placeholder="Invoice Amount"
+                  />
+                </div>
+
+                {/* Unit Cost */}
+                <div className="flex flex-col gap-2">
+                  <label className="label-style-4">
+                    Price per {transactionUnit}
+                  </label>
+
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={unitCost || ""}
+                    onChange={(e) => {
+                      setLastEdited("unitCost");
+
+                      setValue(
+                        "unitCost",
+                        Number(e.target.value || 0)
+                      );
+                    }}
+                    className="input-style-4"
+                    placeholder={`Cost per ${transactionUnit}`}
+                  />
+                </div>
+
+              </div>
+
+              {/* ====================================================== */}
+              {/* PAYMENT */}
+              {/* ====================================================== */}
+
+              <h3 className="font-semibold text-lg pt-2">
+                Payment
+              </h3>
+
+              <div className="grid md:grid-cols-2 gap-4">
+
+                {/* Payment Status */}
+                <div className="flex flex-col gap-2">
+                  <label className="label-style-4">
+                    Payment Status
+                  </label>
+
+                  <select
+                    {...register("paymentStatus")}
+                    className="input-style-4"
+                  >
+                    <option value="PAID">
+                      Paid
+                    </option>
+
+                    <option value="PARTIAL">
+                      Partial Payment
+                    </option>
+
+                    <option value="CREDIT">
+                      Credit Purchase
+                    </option>
+                  </select>
+                </div>
+
+                {/* Payment Method */}
+                {watch("paymentStatus") !== "CREDIT" && (
+                  <div className="flex flex-col gap-2">
+                    <label className="label-style-4">
+                      Payment Method
+                    </label>
+
+                    <select
+                      {...register("paymentMethod")}
+                      className="input-style-4"
+                    >
+                      <option value="CASH">
+                        Cash
+                      </option>
+
+                      <option value="UPI">
+                        UPI
+                      </option>
+
+                      <option value="CARD">
+                        Card
+                      </option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Paid Amount */}
+                <div className="flex flex-col gap-2">
+                  <label className="label-style-4">
+                    Paid Amount
+                  </label>
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    disabled={
+                      watch("paymentStatus") ===
+                      "PAID"
+                    }
                     {...register("paidAmount")}
                     className="input-style-4"
                     placeholder="0"
                   />
                 </div>
-              )}
 
-              {watch("paymentStatus") === "PAID" && (
+                {/* Due Amount */}
                 <div className="flex flex-col gap-2">
                   <label className="label-style-4">
-                    Payment Method
+                    Due Amount
                   </label>
 
-                  <select
-                    {...register("paymentMethod")}
-                    className="input-style-4"
-                  >
-                    <option value="CASH">Cash</option>
-                    <option value="UPI">UPI</option>
-                    <option value="CARD">Card</option>
-                  </select>
+                  <input
+                    value={dueAmount.toFixed(2)}
+                    readOnly
+                    className="input-style-4 bg-gray-100"
+                  />
                 </div>
-              )}
+
+              </div>
+
+
 
             </div>
 
           </div>
+          <div className="bg-white flex-[0.40] rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col gap-5">
 
-          {/* ===================================================== */}
-          {/* NOTE */}
-          {/* ===================================================== */}
+            {/* ====================================================== */}
+            {/* SUMMARY CARD */}
+            {/* ====================================================== */}
 
-          <div className="flex flex-col gap-2">
-            <label className="label-style-4">
-              Note
-            </label>
+            <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 flex justify-between">
 
-            <textarea
-              {...register("note")}
-              rows={4}
-              placeholder="Optional note..."
-              className="input-style-4 resize-none"
-            />
+              <div>
+                <p className="text-sm text-gray-500">
+                  Purchase Amount
+                </p>
+
+                <p className="text-2xl font-bold">
+                  ₹ {(Number(totalAmount) || 0).toFixed(2)}
+                </p>
+              </div>
+
+              <div className="text-right">
+                <p className="text-sm text-gray-500">
+                  Outstanding Amount
+                </p>
+
+                <p
+                  className={`text-2xl font-bold ${dueAmount > 0
+                    ? "text-red-600"
+                    : "text-green-600"
+                    }`}
+                >
+                  ₹ {dueAmount.toFixed(2)}
+                </p>
+              </div>
+
+            </div>
+
+            {/* ===================================================== */}
+            {/* NOTE */}
+            {/* ===================================================== */}
+
+            <div className="flex flex-col gap-2">
+              <label className="label-style-4">
+                Note
+              </label>
+
+              <textarea
+                {...register("note")}
+                rows={4}
+                placeholder="Optional note..."
+                className="input-style-4 resize-none"
+              />
+            </div>
+
+            {/* ===================================================== */}
+            {/* SAVE */}
+            {/* ===================================================== */}
+
+            <Button
+              type="submit"
+              disabled={
+                isSubmitting
+              }
+              className="btn-save-4 h-11"
+            >
+              {isSubmitting
+                ? "Saving..."
+                : "Save Stock Purchase"}
+            </Button>
+
           </div>
-
-          {/* ===================================================== */}
-          {/* SAVE */}
-          {/* ===================================================== */}
-
-          <Button
-            type="submit"
-            disabled={
-              isSubmitting
-            }
-            className="btn-save-4 h-11"
-          >
-            {isSubmitting
-              ? "Saving..."
-              : "Save Stock Purchase"}
-          </Button>
         </form>
       </div >
     </div >

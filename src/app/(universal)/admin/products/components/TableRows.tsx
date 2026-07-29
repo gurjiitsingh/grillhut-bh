@@ -89,22 +89,25 @@ const [showModifierModal, setShowModifierModal] = useState(false);
     }
   }
 
-  return (<>
-  <TableRow
-    className={`
-      whitespace-nowrap
-      transition-colors
-      border-0
-      hover:bg-green-50
-      ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-    `}
-  >
+  return (
+   <>
     {showModifierModal && (
       <ModifierModal
         productId={product.id!}
         onClose={() => setShowModifierModal(false)}
       />
     )}
+
+    <TableRow
+      className={`
+        whitespace-nowrap
+        transition-colors
+        border-0
+        hover:bg-green-50
+        ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+      `}
+    >
+  
 
 
       <TableCell className="text-sm font-medium text-gray-700">
@@ -116,8 +119,9 @@ const [showModifierModal, setShowModifierModal] = useState(false);
 </TableCell>
       {/* 🖼 Product Image */}
       <TableCell>
-        <div className="px-3 py-1 text-center min-w-[100px]">
-          {product.image && (
+        <div className="px-3 py-1 flex gap-2 items-center text-center min-w-[100px]">
+       
+       <div>   {product.image && (
             <Image
               className="h-12 w-12 object-cover rounded-md shadow-sm"
               src={product.image}
@@ -125,7 +129,8 @@ const [showModifierModal, setShowModifierModal] = useState(false);
               height={100}
               alt={product.name}
             />
-          )}
+          )}</div>
+            <div>{product.sortOrder}</div>  
         </div>
       
       </TableCell>
@@ -133,7 +138,7 @@ const [showModifierModal, setShowModifierModal] = useState(false);
       {/* 🏷 Name + Featured */}
       <TableCell className="whitespace-normal break-words max-w-[180px]">
         <div className="flex items-center gap-2">
-          {product.sortOrder}&nbsp;{product.name}
+         {product.name}
           <button
             onClick={handleFeatureToggle}
             className="flex items-center justify-center rounded-md hover:bg-yellow-100 p-1 transition"

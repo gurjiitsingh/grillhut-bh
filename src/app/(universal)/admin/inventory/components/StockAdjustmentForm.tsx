@@ -17,6 +17,9 @@ import { InventoryItemType, InventoryUnit } from "@/lib/types/InventoryItemType"
 
 import { adjustInventoryStock } from "@/app/(universal)/action/inventory/adjustInventoryStock";
 import { displayStock } from "@/utils/inventory/displayStock";
+import { getPrimaryPurchaseMapping } from "@/utils/getPrimaryPurchaseMapping";
+import toast from "react-hot-toast";
+import { InventoryTransactionNameType } from "@/lib/types/InventoryTransactionType";
 
 type Props = {
   inventoryItems: InventoryItemType[];
@@ -25,21 +28,17 @@ type Props = {
 type FormType = {
   inventoryItemId: string;
 
-  type:
-  | "PURCHASE"
-  | "OPENING_STOCK"
-  | "ADJUSTMENT"
-  | "WASTAGE"
-  | "SUPPLIER_RETURN"
-  | "CUSTOMER_RETURN";
+  type: InventoryTransactionNameType,
 
-  direction:
-  | "IN"
-  | "OUT";
+  direction: "IN" | "OUT";
 
   quantity: number;
 
-  transactionUnit: InventoryUnit
+  transactionUnit: InventoryUnit;
+
+  averageCost: number;
+
+  stockValue: number;
 
   note: string;
 };
@@ -57,7 +56,9 @@ export default function StockAdjustmentForm({
   const [showDropdown, setShowDropdown] =
     useState(false);
 
- 
+  const [lastEdited, setLastEdited] = useState<
+    "averageCost" | "stockValue"
+  >("averageCost");
 
   const [
     selectedInventory,
@@ -78,64 +79,148 @@ export default function StockAdjustmentForm({
       type: "OPENING_STOCK",
       direction: "IN",
       quantity: 0,
-      transactionUnit: "pcs",
+      transactionUnit: "gm",
       note: "",
     },
   });
 
-  const type = watch(
-    "type"
-  );
+  const type = watch("type");
+  const quantity = watch("quantity");
+  const averageCost = watch("averageCost");
+  const stockValue = watch("stockValue");
 
   const transactionUnit = watch("transactionUnit");
 
 
+  useEffect(() => {
+    if (!selectedInventory) return;
 
+    const mapping =
+      selectedInventory.purchaseMappings?.find(
+        (m) => m.purchaseUnit === transactionUnit
+      ) ?? {
+        purchaseUnit: selectedInventory.consumptionUnit,
+        factor: 1,
+      };
+
+    if (type === "WASTAGE") return;
+
+    setValue(
+      "quantity",
+      Number(
+        (
+          (selectedInventory.currentStock ?? 0) /
+          mapping.factor
+        ).toFixed(3)
+      )
+    );
+
+    setValue(
+      "averageCost",
+      Number(
+        (
+          (selectedInventory.averageCost ?? 0) *
+          mapping.factor
+        ).toFixed(2)
+      )
+    );
+
+    setValue(
+      "stockValue",
+      Number(
+        (selectedInventory.stockValue ?? 0).toFixed(2)
+      )
+    );
+  }, [
+    transactionUnit,
+    selectedInventory,
+    type,
+    setValue,
+  ]);
   // =====================================================
   // AUTO SET STOCK DIRECTION
   // =====================================================
 
-  // React.useEffect(() => {
-  //   if (
-  //     type === "PURCHASE" ||
-  //     type === "OPENING_STOCK" ||
-  //     type === "CUSTOMER_RETURN"
-  //   ) {
-  //     setValue("direction", "IN");
-  //   }
+  useEffect(() => {
+    if (!selectedInventory) return;
 
-  //   if (
-  //     type === "WASTAGE"
-  //   ) {
-  //     setValue("direction", "OUT");
-  //   }
-  // }, [type, setValue]);
+    const mapping =
+      getPrimaryPurchaseMapping(selectedInventory);
 
-   useEffect(() => {
-  if (selectedInventory) {
     setValue(
       "transactionUnit",
-      selectedInventory.purchaseUnit
+      mapping.purchaseUnit
     );
-  }
-}, [selectedInventory, setValue]);
+  }, [selectedInventory, setValue]);
 
-   useEffect(() => {
+  useEffect(() => {
     switch (type) {
-      case "PURCHASE":
       case "OPENING_STOCK":
-      case "CUSTOMER_RETURN":
-        setValue("direction", "IN");
+
+
         break;
 
       case "WASTAGE":
-      case "SUPPLIER_RETURN":
-        setValue("direction", "OUT");
+
         break;
 
       // ADJUSTMENT = manual selection
     }
   }, [type, setValue]);
+
+  useEffect(() => {
+    switch (type) {
+      case "OPENING_STOCK":
+        setValue("direction", "IN");
+        break;
+
+      case "WASTAGE":
+        setValue("direction", "OUT");
+        break;
+    }
+  }, [type, setValue]);
+
+  useEffect(() => {
+    if (type === "WASTAGE") {
+      setValue("averageCost", 0);
+      setValue("stockValue", 0);
+    }
+  }, [type, setValue]);
+
+  useEffect(() => {
+    const qty = Number(quantity || 0);
+
+    if (qty <= 0) return;
+
+    if (lastEdited === "averageCost") {
+      setValue(
+        "stockValue",
+        Number((qty * Number(averageCost || 0)).toFixed(2))
+      );
+    }
+
+    if (lastEdited === "stockValue") {
+      setValue(
+        "averageCost",
+        Number((Number(stockValue || 0) / qty).toFixed(4))
+      );
+    }
+  }, [
+    quantity,
+    averageCost,
+    stockValue,
+    lastEdited,
+    setValue,
+  ]);
+  const selectedMapping =
+    selectedInventory?.purchaseMappings?.find(
+      (m) => m.purchaseUnit === transactionUnit
+    ) ??
+    (selectedInventory && {
+      purchaseUnit: selectedInventory.consumptionUnit,
+      consumptionUnit: selectedInventory.consumptionUnit,
+      factor: 1,
+    });
 
   // =====================================================
   // FILTER INVENTORY
@@ -163,167 +248,135 @@ export default function StockAdjustmentForm({
   // =====================================================
 
   async function onSubmit(data: FormType) {
-    if (isSubmitting) return;
+  if (isSubmitting) return;
 
-    if (!selectedInventory) {
-      alert("Please select inventory item");
-      return;
-    }
+  if (!selectedInventory) {
+    toast.error("Please select inventory item.");
+    return;
+  }
 
-    const decimalAllowedUnits = [
-      "kg",
-      "gm",
-      "ltr",
-      "ml",
-    ];
+  const decimalAllowedUnits = [
+    "kg",
+    "gm",
+    "ltr",
+    "ml",
+  ];
 
-    const quantity =
-      Number(data.quantity);
+  let quantity = Number(data.quantity);
 
-    // prevent decimal in pcs
-    if (
-      !decimalAllowedUnits.includes(
-        data.transactionUnit
-      ) &&
-      !Number.isInteger(quantity)
-    ) {
-      alert(
-        `Decimal quantity not allowed for ${data.transactionUnit}`
-      );
+    quantity =
+  data.type === "CLEAR"
+    ? 0
+    : Number(data.quantity);
 
-      return;
-    }
+  // prevent decimal in pcs
+  if (
+    !decimalAllowedUnits.includes(data.transactionUnit) &&
+    !Number.isInteger(quantity)
+  ) {
+    toast.error(
+      `Decimal quantity not allowed for ${data.transactionUnit}`
+    );
+    return;
+  }
 
-    // =====================================
-    // ORIGINAL VALUES
-    // =====================================
+  // =====================================
+  // ORIGINAL VALUES
+  // =====================================
 
-    const originalQuantity =
-      Number(data.quantity);
+  const originalQuantity = Number(data.quantity);
 
-    // =====================================
-    // INTERNAL VALUES
-    // =====================================
+  // =====================================
+  // INTERNAL VALUES
+  // =====================================
 
-    let finalQuantity =
-      Number(data.quantity);
+  let finalQuantity = Number(data.quantity);
 
-      if (!selectedInventory.conversionFactor) {
-  alert("Conversion factor missing");
-  return;
-}
-    // convert purchase -> consumption
-    if (
-      data.transactionUnit ===
-      selectedInventory.purchaseUnit &&
-      selectedInventory.purchaseUnit !==
-      selectedInventory.consumptionUnit
-    ) {
-      finalQuantity =
-        finalQuantity *
-        selectedInventory.conversionFactor;
-    }
+  const mapping =
+    selectedInventory.purchaseMappings?.find(
+      (m) => m.purchaseUnit === data.transactionUnit
+    ) ?? {
+      purchaseUnit: selectedInventory.consumptionUnit,
+      factor: 1,
+    };
 
-    setIsSubmitting(true);
+  if (mapping) {
+    finalQuantity = finalQuantity * mapping.factor;
+  }
 
-    let unitCost = 0;
+  setIsSubmitting(true);
 
-    // if (
-    //   data.type === "OPENING_STOCK" ||
-    //   data.type === "CUSTOMER_RETURN"
-    // ) {
-    //   unitCost =
-    //     selectedInventory.costPrice || 0;
-    // }
+  let averageCost = Number(data.averageCost);
 
-  //   let purchaseUnitCost =
-  // selectedInventory.costPrice || 0;
+  if (mapping) {
+    averageCost = averageCost / mapping.factor;
+  }
 
-// if (
-//   selectedInventory.purchaseUnit !==
-//   selectedInventory.consumptionUnit
-// ) {
-//   purchaseUnitCost =
-//     purchaseUnitCost *
-//     selectedInventory.conversionFactor;
-// }
+  try {
+ const result = await adjustInventoryStock({
+  inventoryItemId: data.inventoryItemId,
+  type: data.type,
+  direction: data.direction,
 
-    try {
-      const result =
-        await adjustInventoryStock({
-          inventoryItemId:
-            data.inventoryItemId,
+  // INTERNAL VALUES (consumption unit)
+  quantity: finalQuantity,
+  unitCost: averageCost,
+  stockValue: Number(data.stockValue),
 
-          type:
-            data.type,
+  // DISPLAY / PURCHASE UNIT VALUES
+  purchaseQuantity: originalQuantity,
+  purchaseUnit: data.transactionUnit,
+  purchaseUnitCost: Number(data.averageCost),
+  conversionFactor: mapping?.factor ?? 1,
 
-          direction:
-            data.direction,
-
-          // =====================================
-          // INTERNAL
-          // =====================================
-
-          quantity: finalQuantity,
-
-          unitCost,
-
-          // =====================================
-          // ORIGINAL
-          // =====================================
-
-          purchaseQuantity:
-            originalQuantity,
-
-          purchaseUnit:
-            data.transactionUnit,
-
-          purchaseUnitCost:0,
-
-          conversionFactor:
-            selectedInventory.conversionFactor,
-
-          paymentStatus: "PAID",
-
-          note: data.note,
-
-          createdBy: "admin",
-        });
-
-      if (result.success) {
-        let updatedStock =
-          selectedInventory.currentStock;
-
-        if (data.direction === "IN") {
-          updatedStock! += finalQuantity;
-        } else {
-          updatedStock! -= finalQuantity;
-        }
-
-        setSelectedInventory({
-          ...selectedInventory,
-          currentStock: updatedStock,
-        });
-
-       reset({
-  type: "OPENING_STOCK",
-  direction: "IN",
-  quantity: 0,
-  note: "",
-  inventoryItemId: selectedInventory.id,
-  transactionUnit: selectedInventory.purchaseUnit, // ✅ FIX
+  paymentStatus: "PAID",
+  note: data.note,
+  createdBy: "admin",
 });
-      } else {
-        alert(result.message);
-      }
-    } catch (error) {
-      console.error(error);
 
-      alert("Something went wrong");
+    if (!result.success) {
+      toast.error(result.message);
+      return;
     }
 
+    toast.success(result.message);
+
+    let updatedStock: number;
+
+    if (data.type === "OPENING_STOCK") {
+      updatedStock = finalQuantity;
+    } else if (data.direction === "IN") {
+      updatedStock =
+        (selectedInventory.currentStock ?? 0) +
+        finalQuantity;
+    } else {
+      updatedStock =
+        (selectedInventory.currentStock ?? 0) -
+        finalQuantity;
+    }
+
+    setSelectedInventory({
+      ...selectedInventory,
+      currentStock: updatedStock,
+    });
+
+    reset({
+      type: "OPENING_STOCK",
+      direction: "IN",
+      quantity: 0,
+      note: "",
+      inventoryItemId: selectedInventory.id,
+      transactionUnit:
+        getPrimaryPurchaseMapping(selectedInventory)
+          .purchaseUnit,
+    });
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong.");
+  } finally {
     setIsSubmitting(false);
   }
+}
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] p-4 md:p-6">
@@ -339,8 +392,7 @@ export default function StockAdjustmentForm({
           </h1>
 
           <p className="text-sm text-gray-500 mt-1">
-            Add or remove inventory
-            stock manually
+            Adjust inventory quantity and valuation manually.
           </p>
         </div>
 
@@ -369,7 +421,7 @@ export default function StockAdjustmentForm({
               {!search.trim() && (
                 <Search
                   size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
                 />
               )}
 
@@ -403,31 +455,64 @@ export default function StockAdjustmentForm({
                       <button
                         key={item.id}
                         type="button"
-                     onClick={() => {
-  setSelectedInventory(item);
+                        onClick={() => {
+                          setSelectedInventory(item);
 
-  setValue("inventoryItemId", item.id, {
-    shouldValidate: true,
-  });
+                          setValue("inventoryItemId", item.id);
 
-  setValue("transactionUnit", item.purchaseUnit, {
-    shouldValidate: true,
-  });
+                          const mapping =
+                            getPrimaryPurchaseMapping(item);
 
-  setSearch(item.name);
-  setShowDropdown(false);
-}}
+                          setValue(
+                            "transactionUnit",
+                            mapping.purchaseUnit
+                          );
+
+
+                          const displayQuantity =
+                            (item.currentStock ?? 0) /
+                            mapping.factor;
+
+                          const displayaverageCost =
+                            (item.averageCost ?? 0) *
+                            mapping.factor;
+
+
+                          if (type === "WASTAGE") {
+                            setValue("averageCost", 0);
+                            setValue("stockValue", 0);
+                            setValue("quantity", 0);
+                          } else {
+                            setValue("averageCost", Number(displayaverageCost.toFixed(2)));
+                            setValue("stockValue", Number((item.stockValue ?? 0).toFixed(2)));
+                            setValue("quantity", Number(displayQuantity.toFixed(3)));
+                          }
+
+                          setSearch(item.name);
+                          setShowDropdown(false);
+                        }}
                         className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-0"
                       >
                         <div className="font-medium text-gray-800">
                           {item.name}
                         </div>
 
-                        <div className="text-xs text-gray-400">
-                          Current:{" "}
-                          {item.currentStock}{" "}
-                          {item.consumptionUnit}
-                        </div>
+
+
+                     <div className="text-xs text-gray-400">
+  Current{" "}
+  {(() => {
+    const mapping =
+      getPrimaryPurchaseMapping(item);
+
+    return displayStock(
+      item.currentStock ?? 0,
+      mapping.purchaseUnit,
+      item.consumptionUnit,
+      mapping.factor
+    );
+  })()}
+</div>
                       </button>
                     ))}
                   </div>
@@ -471,12 +556,14 @@ export default function StockAdjustmentForm({
               </div>
 
               <div className="text-2xl font-bold text-blue-700">
-                {displayStock(
-                  selectedInventory.currentStock!,
-                  selectedInventory.purchaseUnit,
-                  selectedInventory.consumptionUnit,
-                  selectedInventory.conversionFactor
-                )}
+                {
+                  displayStock(
+                    selectedInventory.currentStock!,
+                    selectedMapping!.purchaseUnit,
+                    selectedInventory.consumptionUnit,
+                    selectedMapping!.factor
+                  )
+                }
               </div>
             </div>
           )}
@@ -504,13 +591,6 @@ export default function StockAdjustmentForm({
                   Opening Stock
                 </option>
 
-                <option value="CUSTOMER_RETURN">
-                  Customer Return
-                </option>
-
-                <option value="SUPPLIER_RETURN">
-                  Supplier Return
-                </option>
 
                 <option value="WASTAGE">
                   Wastage
@@ -518,6 +598,9 @@ export default function StockAdjustmentForm({
 
                 <option value="ADJUSTMENT">
                   Adjustment
+                </option>
+                 <option value="CLEAR">
+                  CLEAR
                 </option>
               </select>
             </div>
@@ -561,7 +644,12 @@ export default function StockAdjustmentForm({
                 step="0.001"
                 {...register("quantity")}
                 className="input-style-4"
-                placeholder="0"
+                placeholder="Enter quantity"
+                onFocus={(e) => {
+                  if (e.target.value === "0") {
+                    e.target.value = "";
+                  }
+                }}
               />
             </div>
 
@@ -574,32 +662,28 @@ export default function StockAdjustmentForm({
                 {...register("transactionUnit")}
                 className="input-style-4"
               >
-            {selectedInventory && (
-  <>
-    <option value={selectedInventory.purchaseUnit}>
-      {selectedInventory.purchaseUnit}
-    </option>
-
-    {selectedInventory.consumptionUnit !==
-      selectedInventory.purchaseUnit && (
-      <option value={selectedInventory.consumptionUnit}>
-        {selectedInventory.consumptionUnit}
-      </option>
-    )}
-  </>
-)}
+                {selectedInventory &&
+                  selectedInventory.purchaseMappings?.map(
+                    (mapping) => (
+                      <option
+                        key={mapping.purchaseUnit}
+                        value={mapping.purchaseUnit}
+                      >
+                        {mapping.purchaseUnit}
+                      </option>
+                    )
+                  )}
 
                 {selectedInventory &&
-                  selectedInventory.consumptionUnit !==
-                  selectedInventory.purchaseUnit && (
+                  (!selectedInventory.purchaseMappings ||
+                    selectedInventory.purchaseMappings.length ===
+                    0) && (
                     <option
                       value={
                         selectedInventory.consumptionUnit
                       }
                     >
-                      {
-                        selectedInventory.consumptionUnit
-                      }
+                      {selectedInventory.consumptionUnit}
                     </option>
                   )}
               </select>
@@ -607,6 +691,51 @@ export default function StockAdjustmentForm({
 
           </div>
 
+
+          {/* ===================================================== */}
+          {/* VALUATION */}
+          {/* ===================================================== */}
+
+          {type !== "WASTAGE" && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div className="flex flex-col gap-2">
+              <label className="label-style-4">
+                Unit Cost
+              </label>
+
+              <input
+                type="number"
+                step="0.01"
+                value={averageCost || ""}
+                onChange={(e) => {
+                  setLastEdited("averageCost");
+                  setValue("averageCost", Number(e.target.value || 0));
+                }}
+                className="input-style-4"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="label-style-4">
+                Total Stock Value
+              </label>
+
+              <input
+                type="number"
+                step="0.01"
+                value={stockValue || ""}
+                onChange={(e) => {
+                  setLastEdited("stockValue");
+                  setValue("stockValue", Number(e.target.value || 0));
+                }}
+                className="input-style-4"
+                placeholder="0.00"
+              />
+            </div>
+
+          </div>
+          }
           {/* ===================================================== */}
           {/* NOTE */}
           {/* ===================================================== */}

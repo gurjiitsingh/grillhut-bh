@@ -18,30 +18,32 @@ import { InventoryItemType, InventoryUnit } from "@/lib/types/InventoryItemType"
 
 import { displayStock } from "@/utils/inventory/displayStock";
 import { ProductType } from "@/lib/types/productType";
-import { updateFinishedItemStock } from "@/app/(universal)/action/stock-finished/updateFinshedItemStock";
+ 
+import { ProductStock } from "@/lib/types/productStockType";
+import toast from "react-hot-toast";
+import { adjustFinishedItemStock } from "@/app/(universal)/action/stock-finished/AdjustFinshedItemStock";
 
 type Props = {
-  products: ProductType[];
+  products: ProductStock[];
 };
 
 type FormType = {
   id: string;
 
   type:
-  | "PURCHASE"
-  | "OPENING_STOCK"
-  | "ADJUSTMENT"
-  | "WASTAGE"
-  | "SUPPLIER_RETURN"
-  | "CUSTOMER_RETURN";
+    | "PURCHASE"
+    | "OPENING_STOCK"
+    | "ADJUSTMENT"
+    | "UPDATE" 
+    | "WASTAGE"
+    | "PURCHASE_RETURN"
+    | "CUSTOMER_RETURN";
 
-  direction:
-  | "IN"
-  | "OUT";
-
+  direction: "IN" | "OUT";
+averageCost: number;
   quantity: number;
 
-  transactionUnit: InventoryUnit
+  transactionUnit: InventoryUnit;
 
   note: string;
 };
@@ -55,19 +57,13 @@ export default function StockAdjustmentForm({
 
   const [search, setSearch] =
     useState("");
-    const [selectedProduct, setSelectedProduct] =
-  useState<ProductType | null>(null);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductStock | null>(null);
 
   const [showDropdown, setShowDropdown] =
     useState(false);
 
-  const [
-    selectedInventory,
-    setSelectedInventory,
-  ] =
-    useState<ProductType | null>(
-      null
-    );
+
 
   const {
     register,
@@ -77,19 +73,22 @@ export default function StockAdjustmentForm({
     reset,
   } = useForm<FormType>({
     defaultValues: {
-      type: "OPENING_STOCK",
-      direction: "IN",
-      quantity: 0,
-      transactionUnit: "pcs",
-      note: "",
-    },
+  type: "OPENING_STOCK",
+  direction: "IN",
+  quantity: 0,
+  transactionUnit: "kg",
+  averageCost: 0,
+  
+
+  note: "",
+},
   });
 
   const type = watch(
     "type"
   );
-
-  const transactionUnit = watch("transactionUnit");
+const averageCost = watch("averageCost");
+   
 
 
 
@@ -97,40 +96,45 @@ export default function StockAdjustmentForm({
   // AUTO SET STOCK DIRECTION
   // =====================================================
 
-  // React.useEffect(() => {
-  //   if (
-  //     type === "PURCHASE" ||
-  //     type === "OPENING_STOCK" ||
-  //     type === "CUSTOMER_RETURN"
-  //   ) {
-  //     setValue("direction", "IN");
-  //   }
-
-  //   if (
-  //     type === "WASTAGE"
-  //   ) {
-  //     setValue("direction", "OUT");
-  //   }
-  // }, [type, setValue]);
 
 
+  useEffect(() => {
+  switch (type) {
+    case "OPENING_STOCK":
+      setValue("direction", "IN");
+      break;
 
-  React.useEffect(() => {
-    switch (type) {
-      case "PURCHASE":
-      case "OPENING_STOCK":
-      case "CUSTOMER_RETURN":
-        setValue("direction", "IN");
-        break;
+    case "CUSTOMER_RETURN":
+      setValue("direction", "IN");
+      break;
 
-      case "WASTAGE":
-      case "SUPPLIER_RETURN":
-        setValue("direction", "OUT");
-        break;
+    case "PURCHASE_RETURN":
+      setValue("direction", "OUT");
+      break;
 
-      // ADJUSTMENT = manual selection
-    }
-  }, [type, setValue]);
+    case "WASTAGE":
+      setValue("direction", "OUT");
+      break;
+
+    case "ADJUSTMENT":
+    case "UPDATE":
+      // User selects direction
+      break;
+
+    default:
+      break;
+  }
+}, [type, setValue]);
+
+
+useEffect(() => {
+  if (type === "UPDATE" && selectedProduct) {
+    setValue(
+      "averageCost",
+      Number(selectedProduct.avgCost ?? 0)
+    );
+  }
+}, [type, selectedProduct, setValue]);
 
   // =====================================================
   // FILTER INVENTORY
@@ -157,116 +161,110 @@ export default function StockAdjustmentForm({
   // SUBMIT
   // =====================================================
 
-  async function onSubmit(data: FormType) {
-    if (isSubmitting) return;
-
-    if (!selectedInventory) {
-      alert("Please select inventory item");
-      return;
-    }
-
-    const decimalAllowedUnits = [
-      "kg",
-      "gm",
-      "ltr",
-      "ml",
-    ];
-
-    const quantity =
-      Number(data.quantity);
-
-    // prevent decimal in pcs
-    if (
-      !decimalAllowedUnits.includes(
-        data.transactionUnit
-      ) &&
-      !Number.isInteger(quantity)
-    ) {
-      alert(
-        `Decimal quantity not allowed for ${data.transactionUnit}`
-      );
-
-      return;
-    }
-
-    // =====================================
-    // ORIGINAL VALUES
-    // =====================================
-
-    const originalQuantity =
-      Number(data.quantity);
-
-    // =====================================
-    // INTERNAL VALUES
-    // =====================================
-
-    let finalQuantity =
-      Number(data.quantity);
-
-    // convert purchase -> consumption
-
-
-    setIsSubmitting(true);
-
-    let unitCost = 0;
+async function onSubmit(data: FormType) {
 
 
 
-
-
-
-
-    try {
-      const result =
-        await updateFinishedItemStock({
-          id: data.id,
-          productName: "selectedProduct.name",
-
-          direction: data.direction,
-
-          quantity: finalQuantity,
-          transactionUnit: data.transactionUnit,
-
-          note: data.note,
-
-          createdBy: "admin",
-        });
-
-      if (result.success) {
-        let updatedStock =
-          selectedInventory.currentStock;
-
-        if (data.direction === "IN") {
-          updatedStock! += finalQuantity;
-        } else {
-          updatedStock! -= finalQuantity;
-        }
-
-        setSelectedInventory({
-          ...selectedInventory,
-          currentStock: updatedStock,
-        });
-
-        reset({
-          id: selectedProduct!.id,
-          type: "OPENING_STOCK",
-          direction: "IN",
-          quantity: 0,
-          transactionUnit: "pcs",
-          note: "",
-        });
-      } else {
-        alert(result.message);
-      }
-    } catch (error) {
-      console.error(error);
-
-      alert("Something went wrong");
-    }
-
-    setIsSubmitting(false);
+  if (isSubmitting) return;
+  if (!selectedProduct) {
+    toast.error("Please select a product.");
+    return;
   }
 
+  const quantity = Number(data.quantity);
+
+  if (quantity < 0) {
+    toast.error("Quantity cannot be negative.");
+    return;
+  }
+
+  if (
+    data.type !== "UPDATE" &&
+    quantity === 0
+  ) {
+    toast.error(
+      "Quantity must be greater than zero."
+    );
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const mode =
+      data.type === "UPDATE"
+        ? "SET"
+        : data.direction === "IN"
+        ? "INCREASE"
+        : "DECREASE";
+
+console.log("Form Data:", data);
+console.log("averageCost:", data.averageCost);
+
+        //FUNCIONT CALL######################
+    const result =
+      await adjustFinishedItemStock({
+        id: data.id,
+
+        mode,
+
+        quantity,
+
+        sellingPrice:
+          selectedProduct.sellingPrice,
+
+        wholesalePrice:
+          selectedProduct.wholesalePrice,
+
+        costPrice:
+          selectedProduct.costPrice,
+
+        avgCost: data.averageCost,
+      });
+
+    if (!result.success) {
+      toast.error(
+        result.message ||
+          "Failed to update stock."
+      );
+      return;
+    }
+
+    let updatedStock =
+      selectedProduct.currentStock;
+
+    switch (mode) {
+      case "SET":
+        updatedStock = quantity;
+        break;
+
+      case "INCREASE":
+        updatedStock += quantity;
+        break;
+
+      case "DECREASE":
+        updatedStock -= quantity;
+        break;
+    }
+
+    setSelectedProduct({
+      ...selectedProduct,
+      currentStock: updatedStock,
+    });
+
+    toast.success(
+      "Stock updated successfully."
+    );
+  } catch (error) {
+    console.error(error);
+
+    toast.error(
+      "Something went wrong. Please try again."
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+}
   return (
     <div className="min-h-screen bg-[#f6f8fb] p-4 md:p-6">
       <div className="max-w-3xl">
@@ -276,13 +274,13 @@ export default function StockAdjustmentForm({
         {/* ===================================================== */}
 
         <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
-  Stock Adjustment
-</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Stock Adjustment
+          </h1>
 
-<p className="text-sm text-gray-500 mt-1">
-  Manually add or remove finished product stock.
-</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Manually add or remove finished product stock.
+          </p>
         </div>
 
         {/* ===================================================== */}
@@ -310,7 +308,7 @@ export default function StockAdjustmentForm({
               {!search.trim() && (
                 <Search
                   size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
                 />
               )}
 
@@ -344,21 +342,16 @@ export default function StockAdjustmentForm({
                       <button
                         key={item.id}
                         type="button"
-                        onClick={() => {
-                          setSelectedInventory(item);
+                  onClick={() => {
+  setSelectedProduct(item);
 
-                          setValue(
-                            "id",
-                            item.id
-                          );
+  setValue("id", item.id);
+  setValue("averageCost", item.avgCost ?? 0);
+  setValue("quantity", item.currentStock ?? 0); // add this
 
-                          // default transaction unit
-
-
-                          setSearch(item.name);
-
-                          setShowDropdown(false);
-                        }}
+  setSearch(item.name);
+  setShowDropdown(false);
+}}
                         className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-0"
                       >
                         <div className="font-medium text-gray-800">
@@ -388,7 +381,7 @@ export default function StockAdjustmentForm({
           {/* CURRENT STOCK */}
           {/* ===================================================== */}
 
-          {selectedInventory && (
+          {selectedProduct && (
             <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 flex items-center justify-between">
 
               <div className="flex items-center gap-3">
@@ -402,7 +395,7 @@ export default function StockAdjustmentForm({
                 <div>
                   <h3 className="font-semibold text-gray-800">
                     {
-                      selectedInventory.name
+                      selectedProduct.name
                     }
                   </h3>
 
@@ -414,11 +407,11 @@ export default function StockAdjustmentForm({
 
               <div className="text-2xl font-bold text-blue-700">
                 {/* {displayStock(
-                  selectedInventory.currentStock!,
-                  selectedInventory.purchaseUnit,
-                  selectedInventory.consumptionUnit,
-                  selectedInventory.conversionFactor
-                )} */}
+      selectedProduct.currentStock!,
+      selectedProduct.purchaseUnit,
+      selectedProduct.consumptionUnit,
+      selectedProduct.conversionFactor
+    )} */}
               </div>
             </div>
           )}
@@ -429,12 +422,13 @@ export default function StockAdjustmentForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
+            {/* Transaction Type */}
             <div className="flex flex-col gap-2">
               <label className="label-style-4">
                 Transaction Type
               </label>
 
-        <select
+         <select
   {...register("type")}
   className="input-style-4"
 >
@@ -442,32 +436,33 @@ export default function StockAdjustmentForm({
     Opening Stock
   </option>
 
+  <option value="ADJUSTMENT">
+    Stock Adjustment
+  </option>
+
+  <option value="UPDATE">
+    Update (Testing)
+  </option>
+
   <option value="CUSTOMER_RETURN">
     Customer Return
   </option>
 
-  <option value="SUPPLIER_RETURN">
-    Supplier Return
+  <option value="PURCHASE_RETURN">
+    Purchase Return
   </option>
 
   <option value="WASTAGE">
     Wastage
   </option>
-
-  <option value="ADJUSTMENT_IN">
-    Adjustment (Increase)
-  </option>
-
-  <option value="ADJUSTMENT_OUT">
-    Adjustment (Decrease)
-  </option>
 </select>
             </div>
 
-            {type === "ADJUSTMENT" && (
+            {/* Direction (Only for Adjustment) */}
+          {type === "ADJUSTMENT" && (
               <div className="flex flex-col gap-2">
                 <label className="label-style-4">
-                  Stock Direction
+                  Adjustment Direction
                 </label>
 
                 <select
@@ -475,15 +470,16 @@ export default function StockAdjustmentForm({
                   className="input-style-4"
                 >
                   <option value="IN">
-                    Add Stock
+                    Increase Stock
                   </option>
 
                   <option value="OUT">
-                    Remove Stock
+                    Decrease Stock
                   </option>
                 </select>
               </div>
             )}
+
           </div>
 
           {/* ===================================================== */}
@@ -491,7 +487,13 @@ export default function StockAdjustmentForm({
           {/* ===================================================== */}
 
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+  className={`grid gap-4 ${
+    type === "UPDATE"
+      ? "grid-cols-1 md:grid-cols-2"
+      : "grid-cols-1 md:grid-cols-2"
+  }`}
+>
 
             {/* Quantity */}
 
@@ -506,12 +508,18 @@ export default function StockAdjustmentForm({
                 {...register("quantity")}
                 className="input-style-4"
                 placeholder="0"
+                onFocus={(e) => {
+                  if (e.target.value === "0") {
+                    e.target.value = "";
+                  }
+                }}
+               
               />
             </div>
 
             {/* Unit */}
 
-            <div className="flex flex-col gap-2">
+         {type !== "UPDATE" && (   <div className="flex flex-col gap-2">
               <label className="label-style-4">
                 Unit
               </label>
@@ -531,7 +539,25 @@ export default function StockAdjustmentForm({
                 <option value="ltr">Liter (ltr)</option>
                 <option value="ml">Milliliter (ml)</option>
               </select>
-            </div>
+            </div>)}
+
+{type === "UPDATE" && (
+  <div className="flex flex-col gap-2">
+    <label className="label-style-4">
+      Average Cost
+    </label>
+
+   <input
+  type="number"
+  step="0.0001"
+  {...register("averageCost", {
+    valueAsNumber: true,
+  })}
+  defaultValue={selectedProduct?.avgCost ?? 0}
+  className="input-style-4"
+/>
+  </div>
+)}
 
           </div>
 

@@ -21,61 +21,79 @@ export const fetchInventoryItems = cache(
     try {
       const snapshot = await adminDb
         .collection("inventoryItems")
-       // .orderBy("createdAt", "desc")
+        //.orderBy("createdAt", "desc")
         .get();
 
-      const inventoryItems =
-        snapshot.docs.map((doc) => {
-          const data = doc.data();
+      const inventoryItems = snapshot.docs.map((doc) => {
+        const data = doc.data();
 
-          return {
-            id: doc.id,
 
-            name: data.name || "",
+  //       purchaseMappings:
+  // data.purchaseMappings?.length
+  //   ? data.purchaseMappings
+  //   : [
+  //       {
+  //         purchaseUnit:
+  //           data.purchaseUnit ||
+  //           data.consumptionUnit ||
+  //           "pcs",
+  //         consumptionUnit:
+  //           data.consumptionUnit || "pcs",
+  //         factor:
+  //           Number(data.conversionFactor) || 1,
+  //       },
+  //     ],
 
-            sku: data.sku || "",
+      return {
+  id: doc.id,
 
-            barcode: data.barcode || "",
+  name: data.name || "",
 
-            purchaseUnit:
-              data.purchaseUnit || "pcs",
+  sku: data.sku || "",
 
-            consumptionUnit:
-              data.consumptionUnit || "pcs",
+  barcode: data.barcode || "",
 
-            conversionFactor:
-              data.conversionFactor || 1,
+  consumptionUnit:
+    data.consumptionUnit || "pcs",
 
-            currentStock:
-              data.currentStock || 0,
+  purchaseMappings:
+    data.purchaseMappings || [],
 
-            minStock:
-              data.minStock || 0,
+    
+  currentStock:
+    Number(data.currentStock) || 0,
 
-            costPrice:
-              data.costPrice || 0,
+  minStock:
+    Number(data.minStock) || 0,
 
-            sellingPrice:
-              data.sellingPrice || 0,
+  averageCost:
+    Number(data.averageCost) || 0,
+purchaseUnitCost:  Number(data.purchaseUnitCost) || 0,
+  stockValue:
+    Number(data.stockValue) || 0,
 
-            categoryId:
-              data.categoryId || "",
+  sellingPrice:
+    Number(data.sellingPrice) || 0, 
 
-            supplierId:
-              data.supplierId || "",
+  categoryId:
+    data.categoryId || "",
 
-            isActive:
-              data.isActive ?? true,
+  supplierId:
+    data.supplierId || "",
 
-            createdAt:
-              data.createdAt?.toDate?.().toISOString() ||
-              null,
+  supplierIds:
+    data.supplierIds || [],
 
-            updatedAt:
-              data.updatedAt?.toDate?.().toISOString() ||
-              null,
-          };
-        }) as InventoryItemType[];
+  isActive:
+    data.isActive ?? true,
+
+  createdAt:
+    data.createdAt?.toDate?.().toISOString() || null,
+
+  updatedAt:
+    data.updatedAt?.toDate?.().toISOString() || null,
+};
+      }) as InventoryItemType[];
 
       return inventoryItems;
     } catch (error) {
@@ -124,28 +142,37 @@ export async function deleteInventoryItem(
     // CHECK TRANSACTIONS
     // ==========================
 
-    const transactionSnapshot =
-      await adminDb
-        .collection(
-          "inventoryTransactions"
-        )
-        .where(
-          "inventoryItemId",
-          "==",
-          id
-        )
-        .limit(1)
-        .get();
+const transactionSnapshot =
+  await adminDb
+    .collection("stockLedgerInventory")
+    .where(
+      "inventoryItemId",
+      "==",
+      id
+    )
+    .limit(1)
+    .get();
 
-    if (
-      !transactionSnapshot.empty
-    ) {
-      return {
-        success: false,
-        message:
-          "Inventory item has transaction history and cannot be deleted.",
-      };
+if (!transactionSnapshot.empty) {
+
+  transactionSnapshot.docs.forEach(
+    (doc) => {
+      console.log(
+        "Inventory transaction found:",
+        {
+          id: doc.id,
+          ...doc.data(),
+        }
+      );
     }
+  );
+
+  return {
+    success: false,
+    message:
+      "Inventory item has transaction history and cannot be deleted.",
+  };
+}
 
     // ==========================
     // DELETE INVENTORY
@@ -197,16 +224,12 @@ export async function deleteInventoryItem(
 }
 
 
-
-
-
-
 // FETCH SINGLE INVENTORY ITEM
 export async function fetchInventoryItemById(
   id: string
 ): Promise<InventoryItemType | null> {
 
-  console.log("id----------------",id)
+ 
   try {
     const docRef = await adminDb
       .collection("inventoryItems")

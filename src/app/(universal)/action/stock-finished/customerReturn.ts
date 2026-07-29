@@ -6,7 +6,10 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { updateCustomerAccount } from "./inventorySupplier/updateCustomerAccount";
 import { InventoryUnit } from "@/lib/types/InventoryItemType";
 import { applyInventoryMovement } from "../inventory/applyInventoryMovement";
-import { applyFinishedMovement } from "./finishedStockLedger/applyFinishedMovement";
+import { applyFinishedTransactions } from "./finishedStockLedger/applyFinishedTransactions";
+import { applyCustomerTransaction } from "./customer/applyCustomerTransaction";
+
+
 
 type PaymentMethod = "CASH" | "UPI" | "CARD";
 
@@ -49,7 +52,7 @@ export async function customerReturn({
   referenceType = "MANUAL",
 }: CustomerReturnStock) {
 
-  console.log("unitPrice---------------", unitPrice)
+
   try {
     if (!id) {
       return { success: false, message: "Product ID required" };
@@ -62,7 +65,7 @@ export async function customerReturn({
     // =========================
     // GET PRODUCT
     // =========================
-    const productRef = adminDb.collection("products").doc(id);
+    const productRef = adminDb.collection("productStock").doc(id);
     const productSnap = await productRef.get();
 
     if (!productSnap.exists) {
@@ -80,84 +83,107 @@ export async function customerReturn({
     // =========================
     // FINISHED STOCK MOVEMENT
     // =========================
-    const totalAmount = quantity * unitPrice;
-    
+    const totalAmount = 0;
+    const creditAmount = quantity * unitPrice;
+    let currentCreditBalance = 0;
+const returnProductAmount = quantity * unitPrice;
 
-    const movement = await applyFinishedMovement({
-      productId: id,
-      type: "RETURN",
-      direction: "IN",
 
-      quantity,
-      transactionUnit,
+    await adminDb.runTransaction(async (tx) => {
 
-      unitPrice,
-      totalAmount,
+      let currentBalance = 0;
 
-      paidAmount: paymentMethod ? totalAmount : 0,
-      dueAmount: paymentMethod ? 0 : totalAmount,
-      paymentStatus: paymentMethod ? "PAID" : "CREDIT",
-      paymentMethod,
+      if (wholeSaleCutomerId) {
+        const accountRef = adminDb
+          .collection("customerAccounts")
+          .doc(wholeSaleCutomerId);
 
-      referenceId,
-      referenceType,
+        const accountSnap = await tx.get(accountRef);
 
-      note,
-      createdBy: createdBy || "admin",
-      source: "ADMIN",
-    });
+        currentBalance = Number(accountSnap.data()?.balance || 0 );
+        currentCreditBalance = Number(accountSnap.data()?.creditBalance || 0);
+      }
 
-    // =========================
-    // REVERSE RAW MATERIAL CONSUMPTION
-    // =========================
-    const recipeSnapshot = await adminDb
-      .collection("productRecipes")
-      .where("productId", "==", id)
-      .get();
+      const movement = await applyFinishedTransactions(tx, {
+        productId: id,
+        type: "RETURN",
+        direction: "IN",
 
-    if (!recipeSnapshot.empty) {
-      for (const recipeDoc of recipeSnapshot.docs) {
-        const recipe = recipeDoc.data();
+        quantity,
+        transactionUnit,
 
-        await applyInventoryMovement({
-          inventoryItemId: recipe.inventoryItemId,
+        unitPrice,
+        totalAmount: creditAmount,
+returnProductAmount,
+        paidAmount: paymentMethod ? totalAmount : 0,
+        dueAmount: paymentMethod ? 0 : totalAmount,
 
-          type: "RETURN",
-          direction: "IN",
+        paymentStatus: paymentMethod ? "PAID" : "CREDIT",
+        paymentMethod,
 
-          quantity: (Number(recipe.quantity) || 0) * quantity,
+        referenceId,
+        referenceType,
 
-          note: `Customer return reversal (${productData?.name})`,
+        note,
+        createdBy: createdBy || "admin",
+        source: "ADMIN",
+      });
 
-          referenceId: "movement.transactionId" ,
-          referenceType: "RETURN",
+      // =========================
+      // CUSTOMER ACCOUNT REVERSAL
+      // =========================
+      if (wholeSaleCutomerId) {
+        await updateCustomerAccount(tx, {
+          wholeSaleCutomerId,
+          wholeSaleCutomerName,
+          type: "CUSTOMER_RETURN",
 
+          totalAmount: 0, // not used for return
+          paidAmount: 0,
+          dueAmount: 0,
+          creditAmount,
+          currentCreditBalance,
+          currentBalance, // ✅ FIXED
+
+          paymentMethod,
+        });
+
+
+
+        await applyCustomerTransaction(tx, {
+          customerId: wholeSaleCutomerId,
+          customerName: wholeSaleCutomerName,
+
+          type: "CUSTOMER_RETURN",
+
+          totalAmount,// in this case it is total amount of return
+          returnProductAmount,
+          paidAmount: 0,
+          dueAmount: 0,
+          creditAmount: creditAmount ? creditAmount : 0,
+          currentCreditBalance,
+          currentBalance,
+
+          paymentMethod,
+
+          referenceId,
+          referenceType,
+
+          note,
           createdBy: createdBy || "admin",
           source: "ADMIN",
         });
+
+
+
+
       }
-    }
-
-    // =========================
-    // CUSTOMER ACCOUNT REVERSAL
-    // =========================
-    if (wholeSaleCutomerId) {
-      const totalAmount = quantity * unitPrice;
-
-      await updateCustomerAccount({
-        wholeSaleCutomerId,
-        type: "RETURN",
-        totalAmount,
-        paidAmount: paymentMethod ? totalAmount : 0,
-        dueAmount: paymentMethod ? 0 : totalAmount,
-        paymentMethod,
-      });
-    }
+    });
 
     // =========================
     // CACHE REFRESH
     // =========================
-    revalidateTag("products","max");
+    revalidateTag("products", "max");
     revalidatePath("/admin/stock-finished");
 
     return {

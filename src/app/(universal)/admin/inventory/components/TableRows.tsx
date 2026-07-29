@@ -33,6 +33,7 @@ import { formatCurrencyNumber } from "@/utils/formatCurrency";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
 import { InventoryItemType } from "@/lib/types/InventoryItemType";
 import { displayStock } from "@/utils/inventory/displayStock";
+import { getDisplayAverageCost, getPrimaryPurchaseMapping } from "@/utils/getPrimaryPurchaseMapping";
 
 
 
@@ -44,7 +45,31 @@ function TableRows({
 }) {
   const { settings } = UseSiteContext();
 
-   
+const mapping = getPrimaryPurchaseMapping(item);
+
+
+const primaryMapping =
+  getPrimaryPurchaseMapping(item);
+
+const displayAverageCost =
+  getDisplayAverageCost(item).toFixed(2);
+
+
+
+//   const primaryMapping =
+//   item.purchaseMappings?.[0] ?? {
+//     purchaseUnit: item.consumptionUnit,
+//     consumptionUnit: item.consumptionUnit,
+//     factor: 1,
+//   };
+
+//  const displayAverageCost =
+//   primaryMapping.factor === 1
+//     ? item.averageCost!.toFixed(2)
+//     : (
+//         item.averageCost! *
+//         primaryMapping.factor
+//       ).toFixed(2);
 
   const isLowStock =
     item.currentStock! <= item.minStock!;
@@ -120,7 +145,7 @@ function TableRows({
       {/* UNIT */}
       <TableCell>
         <span className="capitalize text-sm font-medium text-gray-700">
-          {item.purchaseUnit}
+        {primaryMapping.purchaseUnit}
         </span>
       </TableCell>
 
@@ -133,12 +158,47 @@ function TableRows({
                 : "text-gray-800"
               }`}
           >
-            {displayStock(
-              item.currentStock!,
-              item.purchaseUnit,
-              item.consumptionUnit,
-              item.conversionFactor
-            )}
+         {displayStock(
+  item.currentStock!,
+  primaryMapping.purchaseUnit,
+  item.consumptionUnit,
+  primaryMapping.factor
+)}
+          </span>
+
+          <span className="text-xs text-gray-400">
+            Available
+          </span>
+        </div>
+      </TableCell>
+
+        <TableCell>
+        <div className="flex flex-col">
+          <span
+            className={`font-bold text-base ${isLowStock
+                ? "text-rose-600"
+                : "text-gray-800"
+              }`}
+          >
+          {/* {displayAverageCost}/{primaryMapping.purchaseUnit} */}
+         { item.purchaseUnitCost}
+          </span>
+
+          <span className="text-xs text-gray-400">
+            Available
+          </span>
+        </div>
+      </TableCell>
+
+        <TableCell>
+        <div className="flex flex-col">
+          <span
+            className={`font-bold text-base ${isLowStock
+                ? "text-rose-600"
+                : "text-gray-800"
+              }`}
+          >
+         Rs {item.stockValue}
           </span>
 
           <span className="text-xs text-gray-400">
@@ -150,12 +210,12 @@ function TableRows({
       {/* MIN STOCK */}
       <TableCell>
         <span className="text-sm font-medium text-gray-700">
-          {displayStock(
-            item.minStock!,
-            item.purchaseUnit,
-            item.consumptionUnit,
-            item.conversionFactor
-          )}
+       {displayStock(
+  item.minStock!,
+  primaryMapping.purchaseUnit,
+  item.consumptionUnit,
+  primaryMapping.factor
+)} 
         </span>
       </TableCell>
 
@@ -195,7 +255,7 @@ function TableRows({
         <div className="flex items-center justify-end gap-2">
           {/* EDIT */}
           <Link
-            href={`/admin/inventory/${item.id}`}
+            href={`/admin/inventory/edit/${item.id}`}
           >
             <Button
               size="sm"

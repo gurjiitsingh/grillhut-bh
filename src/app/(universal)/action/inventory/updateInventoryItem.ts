@@ -13,6 +13,7 @@ export async function updateInventoryItem(
   id: string,
   formData: FormData
 ) {
+  
 
   try {
     const name =
@@ -31,18 +32,22 @@ export async function updateInventoryItem(
         ) as string | null
       )?.trim() || "";
 
-    const purchaseUnit = formData.get(
-      "purchaseUnit"
-    ) as InventoryUnit;
+    // const purchaseUnit = formData.get(
+    //   "purchaseUnit"
+    // ) as InventoryUnit;
 
     const consumptionUnit = formData.get(
       "consumptionUnit"
     ) as InventoryUnit;
 
-    const conversionFactor =
-      Number(
-        formData.get("conversionFactor")
-      ) || 1;
+    const purchaseMappings = JSON.parse(
+  formData.get("purchaseMappings") as string
+);
+
+    // const conversionFactor =
+    //   Number(
+    //     formData.get("conversionFactor")
+    //   ) || 1;
 
     // let currentStock =
     //   Number(
@@ -81,6 +86,8 @@ const supplierIds =
     const isActive =
       formData.get("isActive") === "true";
 
+
+      
     // STORE STOCK IN CONSUMPTION UNIT
     // if (
     //   purchaseUnit !== consumptionUnit &&
@@ -96,9 +103,9 @@ const supplierIds =
       sku: cleanedSku,
       barcode: cleanedBarcode,
 
-      purchaseUnit,
+     // purchaseUnit,
       consumptionUnit,
-      conversionFactor,
+      purchaseMappings,
 
      // currentStock,
       minStock,
@@ -111,7 +118,7 @@ const supplierIds =
 
       isActive,
     };
-
+ 
     const result =
       newInventorySchema.safeParse(
         receivedData
@@ -228,10 +235,10 @@ const supplierIds =
   sku: cleanedSku,
   barcode: cleanedBarcode,
 
-  // purchaseUnit,
-  // consumptionUnit,
-  // conversionFactor,
-
+  //purchaseUnit,
+  consumptionUnit,
+  //conversionFactor,
+purchaseMappings,
   //currentStock,
   minStock,
 
@@ -248,7 +255,7 @@ const supplierIds =
   updatedAt:
     admin.firestore.FieldValue.serverTimestamp(),
 };
-console.log("data---------------------",data)
+ 
 
     await adminDb
       .collection("inventoryItems")

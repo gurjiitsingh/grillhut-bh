@@ -26,6 +26,7 @@ import { InventoryItemType } from "@/lib/types/InventoryItemType";
 
 import TableRows from "./TableRows";
 import { InventoryCategory } from "@/lib/types/InventoryCategory";
+import { formatCurrencyNumber } from "@/utils/formatCurrency";
 
 type Props = {
   inventoryItems: InventoryItemType[];
@@ -36,20 +37,22 @@ export default function ListView({
   inventoryItems,
   categories
 }: Props) {
+
+
   const [filtered, setFiltered] =
     useState<InventoryItemType[]>([]);
 
   const [search, setSearch] =
     useState("");
 
-const categoryMap = useMemo(() => {
-  return new Map(
-    (categories ?? []).map((category) => [
-      category.id,
-      category.name,
-    ])
-  );
-}, [categories]);
+  const categoryMap = useMemo(() => {
+    return new Map(
+      (categories ?? []).map((category) => [
+        category.id,
+        category.name,
+      ])
+    );
+  }, [categories]);
 
   const inventoryWithCategory =
     useMemo(() => {
@@ -97,10 +100,17 @@ const categoryMap = useMemo(() => {
     ).length;
   }, [inventoryItems]);
 
+const totalStockValue = useMemo(() => {
+  return inventoryItems.reduce(
+    (sum, item) => sum + (Number(item.stockValue) || 0),
+    0
+  );
+}, [inventoryItems]);
+
   return (
     <div className="flex flex-col gap-5">
       {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* TOTAL */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div className="flex items-center justify-between">
@@ -166,6 +176,30 @@ const categoryMap = useMemo(() => {
             </div>
           </div>
         </div>
+
+ {/*  STOCK value*/}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">
+                Stock Value
+              </p>
+
+             <h3 className="text-3xl font-bold text-green-600 mt-2">
+  {formatCurrencyNumber(totalStockValue)}
+</h3>
+            </div>
+
+            <div className="h-12 w-12 rounded-2xl bg-rose-100 flex items-center justify-center">
+              <AlertTriangle
+                className="text-rose-600"
+                size={24}
+              />
+            </div>
+          </div>
+        </div>
+
+
       </div>
 
       {/* FILTER BAR */}
@@ -223,6 +257,14 @@ const categoryMap = useMemo(() => {
                 <TableHead>
                   Stock
                 </TableHead>
+                <TableHead>
+                  Avg cost
+                </TableHead>
+
+                <TableHead>
+                  Stock Value
+                </TableHead>
+
 
                 <TableHead>
                   Min Stock
@@ -242,27 +284,27 @@ const categoryMap = useMemo(() => {
               </TableRow>
             </TableHeader>
 
-       <TableBody>
-  {filtered.length > 0 ? (
-    inventoryWithCategory.map(
-      (item) => (
-        <TableRows
-          key={item.id}
-          item={item}
-        />
-      )
-    )
-  ) : (
-    <TableRow>
-      <td
-        colSpan={8}
-        className="text-center py-16 text-gray-400"
-      >
-        No inventory items found
-      </td>
-    </TableRow>
-  )}
-</TableBody>
+            <TableBody>
+              {filtered.length > 0 ? (
+                inventoryWithCategory.map(
+                  (item) => (
+                    <TableRows
+                      key={item.id}
+                      item={item}
+                    />
+                  )
+                )
+              ) : (
+                <TableRow>
+                  <td
+                    colSpan={8}
+                    className="text-center py-16 text-gray-400"
+                  >
+                    No inventory items found
+                  </td>
+                </TableRow>
+              )}
+            </TableBody>
           </Table>
         </div>
       </div>

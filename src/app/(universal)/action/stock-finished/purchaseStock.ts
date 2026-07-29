@@ -5,7 +5,7 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { InventoryUnit } from "@/lib/types/InventoryItemType";
 import { applyInventoryMovement } from "../inventory/applyInventoryMovement";
-import { applyFinishedMovement } from "./finishedStockLedger/applyFinishedMovement";
+import {  applyFinishedTransactions } from "./finishedStockLedger/applyFinishedTransactions";
 
 type PaymentMethod = "CASH" | "UPI" | "CARD";
 
@@ -68,65 +68,92 @@ export async function purchaseStock({
     // (optional future: update product stock here if you want direct field update)
     // await productRef.update({ currentStock: newStock });
 
-    // =========================
-    // FINISHED STOCK MOVEMENT
-    // =========================
-    const totalAmount = quantity * unitPrice;
+  
 
-    await applyFinishedMovement({
-      productId: id,
+  // =========================
+// FINISHED STOCK MOVEMENT
+// =========================
+const totalAmount = quantity * unitPrice;
+
+await adminDb.runTransaction(async (tx) => {
+  // Finished stock ledger
+  await applyFinishedTransactions(tx, {
+    productId: id,
+    type: "PURCHASE",
+    direction: "IN",
+
+    quantity,
+    transactionUnit,
+
+    unitPrice,
+    totalAmount,
+
+    paidAmount: paymentMethod ? totalAmount : 0,
+    dueAmount: paymentMethod ? 0 : totalAmount,
+    paymentStatus: paymentMethod ? "PAID" : "CREDIT",
+    paymentMethod,
+
+    referenceId,
+    referenceType: "PURCHASE",
+
+    note: note || "Purchase entry",
+    createdBy: createdBy || "admin",
+    source: "ADMIN",
+  });
+
+  // =========================
+  // RAW MATERIAL STOCK
+  // =========================
+
+  const recipeSnapshot = await adminDb
+    .collection("productRecipes")
+    .where("productId", "==", id)
+    .get();
+
+  for (const recipeDoc of recipeSnapshot.docs) {
+    const recipe = recipeDoc.data();
+
+    const rawQty =
+      (Number(recipe.quantity) || 0) * quantity;
+
+    await applyInventoryMovement(tx, {
+      inventoryItemId: recipe.inventoryItemId,
+
       type: "PURCHASE",
       direction: "IN",
 
-      quantity,
-      transactionUnit,
+      // inventory movement
+      quantity: rawQty,
+      unitCost: unitPrice,
 
-      unitPrice,
-      totalAmount,
+      // purchase information
+      purchaseQuantity: rawQty,
+      purchaseUnit: recipe.inventoryUnit,
+      purchaseUnitCost: unitPrice,
+      conversionFactor: 1,
 
-      paidAmount: paymentMethod ? totalAmount : 0,
-      dueAmount: paymentMethod ? 0 : totalAmount,
+      supplierId: "",
+      supplierName: "",
+
+      totalAmount: rawQty * unitPrice,
+      paidAmount: paymentMethod ? rawQty * unitPrice : 0,
+      dueAmount: paymentMethod ? 0 : rawQty * unitPrice,
       paymentStatus: paymentMethod ? "PAID" : "CREDIT",
       paymentMethod,
 
-      referenceId,
+      referenceId: referenceId || "",
       referenceType: "PURCHASE",
 
-      note: note || "Purchase entry",
+      note:
+        note ||
+        `Purchase stock inflow (${productData?.name})`,
+
       createdBy: createdBy || "admin",
       source: "ADMIN",
     });
-
-    // =========================
-    // RAW MATERIAL STOCK IN (if product has recipe)
-    // =========================
-    const recipeSnapshot = await adminDb
-      .collection("productRecipes")
-      .where("productId", "==", id)
-      .get();
-
-    if (!recipeSnapshot.empty) {
-      for (const recipeDoc of recipeSnapshot.docs) {
-        const recipe = recipeDoc.data();
-
-        await applyInventoryMovement({
-          inventoryItemId: recipe.inventoryItemId,
-
-          type: "PURCHASE",
-          direction: "IN",
-
-          quantity: (Number(recipe.quantity) || 0) * quantity,
-
-          note: `Purchase stock inflow (${productData?.name})`,
-
-          referenceId: referenceId || "",
-          referenceType: "PURCHASE",
-
-          createdBy: createdBy || "admin",
-          source: "ADMIN",
-        });
-      }
-    }
+  }
+});
+   
 
     // =========================
     // CACHE
