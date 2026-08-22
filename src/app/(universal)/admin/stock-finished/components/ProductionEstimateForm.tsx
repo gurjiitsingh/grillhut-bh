@@ -23,7 +23,7 @@ export default function ProductionEstimateForm({
   products,
 }: Props) {
 
-  console.log("products-------------", products)
+ 
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
@@ -360,7 +360,7 @@ export default function ProductionEstimateForm({
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 border-b bg-gray-50">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 border-b bg-gray-50">
 
         <div className="rounded-2xl bg-cyan-50 border border-cyan-100 p-5">
           <p className="text-sm text-gray-500">
@@ -371,6 +371,16 @@ export default function ProductionEstimateForm({
             {estimate.items.length}
           </p>
         </div>
+         <div className="rounded-2xl bg-green-50 border border-green-100 p-5">
+          <p className="text-sm text-gray-500">
+            Estimated Cost/Unit
+          </p>
+
+          <p className="text-3xl font-bold text-green-700 mt-2">
+            ₹ {((estimate.totalEstimatedCost)).toFixed(2)}
+          </p>
+        </div>
+
 
         <div className="rounded-2xl bg-green-50 border border-green-100 p-5">
           <p className="text-sm text-gray-500">

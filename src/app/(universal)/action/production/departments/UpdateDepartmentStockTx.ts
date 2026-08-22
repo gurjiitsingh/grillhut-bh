@@ -1,12 +1,13 @@
 "use server";
 
 import { adminDb } from "@/lib/firebaseAdmin";
-import { DepartmentStockUpdate } from "@/lib/types/department/DepartmentStockUpdate";
+import { DepartmentStockIssueUpdateType } from "@/lib/types/department/DepartmentStockUpdate";
+ 
 
 
 interface UpdateDepartmentStockInput {
   transaction: FirebaseFirestore.Transaction;
-  update: DepartmentStockUpdate;
+  update: DepartmentStockIssueUpdateType;
 }
 
 export async function updateDepartmentStockTx({
@@ -19,44 +20,36 @@ export async function updateDepartmentStockTx({
 
   const newStockValue = Number(
     (
-      (update.newQuantity! * update.newPurchaseUnitCost) /
+      (update.newCurrentStock! * update.newPurchaseUnitCost) /
       update.conversionFactor
     ).toFixed(2)
   );
 
   console.log("========== Department Stock Update ==========");
-  console.log("Quantity New value        :", update.newQuantity);
-  console.log("Average Cost      :", update.newPurchaseUnitCost); // or update.newAverageCost
-  console.log("Average Cost      :", update.newPurchaseUnitCost);
+  console.log("New Stock Value       :", update.newStockValue);
+  console.log("New CurrentStock        :", update.newCurrentStock);
+  console.log("Average Cost      :",  update.newAverageCost); // or update.newAverageCost
+
+  console.log("new purchase Unit      :", update.newPurchaseUnitCost);  
   console.log("update.conversionFactor       :", update.conversionFactor);
-  console.log("Purchase Unit Cost:", update.newPurchaseUnitCost);
-  console.log("Current Stock     :", update.newQuantity);
-  console.log("Stock Value       :", newStockValue);
-
-    let averageCost = update.newPurchaseUnitCost;
-  let purchaseUnitCost = update.newPurchaseUnitCost;
-
-  if (update.newQuantity == 0) {
-    averageCost = 0;
-    purchaseUnitCost = 0;
-  }
 
 
+//console.log("data---------------------------",update.newCurrentStock)
   const data = {
-    quantity: update.newQuantity,
-    averageCost: averageCost,
-    purchaseUnitCost: purchaseUnitCost,
+    
+    averageCost: update.newAverageCost,
+    purchaseUnitCost: update.newAverageCost,//update.newPurchaseUnitCost,
+    
     consumptionUnit:update.consumptionUnit,
-    currentStock: update.newQuantity,
-    stockValue: newStockValue,
+    currentStock: update.newCurrentStock,
+    stockValue: update.newStockValue,
     updatedAt: now,
   };
 
-  console.log("Updating Firestore with:", data);
+  //console.log("Updating Firestore with:", data);
 
-
-
-
+  console.log("update.exists:", update.exists);
+console.log("update.ref:", update.ref?.path);
 
   if (update.exists && update.ref) {
 
@@ -64,13 +57,11 @@ export async function updateDepartmentStockTx({
     return;
   }
 
-
-
-
+  //console.log("update.newCurrentStock----------------------------", update.newCurrentStock)
 
   const ref = db.collection("departmentStock").doc();
 
-  tx.set(ref, {
+   tx.set(ref, {
     id: ref.id,
 
     departmentId: update.departmentId,
@@ -78,11 +69,11 @@ export async function updateDepartmentStockTx({
     inventoryItemId: update.inventoryItemId,
     inventoryItemName: update.inventoryItemName,
 
-    quantity: update.newQuantity,
-    currentStock: update.newQuantity,
-    averageCost: update.newPurchaseUnitCost,
+   // quantity: update.newQuantity,
+    currentStock: update.newCurrentStock,
+    averageCost: update.newAverageCost,
+    stockValue: update.newStockValue,
     purchaseUnitCost:  update.newPurchaseUnitCost,
-    stockValue: newStockValue,
     purchaseUnit: update.purchaseUnit,
     consumptionUnit: update.consumptionUnit,
     conversionFactor: update.conversionFactor,

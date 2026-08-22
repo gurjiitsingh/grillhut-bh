@@ -1,13 +1,5 @@
-import React from 'react';
-  
-  const UseWindowDimensions = () =>  {
-	return (
-	  <div>
-	  </div>
-	);
-  }
-  
-  export default UseWindowDimensions;
+ 
+   'use client'
   import { useState, useEffect } from "react";
 
 export const useWindowDimensions = () => {

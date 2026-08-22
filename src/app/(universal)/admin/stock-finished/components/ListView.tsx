@@ -13,6 +13,7 @@ import {
   PackageCheck,
   Boxes,
   Package2,
+  Wrench,
 } from "lucide-react";
 
 import {
@@ -88,23 +89,23 @@ export default function ListView({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
         <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-2xl bg-rose-100 flex items-center justify-center">
-                  <Package2
-                    size={22}
-                    className="text-rose-600"
-                  />
-                </div>
+          <div className="h-11 w-11 rounded-2xl bg-rose-100 flex items-center justify-center">
+            <Package2
+              size={22}
+              className="text-rose-600"
+            />
+          </div>
 
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-800">
-                    Prodcut Stock Management
-                  </h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Prodcut Stock Management
+            </h1>
 
-                  <p className="text-sm text-gray-500">
-                    Manage finished items stock
-                   </p>
-                </div>
-              </div>
+            <p className="text-sm text-gray-500">
+              Manage finished items stock
+            </p>
+          </div>
+        </div>
         {/* TOTAL */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div className="flex items-center justify-between">
@@ -176,7 +177,7 @@ export default function ListView({
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
         <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
           {/* SEARCH */}
-          <div className="relative w-full lg:max-w-md">
+          <div className="flex gap-2 relative w-full lg:max-w-md">
             <Search
               size={18}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -191,25 +192,34 @@ export default function ListView({
               }
               className="input-style-4 pl-10"
             />
+             <div className="flex gap-2 text-sm text-gray-500">
+              Showing{" "}
+              <span className="font-semibold text-gray-700">
+                {filtered.length}
+              </span>{" "}
+              
+                items
+            </div>
+
           </div>
 
           {/* INFO */}
           <div className="flex gap-3 items-center">
-             <Link
-            href="/admin/stock-finished/products/add"
-            className="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#00796b]"
-          >
-            + Products
-          </Link>
-          <div className="text-sm text-gray-500">
-            Showing{" "}
-            <span className="font-semibold text-gray-700">
-              {filtered.length}
-            </span>{" "}
-            inventory items
-          </div>
+            <Link
+              href="/admin/stock-finished/products/add"
+              className="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#00796b]"
+            >
+              + Products
+            </Link>
 
-</div>
+              <Link href="/admin/stock-finished/repair">
+                  <button className="btn-save-4 flex items-center gap-2">
+                    <Wrench size={18} />
+                    Repair
+                  </button>
+                </Link>
+           
+          </div>
         </div>
       </div>
 
@@ -223,11 +233,11 @@ export default function ListView({
                   Item
                 </TableHead>
 
-                  <TableHead>
+                <TableHead>
                   W Sale Price
                 </TableHead>
-                 
-              
+
+
                 {/* <TableHead>
                   SKU
                 </TableHead> */}
@@ -259,13 +269,13 @@ export default function ListView({
                 <TableHead>
                   Maintain Live
                 </TableHead>
-                  <TableHead>
+                <TableHead>
                   Category
                 </TableHead>
 
-                {/* <TableHead className="text-right pr-5">
+                <TableHead className="text-right pr-5">
                   Actions
-                </TableHead> */}
+                </TableHead>
               </TableRow>
             </TableHeader>
 

@@ -1,13 +1,5 @@
-import React from 'react';
+ 
   
-  const CategorySlider = () =>  {
-	return (
-	  <div>
-	  </div>
-	);
-  }
-  
-  export default CategorySlider;
   "use client";
 
 import { useEffect, useState, useMemo } from "react";

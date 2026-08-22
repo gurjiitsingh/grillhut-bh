@@ -1,13 +1,5 @@
-import React from 'react';
+ 
   
-  const OldTypeCategorySlider = () =>  {
-	return (
-	  <div>
-	  </div>
-	);
-  }
-  
-  export default OldTypeCategorySlider;
   "use client";
 
 import { useEffect, useState, useMemo } from "react";

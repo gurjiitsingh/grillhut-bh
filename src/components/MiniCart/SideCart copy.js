@@ -1,13 +1,5 @@
-import React from 'react';
+ 
   
-  const SideCart copy = () =>  {
-	return (
-	  <div>
-	  </div>
-	);
-  }
-  
-  export default SideCart copy;
   "use client";
 
 import { useRef } from "react";

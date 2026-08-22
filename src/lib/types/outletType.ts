@@ -54,6 +54,11 @@ export const outletSchema = z.object({
   printerWidth: z.enum(["58", "80"]),
   footerNote: z.string().optional(),
 
+  taxMode: z.enum([
+  "FORCE_INCLUSIVE",
+  "FORCE_EXCLUSIVE",
+  "PER_ITEM",
+]).default("PER_ITEM"),
   // QR
   qrEnabled: z.boolean().optional(),
 
@@ -71,21 +76,27 @@ export const outletSchema = z.object({
   isActive: z.boolean(),
 
   // UPI
-  upiId: z
+  // UPI
+upiId: z.preprocess(
+  (v) => (v === "" ? undefined : v),
+  z
     .string()
-    .regex(/^[\w.-]+@[\w.-]+$/, "Invalid UPI ID")
+    .regex(
+      /^[\w.-]+@[\w.-]+$/,
+      "Invalid UPI ID"
+    )
     .optional()
-    .nullable(),
+),
 
-  upiName: z
-    .string()
-    .optional()
-    .nullable(),
+upiName: z.preprocess(
+  (v) => (v === "" ? undefined : v),
+  z.string().optional()
+),
 
-  upiTitle: z
-    .string()
-    .optional()
-    .nullable(),
+upiTitle: z.preprocess(
+  (v) => (v === "" ? undefined : v),
+  z.string().optional()
+),
 });
 
 export type ToutletSchema = z.infer<typeof outletSchema>;

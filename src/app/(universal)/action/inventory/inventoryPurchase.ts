@@ -2,7 +2,7 @@
 
 import admin from "firebase-admin";
 import { adminDb } from "@/lib/firebaseAdmin";
-import { ApplyInventoryTransactionType } from "@/lib/types/ApplyInventoryTransactionType";
+import { ApplyInventoryTransactionType, InventoryTransactionPurchaseType } from "@/lib/types/ApplyInventoryTransactionType";
 import { InventoryLedgerType } from "@/lib/types/inventory/InventoryLedgerType";
 
 
@@ -23,22 +23,17 @@ export async function inventoryPurchase(
         direction,
 
         quantity,
-        stockValue,
-        unitCost,
 
-        purchaseQuantity,
+
         purchaseUnit,
+        purchaseQuantity,
         purchaseUnitCost,
         conversionFactor,
 
         supplierId,
         supplierName,
 
-        totalAmount = 0,
-        paidAmount = 0,
-        dueAmount = 0,
-        paymentStatus = "PAID",
-        paymentMethod = null,
+
 
         referenceType = "MANUAL",
         referenceId = "",
@@ -47,9 +42,18 @@ export async function inventoryPurchase(
         createdBy = "system",
 
         source = "SYSTEM",
-    }: ApplyInventoryTransactionType) {
+    }: InventoryTransactionPurchaseType) {
 
-
+if (!Number.isFinite(purchaseQuantity!) || purchaseQuantity! <= 0) {
+  throw new Error(
+    `Invalid purchaseQuantity: ${purchaseQuantity}`
+  );
+}
+if (!Number.isFinite(purchaseUnitCost!) || purchaseUnitCost! < 0) {
+  throw new Error(
+    `Invalid purchaseUnitCost: ${purchaseUnitCost}`
+  );
+}
     const now = admin.firestore.FieldValue.serverTimestamp();
 
     if (quantity <= 0) {
@@ -67,111 +71,58 @@ export async function inventoryPurchase(
     }
 
     const inventory = snap.data()!;
+    
 
     // =====================================================
-    // UPDATE INVENTORY ITEM (MASTER STOCK)
+    //  INVENTORY ITEM (MASTER STOCK) DATA FETCH
     // =====================================================
 
     const beforeStock =
         Number(inventory.currentStock) || 0;
 
-    const beforeAverageCost =
-        Number(inventory.averageCost) || 0;
-
-    const beforeStockValue =
-        Number(inventory.stockValue) || 0;
-
-    const purchaseUnitCostN = Number(purchaseUnitCost) || 0;
-
-    const totalPurchaseAmount = purchaseUnitCostN * purchaseQuantity!;
-
-    let afterStock = beforeStock;
-    let afterAverageCost = beforeAverageCost;
-    let afterStockValue = beforeStockValue;
-
-    const isCostMovement = COST_TYPES.has(type);
-
-    // Use entered cost, otherwise current average cost
-    const finalUnitCost = Number(unitCost || beforeAverageCost);
 
 
-    afterStock = beforeStock + quantity;
+    const beforeStockValue = Number(inventory.stockValue) || 0;
+    const existingConversionFactor = Number(inventory.conversionFactor) || 1;
 
-    // afterStockValue =
-    //     beforeStockValue + totalAmount;
-    afterStockValue = beforeStockValue + stockValue!;
+    // =====================================================
+    //  PURCHASE DATA
+    // =====================================================
+    const totalPurchaseAmount = purchaseUnitCost * purchaseQuantity!;
 
-    afterAverageCost =
-        afterStock > 0
-            ? afterStockValue / afterStock
-            : 0;
+    // =====================================================
+    //  CALCULATIONS
+    // =====================================================
 
+    let afterStock = beforeStock + quantity;;
 
-    // Final safety
-    afterStockValue = Number(
-        afterStockValue.toFixed(2)
-    );
+    let afterStockValue = beforeStockValue + purchaseQuantity! * purchaseUnitCost!;;
+    let afterAverageCost = Number((afterStockValue /( afterStock / existingConversionFactor)).toFixed(2));
 
-    // afterAverageCost = Number(
-    //     afterAverageCost.toFixed(8)
-    // );
-    afterAverageCost = afterAverageCost;
+console.log("====================================");
+console.log("AVERAGE COST DEBUG");
+console.log("====================================");
 
-    let stockQtyInPurchaseUnit = inventory.currentStock / conversionFactor!;
-
-    //    NEW STRATAGY TO CALCULATE RATE
-    let newPurchaseUnitCostStockValue = 0;
-    let newPurchaseUnitCost = 0;
-
-    let purchaseQtyInPurchaseUnit = Number(quantity / conversionFactor!)
-
-    const existingPurchaseUnitCost =
-        Number(inventory.purchaseUnitCost ?? 0);
-
-    if (existingPurchaseUnitCost > 0) {
-        newPurchaseUnitCostStockValue = Number((purchaseUnitCostN * purchaseQtyInPurchaseUnit + inventory.purchaseUnitCost * stockQtyInPurchaseUnit).toFixed(2));
-
-        newPurchaseUnitCost = Number((newPurchaseUnitCostStockValue / (purchaseQtyInPurchaseUnit + stockQtyInPurchaseUnit)).toFixed(2));
-    } else {
-        newPurchaseUnitCostStockValue = Number((purchaseUnitCostN * purchaseQtyInPurchaseUnit).toFixed(2));
-
-        newPurchaseUnitCost = Number((newPurchaseUnitCostStockValue / purchaseQtyInPurchaseUnit).toFixed(2));
+console.log("afterStockValue:", afterStockValue);
+console.log("afterStock:", afterStock);
+console.log("existingConversionFactor:", existingConversionFactor);
+console.log("New AverageCost: ", afterAverageCost)
+console.log("====================================");
 
 
-    }
-    // console.log("stockQtyInPurchaseUnit -----------------",stockQtyInPurchaseUnit)
-    // console.log("stocke qty -----------------",stockQtyInPurchaseUnit)
-    // console.log("purchase qty -----------------",purchaseQtyInPurchaseUnit)
-    // console.log("newPurchaseUnitCostStockValue -----------------",newPurchaseUnitCostStockValue)
-    // console.log("newpruchage -----------------",newPurchaseUnitCost)
-
-
-
+   
     tx.update(inventoryRef, {
         currentStock: afterStock,
-        stockValue: newPurchaseUnitCostStockValue,//afterStockValue,
-        consumptionUnit:inventory.consumptionUnit,
+        stockValue: afterStockValue,//afterStockValue,
+       // consumptionUnit: inventory.consumptionUnit? inventory.consumptionUnit : "gm",
         averageCost: afterAverageCost,
-        costPrice: afterAverageCost,
-        purchaseUnit,
-        purchaseUnitCost: newPurchaseUnitCost,
+      //  costPrice: afterAverageCost,
+        purchaseUnit: purchaseUnit,
+        purchaseUnitCost: purchaseUnitCost,// THIS IS RECENT  PURCHASE COST FOR
         updatedAt: now,
     });
 
-
-
-    // =====================================================
-    // CREATE INVENTORY LEDGER TRANSACTION
-    // Stores immutable history of every inventory movement.
-    // This NEVER updates inventory totals.
-    // =====================================================
-
-    const purchaseQty =
-        purchaseQuantity ??
-        quantity
-
-console.log("inventory-------------------", inventory)
-
+ 
     const ledgerRef =
         adminDb.collection("stockLedgerInventory").doc();
 
@@ -198,14 +149,14 @@ console.log("inventory-------------------", inventory)
         // =====================================================
         // PURCHASE DETAILS
         // =====================================================
-        purchaseQuantity: purchaseQty,
+        purchaseQuantity: quantity,
 
         purchaseUnit: purchaseUnit || inventory.purchaseUnit || inventory.consumptionUnit,
 
-        purchaseUnitCost: purchaseUnitCostN,
+        purchaseUnitCost: purchaseUnitCost,
         quantity: quantity,
         consumptionUnit: inventory.consumptionUnit,
-        unitCost: unitCost,
+
         // =====================================================
         // TRANSACTION DETAILS
         // =====================================================
@@ -219,7 +170,7 @@ console.log("inventory-------------------", inventory)
         transactionUnit:
             inventory.consumptionUnit || "gm",
 
-        transactionUnitCost: finalUnitCost,
+        transactionUnitCost: purchaseUnitCost,
 
         // =====================================================
         // STOCK
@@ -235,16 +186,16 @@ console.log("inventory-------------------", inventory)
         // =====================================================
         // PAYMENT
         // =====================================================
-        paidAmount: isCostMovement ? paidAmount : 0,
-        dueAmount: isCostMovement ? dueAmount : 0,
+        // paidAmount: isCostMovement ? paidAmount : 0,
+        // dueAmount: isCostMovement ? dueAmount : 0,
 
-        paymentStatus: isCostMovement
-            ? paymentStatus
-            : null,
+        // paymentStatus: isCostMovement
+        //     ? paymentStatus
+        //     : null,
 
-        paymentMethod: isCostMovement
-            ? paymentMethod
-            : null,
+        // paymentMethod: isCostMovement
+        //     ? paymentMethod
+        //     : null,
 
         // =====================================================
         // TRANSACTION INFO
@@ -276,7 +227,7 @@ console.log("inventory-------------------", inventory)
     return {
         beforeStock,
         afterStock,
-        unitCost: finalUnitCost,
+        unitCost: purchaseUnitCost,
     };
 
 

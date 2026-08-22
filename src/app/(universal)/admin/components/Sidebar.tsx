@@ -49,13 +49,14 @@ type SidebarFlagKey =
   | "SHOW_TIMMING"
   | "SHOW_SETTING"
   | "SHOW_DATA_BACKUP"
-  | "SHOW_OUTLET"   // ⭐ NEW
-   | "SHOW_TABLES" 
-   | "SHOW_MODIFIER"     
+  | "SHOW_OUTLET"
+  | "SHOW_TABLES"
+  | "SHOW_MODIFIER"
   | "SHOW_MODIFIER_GROUPS"
   | "SHOW_INVENTORY"
-| "SHOW_INVENTORY_TRANSACTIONS"
-| "SHOW_PRODUCT_RECIPES"; 
+  | "SHOW_INVENTORY_TRANSACTIONS"
+  | "SHOW_PRODUCT_RECIPES"
+  | "SHOW_MAINTENANCE"; // ⭐ ADD
 
 type Titem = {
   key: SidebarFlagKey;
@@ -103,6 +104,9 @@ SHOW_INVENTORY_TRANSACTIONS: flag(
 SHOW_PRODUCT_RECIPES: flag(
   process.env.NEXT_PUBLIC_SHOW_PRODUCT_RECIPES
 ),
+  SHOW_MAINTENANCE: flag(
+    process.env.NEXT_PUBLIC_SHOW_MAINTENANCE
+  ),
 };
 
 
@@ -158,7 +162,7 @@ const Sidebar = () => {
     {
   key: "SHOW_INVENTORY_RAW",
   name: "Raw Stock",
-  link: "/admin/inventory/dashboard",
+  link: "/admin/inventory",
   icon: <MdOutlineInventory2 />,
 },
  {
@@ -166,6 +170,12 @@ const Sidebar = () => {
   name: "Distribution",
   link: "/admin/distribution/load-operator",
   icon: <MdInventory />,
+},
+{
+  key: "SHOW_MAINTENANCE",
+  name: "Maintenance",
+  link: "/admin/maintenance/faults",
+  icon: <MdOutlineCrisisAlert />,
 },
 
       {

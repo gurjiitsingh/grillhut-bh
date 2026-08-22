@@ -17,12 +17,12 @@ export async function getRawInventoryDptData({
 }: GetRawInventoryDataParams) {
   const updates: any[] = [];
 
-  console.log("============================================");
-  console.log("🔵 getRawInventoryDptData START");
-  console.log("productId:", productId);
-  console.log("quantity:", quantity);
-  console.log("departmentId:", departmentId);
-  console.log("============================================");
+  // console.log("============================================");
+  // console.log("🔵 getRawInventoryDptData START");
+  // console.log("productId:", productId);
+  // console.log("quantity:", quantity);
+  // console.log("departmentId:", departmentId);
+  // console.log("============================================");
 
   // ============================================
   // PRODUCTION QUANTITY
@@ -305,11 +305,11 @@ for (const doc of recipeSnapshot.docs) {
   // ==========================================
 
   const availableQty =
-    Number(departmentStock.quantity);
+    Number(departmentStock.currentStock);
 
   if (!Number.isFinite(availableQty)) {
     throw new Error(
-      `Invalid department stock quantity for ${inventoryItemId}: ${departmentStock.quantity}`
+      `Invalid department stock quantity for ${inventoryItemId}: ${departmentStock.currentStock}`
     );
   }
  
@@ -425,11 +425,11 @@ for (const doc of recipeSnapshot.docs) {
   updates.push(result);
 }
 
-  console.log("============================================");
-  console.log("🟢 getRawInventoryDptData END");
-  console.log("Total updates:", updates.length);
-  console.log("Final updates:", updates);
-  console.log("============================================");
+  // console.log("============================================");
+  // console.log("🟢 getRawInventoryDptData END");
+  // console.log("Total updates:", updates.length);
+  // console.log("Final updates:", updates);
+  // console.log("============================================");
 
   return updates;
 }

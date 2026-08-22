@@ -1,26 +1,33 @@
-"use server";
+'use server';
 
-import { Transaction } from "firebase-admin/firestore";
+import { Transaction } from 'firebase-admin/firestore';
+import admin from "firebase-admin";
 import { adminDb } from "@/lib/firebaseAdmin";
 
 export type AddStockMovementProps = {
   tx: Transaction;
 
   movementType:
-  | "TRANSFER"
-  | "SALE"
-  | "RETURN"
-  | "ADJUSTMENT";
+  | 'TRANSFER'
+  | 'SALE'
+  | 'RETURN'
+  | 'ADJUSTMENT';
 
   productId: string;
   batchId: string;
   productName: string;
-  productMode?: "raw_stock" | "finished_stock" | "simple";
+
+  customerId?: string;
+  customerName?: string;
+  vehicleId?: string;
+  tripId: string;
+  tripNo: string;
   locationCode: string;
-  customerName?: string,
   responsiblePerson: string;
   quantity: number;
+  wholesalePrice?: number,
   name: string;
+
   fromLocationType: string;
   fromLocationRef: string;
 
@@ -28,7 +35,6 @@ export type AddStockMovementProps = {
   toLocationRef: string;
 
   remarks?: string;
-
   createdBy?: string;
 };
 
@@ -38,13 +44,19 @@ export async function addStockMovement({
 
   productId,
   batchId,
+  tripId,
+  tripNo,
   productName,
-  //productMode,
-  customerName ="",
+
+  customerName,
+  customerId,
+  vehicleId,
   locationCode,
   responsiblePerson,
   quantity,
   name,
+  wholesalePrice,
+
   fromLocationType,
   fromLocationRef,
 
@@ -52,11 +64,27 @@ export async function addStockMovement({
   toLocationRef,
 
   remarks,
-
   createdBy,
 }: AddStockMovementProps) {
+  const ref = adminDb
+    .collection('stockMovements')
+    .doc();
 
-  const ref = adminDb.collection("stockMovements").doc();
+
+
+  // YYYY-MM-DD (India timezone optional)
+  const now = new Date();
+
+  // India date string: YYYY-MM-DD
+  const movementDate = new Intl.DateTimeFormat(
+    'en-CA',
+    {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }
+  ).format(now);
 
   tx.set(ref, {
     id: ref.id,
@@ -65,23 +93,33 @@ export async function addStockMovement({
 
     productId,
     batchId,
+    tripId,
+    tripNo,
     productName,
-    // productMode,
-    customerName,
+
+    customerName: customerName || '',
+    customerId: customerId || '',
+    vehicleId,
     locationCode,
     responsiblePerson,
     quantity,
+    wholesalePrice,
     name,
+
     fromLocationType,
     fromLocationRef,
 
     toLocationType,
     toLocationRef,
 
-    remarks: remarks ?? "",
+    remarks: remarks ?? '',
+    createdBy: createdBy ?? 'system',
 
-    createdBy: createdBy ?? "system",
+    // New searchable date field
+    movementDate,
 
-    createdAt: Date.now(),
+    // Keep timestamp for exact time
+    createdAt:
+      admin.firestore.FieldValue.serverTimestamp(),
   });
 }
