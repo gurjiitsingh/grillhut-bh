@@ -162,11 +162,15 @@ export async function createNewOrder(purchaseData: orderDataType) {
   const collectionRef = adminDb.collection("orderMaster");
   const snapshot = await collectionRef.orderBy("srno", "desc").limit(1).get();
 
-  let new_srno = 1;
-  if (!snapshot.empty) {
-    const latest = snapshot.docs[0].data() as orderMasterDataT;
-    new_srno = (latest?.srno || 0) + 1;
-  }
+let new_srno = "1";
+
+if (!snapshot.empty) {
+  const latest = snapshot.docs[0].data() as orderMasterDataT;
+
+  const latestSrno = Number(latest?.srno || 0);
+
+  new_srno = String(latestSrno + 1);
+}
 
   // =====================================================
   // 6️⃣ ORDER STATUS
