@@ -1,41 +1,58 @@
 "use client";
+
 import Link from "next/link";
 import React from "react";
 import { useLanguage } from "@/store/LanguageContext";
 import { Cinzel, Lato, Roboto, Abel } from "next/font/google";
-// import { Montserrat, Oswald, Bebas_Neue, Anton, Poppins } from "next/font/google";
-// import { Great_Vibes, Pacifico, Dancing_Script } from "next/font/google";
+import {
+  FaFire,
+  FaArrowRight,
+  FaInstagram,
+  FaFacebookF,
+  FaPhoneAlt,
+} from "react-icons/fa";
 
-const cinzel = Cinzel({ subsets: ["latin"], weight: ["400", "600", "700"] });
-const lato = Lato({ subsets: ["latin"], weight: ["400", "700"] });
-const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500", "700"] });
-const abel = Abel({ subsets: ["latin"], weight: "400" });
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
+const abel = Abel({
+  subsets: ["latin"],
+  weight: "400",
+});
+
 const fonts = {
   Cinzel: cinzel,
   Abel: abel,
-  // Playfair: playfair,
-  // Cormorant: cormorant,
-  // Lora: lora,
-  // Montserrat: montserrat,
-  // Oswald: oswald,
-  // Bebas: bebas,
-  // Anton: anton,
-  // GreatVibes: vibes,
-  // Pacifico: pacifico,
-  // Dancing: dancing,
   Lato: lato,
   Roboto: roboto,
-  //Poppins: poppins,
 };
 
 const fontTitle =
   fonts[process.env.NEXT_PUBLIC_FONT_TITLE as keyof typeof fonts] || cinzel;
+
 const fontDescription =
-  fonts[process.env.NEXT_PUBLIC_FONT_DESCRIPTION as keyof typeof fonts] || lato;
+  fonts[process.env.NEXT_PUBLIC_FONT_DESCRIPTION as keyof typeof fonts] ||
+  lato;
+
 const fontPrice =
   fonts[process.env.NEXT_PUBLIC_FONT_PRICE as keyof typeof fonts] || roboto;
 
-type FooterLink = { href: string; name: string };
+type FooterLink = {
+  href: string;
+  name: string;
+};
 
 type Props = {
   outlet?: any;
@@ -44,31 +61,43 @@ type Props = {
 export default function Footer({ outlet }: Props) {
   const { TEXT, BRANDING } = useLanguage();
 
-  // Fallbacks
-const fallbackBrand = {
-  brand_name: outlet?.outletName || BRANDING?.brand_name || "",
-  poweredBy: BRANDING?.poweredBy || "Powered by",
-  poweredByUrl:
-    BRANDING?.poweredByUrl || "https://www.gstadeveloper.com",
+  // =========================================================
+  // FALLBACK BRAND
+  // =========================================================
 
-  copyright: {
-    prefix: BRANDING?.copyright?.prefix || "Copyright ©",
-    suffix:
-      BRANDING?.copyright?.suffix || "All Rights Reserved by",
+  const fallbackBrand = {
+    brand_name:
+      outlet?.outletName || BRANDING?.brand_name || "Grill Hut Junction",
 
-    // ✅ dynamic company
-    company:
-      outlet?.outletName ||
-      BRANDING?.copyright?.company ||
-      "",
-  },
-};
+    poweredBy: BRANDING?.poweredBy || "Powered by",
+
+    poweredByUrl:
+      BRANDING?.poweredByUrl || "https://www.gstadeveloper.com",
+
+    copyright: {
+      prefix: BRANDING?.copyright?.prefix || "Copyright ©",
+
+      suffix:
+        BRANDING?.copyright?.suffix || "All Rights Reserved by",
+
+      company:
+        outlet?.outletName ||
+        BRANDING?.copyright?.company ||
+        "Grill Hut Junction",
+    },
+  };
+
+  // =========================================================
+  // FALLBACK TEXT
+  // =========================================================
 
   const fallbackText = {
     logo_alt: TEXT?.logo_alt || "Restaurant Logo",
+
     sections: {
       links: {
-        title: BRANDING?.sections?.links?.title || "Links",
+        title: BRANDING?.sections?.links?.title || "Explore",
+
         items: BRANDING?.sections?.links?.items || [
           { name: "Home", href: "/" },
           { name: "Menu", href: "/menu" },
@@ -78,128 +107,523 @@ const fallbackBrand = {
           { name: "Allergens", href: "/allergene" },
         ],
       },
+
       company: {
-        title: BRANDING?.sections?.company?.title || "Company",
+        title: BRANDING?.sections?.company?.title || "Information",
+
         items: BRANDING?.sections?.company?.items || [
           { name: "Privacy Policy", href: "/privacy" },
           { name: "Terms of Service", href: "#" },
         ],
       },
+
       social: {
-        title: BRANDING?.sections?.social?.title || "Social Media",
+        title: BRANDING?.sections?.social?.title || "Follow Us",
       },
     },
   };
-// 2B2E4A     navi dark color   d24a0f  orange
 
-const companyName =
-  outlet?.web
+  // =========================================================
+  // COMPANY NAME
+  // =========================================================
+
+  const companyName = outlet?.web
     ? new URL(
         outlet.web.startsWith("http")
           ? outlet.web
           : `https://${outlet.web}`
       ).hostname
     : outlet?.outletName || fallbackBrand.brand_name;
-    
+
   return (
-    <footer className="relative pt-12 -mb-20 bg-[#ea9244] text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-        <div className="flex flex-col md:flex-row justify-between gap-8 md:gap-1">
-          {/* Logo + Brand */}
-          <div className="w-full">
-            <div className="flex flex-col items-start  md:w-[70%] gap-1  h-fit footer-border p-2 mx-1 rounded-2xl ">
-              <div className="flex items-center justify-start rounded-full">
-                <Link href="/">
-                 <img
-  className="h-24 md:h-24"
-  src={outlet?.logo || "/logo.png"}
-  alt={fallbackText.logo_alt}
-/>
-                </Link>
+    <footer className="relative bg-[#171310] text-[#FFF3E3] overflow-hidden">
+
+      {/* =====================================================
+          TOP ACCENT
+      ====================================================== */}
+
+      <div className="h-1 w-full bg-[#F28C28]" />
+
+      {/* =====================================================
+          DECORATIVE GLOW
+      ====================================================== */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          top-0
+          right-0
+          w-[420px]
+          h-[420px]
+          rounded-full
+          bg-[#F28C28]/5
+          blur-3xl
+        "
+      />
+
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+
+        {/* ===================================================
+            MAIN FOOTER
+        ==================================================== */}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 py-16 md:py-20">
+
+          {/* =================================================
+              BRAND
+          ================================================== */}
+
+          <div className="lg:col-span-1">
+
+            <Link
+              href="/"
+              className="inline-flex items-center group"
+            >
+              <div className="relative">
+
+                <div
+                  className="
+                    absolute
+                    -inset-3
+                    rounded-full
+                    bg-[#F28C28]/10
+                    blur-xl
+                    opacity-0
+                    group-hover:opacity-100
+                    transition
+                  "
+                />
+
+                <img
+                  className="
+                    relative
+                    h-24
+                    md:h-28
+                    w-auto
+                    object-contain
+                  "
+                  src={outlet?.logo || "/logo.png"}
+                  alt={fallbackText.logo_alt}
+                />
+
               </div>
-              <div className="flex items-center h-fit">
-                <span className={` ${fontPrice.className} self-center text-md footer-text`}>
-                  {fallbackBrand.brand_name}
+            </Link>
+
+            <div className="mt-5">
+
+              <h2
+                className={`
+                  ${fontTitle.className}
+                  text-xl
+                  md:text-2xl
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-[#FFF3E3]
+                `}
+              >
+                {fallbackBrand.brand_name}
+              </h2>
+
+              <div className="flex items-center gap-2 mt-3">
+                <FaFire className="text-[#F28C28]" />
+
+                <span
+                  className={`
+                    ${fontDescription.className}
+                    text-sm
+                    text-[#B9ADA0]
+                  `}
+                >
+                  Fresh from the grill
                 </span>
               </div>
+
             </div>
+
+            {/* Brand statement */}
+
+            <p
+              className={`
+                ${fontDescription.className}
+                mt-5
+                max-w-sm
+                text-sm
+                leading-6
+                text-[#9F9388]
+              `}
+            >
+              Big flavours, smoky grills and freshly prepared food made
+              to satisfy every craving.
+            </p>
+
+            {/* Social icons */}
+
+            <div className="flex items-center gap-3 mt-7">
+
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="
+                  w-10
+                  h-10
+                  rounded-full
+                  flex
+                  items-center
+                  justify-center
+                  bg-[#211B17]
+                  border
+                  border-[#FFF3E3]/10
+                  text-[#B9ADA0]
+                  hover:bg-[#F28C28]
+                  hover:text-[#171310]
+                  hover:border-[#F28C28]
+                  transition
+                "
+              >
+                <FaInstagram />
+              </a>
+
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="
+                  w-10
+                  h-10
+                  rounded-full
+                  flex
+                  items-center
+                  justify-center
+                  bg-[#211B17]
+                  border
+                  border-[#FFF3E3]/10
+                  text-[#B9ADA0]
+                  hover:bg-[#F28C28]
+                  hover:text-[#171310]
+                  hover:border-[#F28C28]
+                  transition
+                "
+              >
+                <FaFacebookF />
+              </a>
+
+            </div>
+
           </div>
-          {/* Links Section */}
-          <div className="flex flex-col gap-2 w-full px-4">
-            <h3 className={`${fontTitle.className} tracking-wide text-xl font-bold uppercase pb-3`}>
-              {fallbackText.sections.links.title}
-            </h3>
-            <ul className="flex flex-col gap-1">
+
+          {/* =================================================
+              EXPLORE LINKS
+          ================================================== */}
+
+          <div>
+
+            <div className="flex items-center gap-3 mb-6">
+
+              <span className="w-8 h-[2px] bg-[#F28C28]" />
+
+              <h3
+                className={`
+                  ${fontTitle.className}
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-[#FFF3E3]
+                `}
+              >
+                {fallbackText.sections.links.title}
+              </h3>
+
+            </div>
+
+            <ul className="space-y-3">
+
               {fallbackText.sections.links.items.map(
                 (item: FooterLink, idx: number) => (
-                  <li
-                    key={idx}
-                    className={`pb-1 ${
-                      idx < fallbackText.sections.links.items.length - 1
-                        ? "footer-item-border"
-                        : ""
-                    }`}
-                  >
-                    <Link href={item.href} className={`${fontDescription.className}`}>{item.name}</Link>
+                  <li key={idx}>
+
+                    <Link
+                      href={item.href}
+                      className={`
+                        ${fontDescription.className}
+                        group
+                        inline-flex
+                        items-center
+                        gap-2
+                        text-sm
+                        text-[#B9ADA0]
+                        hover:text-[#F28C28]
+                        transition
+                      `}
+                    >
+                      <span
+                        className="
+                          w-0
+                          h-[1px]
+                          bg-[#F28C28]
+                          group-hover:w-3
+                          transition-all
+                        "
+                      />
+
+                      {item.name}
+                    </Link>
+
                   </li>
                 )
               )}
+
             </ul>
+
           </div>
 
-          {/* Company Section */}
-          <div className="flex flex-col gap-2 w-full px-4">
-            <h3 className={`${fontTitle.className} tracking-wide text-xl font-bold uppercase pb-3`}>
-              {fallbackText.sections.company.title}
-            </h3>
-            <ul className="space-y-1">
+          {/* =================================================
+              INFORMATION
+          ================================================== */}
+
+          <div>
+
+            <div className="flex items-center gap-3 mb-6">
+
+              <span className="w-8 h-[2px] bg-[#F28C28]" />
+
+              <h3
+                className={`
+                  ${fontTitle.className}
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-[#FFF3E3]
+                `}
+              >
+                {fallbackText.sections.company.title}
+              </h3>
+
+            </div>
+
+            <ul className="space-y-3">
+
               {fallbackText.sections.company.items.map(
                 (item: FooterLink, idx: number) => (
-                  <li
-                    key={idx}
-                    className={idx === 0 ? "footer-item-border pb-1" : ""}
-                  >
-                    <a rel="noopener noreferrer" className={`${fontDescription.className}`} href={item.href}>
+                  <li key={idx}>
+
+                    <a
+                      rel="noopener noreferrer"
+                      href={item.href}
+                      className={`
+                        ${fontDescription.className}
+                        group
+                        inline-flex
+                        items-center
+                        gap-2
+                        text-sm
+                        text-[#B9ADA0]
+                        hover:text-[#F28C28]
+                        transition
+                      `}
+                    >
+                      <span
+                        className="
+                          w-0
+                          h-[1px]
+                          bg-[#F28C28]
+                          group-hover:w-3
+                          transition-all
+                        "
+                      />
+
                       {item.name}
                     </a>
+
                   </li>
                 )
               )}
+
             </ul>
+
           </div>
 
-          {/* Social Media */}
-          <div className="flex flex-col gap-2 w-full px-4">
-            <div className={`${fontTitle.className} tracking-wide text-xl font-bold uppercase pb-3`}>
-              {fallbackText.sections.social.title}
+          {/* =================================================
+              SOCIAL / CTA
+          ================================================== */}
+
+          <div>
+
+            <div className="flex items-center gap-3 mb-6">
+
+              <span className="w-8 h-[2px] bg-[#F28C28]" />
+
+              <h3
+                className={`
+                  ${fontTitle.className}
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-[#FFF3E3]
+                `}
+              >
+                {fallbackText.sections.social.title}
+              </h3>
+
             </div>
-            <div className="flex justify-start space-x-3">
-              {/* Add social media icons here */}
-            </div>
+
+            <p
+              className={`
+                ${fontDescription.className}
+                text-sm
+                leading-6
+                text-[#9F9388]
+                mb-6
+              `}
+            >
+              Hungry? Discover our menu and get your favourite grilled
+              dishes on the table.
+            </p>
+
+            <Link
+              href="/menu"
+              className="
+                inline-flex
+                items-center
+                gap-3
+                rounded-full
+                bg-[#F28C28]
+                px-6
+                py-3
+                text-sm
+                font-bold
+                uppercase
+                tracking-wide
+                text-[#171310]
+                transition
+                hover:bg-[#FF9F3D]
+                hover:gap-4
+              "
+            >
+              Explore Menu
+              <FaArrowRight />
+            </Link>
+
+            {/* Contact */}
+
+            {outlet?.phone && (
+              <div className="flex items-center gap-3 mt-7">
+
+                <div
+                  className="
+                    w-9
+                    h-9
+                    rounded-full
+                    bg-[#211B17]
+                    border
+                    border-[#FFF3E3]/10
+                    flex
+                    items-center
+                    justify-center
+                    text-[#F28C28]
+                  "
+                >
+                  <FaPhoneAlt className="text-xs" />
+                </div>
+
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-[#857A71]">
+                    Call Us
+                  </p>
+
+                  <a
+                    href={`tel:${outlet.phone}`}
+                    className="
+                      text-sm
+                      text-[#FFF3E3]
+                      hover:text-[#F28C28]
+                      transition
+                    "
+                  >
+                    {outlet.phone}
+                  </a>
+                </div>
+
+              </div>
+            )}
+
           </div>
+
         </div>
+
       </div>
 
-      {/* Footer Bottom */}
-      <div className="footer-bg-bottom mt-12 pt-3 pb-6">
-        <div className="container mx-auto flex flex-col items-center">
-          <p className="text-md footer-text-light">
+      {/* =====================================================
+          FOOTER BOTTOM
+      ====================================================== */}
+
+      <div className="border-t border-[#FFF3E3]/10 bg-[#0F0C0A]">
+
+        <div
+          className="
+            max-w-7xl
+            mx-auto
+            px-6
+            sm:px-8
+            lg:px-12
+            py-5
+            flex
+            flex-col
+            md:flex-row
+            items-center
+            justify-between
+            gap-3
+          "
+        >
+
+          <p
+            className={`
+              ${fontDescription.className}
+              text-xs
+              text-[#857A71]
+              text-center
+              md:text-left
+            `}
+          >
+            {fallbackBrand.copyright.prefix}{" "}
+            {new Date().getFullYear()}{" "}
+            {fallbackBrand.copyright.suffix}{" "}
+            <span className="text-[#B9ADA0]">
+              {companyName}
+            </span>
+          </p>
+
+          <p
+            className={`
+              ${fontDescription.className}
+              text-xs
+              text-[#857A71]
+            `}
+          >
             {fallbackBrand.poweredBy}{" "}
-          <a
-  href={fallbackBrand.poweredByUrl}
-  target="_blank"
-  rel="noopener noreferrer"
->
+
+            <a
+              href={fallbackBrand.poweredByUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                text-[#B9ADA0]
+                hover:text-[#F28C28]
+                transition
+              "
+            >
               {new URL(fallbackBrand.poweredByUrl).hostname}
             </a>
           </p>
-          <p className="text-md footer-text-light">
-            {fallbackBrand.copyright.prefix} {new Date().getFullYear()}{" "}
-            {fallbackBrand.copyright.suffix}{" "}
-            <b>{companyName}</b>
-          </p>
+
         </div>
+
       </div>
+
     </footer>
   );
 }
+ 

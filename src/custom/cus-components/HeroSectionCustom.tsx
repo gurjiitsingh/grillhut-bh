@@ -1,126 +1,161 @@
 "use client";
 
 import Image from "next/image";
-import { FaThumbsUp, FaShieldAlt, FaSmile } from "react-icons/fa";
-import { Chicle } from "next/font/google";
 import Link from "next/link";
+import { Chicle } from "next/font/google";
+import { FaFire, FaArrowRight } from "react-icons/fa";
 
 const chicle = Chicle({
   subsets: ["latin"],
   weight: "400",
 });
 
-export default function HeroSectionCustom() {
+export default function GrillHutHero() {
   return (
-    <section className="relative w-full overflow-hidden">
-      
-      {/* ==========================
-          HERO IMAGE WITH LOGO
-      =========================== */}
-      <div className="relative w-full h-[50vh] md:h-[90vh] flex items-center justify-center">
+    <section className="relative min-h-[720px] md:min-h-[820px] overflow-hidden bg-[#171310] text-[#FFF3E3]">
 
+      {/* Background Image */}
+      <div className="absolute inset-0">
         <Image
-          src="/images/hero-1.jpg"
-          alt="Restaurant background"
+          src="/images/grill-hero.jpg"
+          alt="Freshly grilled food from Grill Hut Junction"
           fill
-          className="object-cover"
           priority
+          className="object-cover"
         />
 
-        {/* dark overlay (transparent right now) */}
-        <div className="absolute inset-0 bg-black/0 md:bg-black/0" />
+        {/* Dark cinematic overlay */}
+        <div className="absolute inset-0 bg-black/65" />
 
-        {/* LOGO inside container with padding */}
-        <div className="absolute bottom-[13rem] md:bottom-auto md:top-40 w-full">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex justify-center md:justify-start z-20">
-            <div
-              className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white flex items-center justify-center shadow-lg"
-              data-aos="fade-right"
-            >
-              <img
-                src="/logo-10.png"
-                alt="Logo"
-                className="w-20 h-20 md:w-24 md:h-24 object-contain"
-              />
-            </div>
-          </div>
-        </div>
+        {/* Warm grill glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_55%,rgba(242,140,40,0.25),transparent_45%)]" />
 
-        {/* curved transition bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-white rounded-t-[50%]" />
+        {/* Bottom fade */}
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#171310] to-transparent" />
       </div>
 
-      {/* ==========================
-          TEXT + BUTTONS
-      =========================== */}
-      <div
-        className="
-        relative
-        bg-white
-        md:bg-transparent
-        md:absolute
-        md:inset-0
-        md:flex
-        md:items-center
-        md:justify-center
-      "
-      >
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex justify-center md:justify-start">
+      {/* Content */}
+      <div className="relative z-10 max-w-7xl mx-auto min-h-[720px] md:min-h-[820px] px-6 sm:px-8 lg:px-12 flex items-center">
 
-          <div className="text-[#2b2b2b] md:text-white max-w-lg pb-6 mt-[-60px] md:mt-0">
+        <div className="max-w-3xl pt-16 md:pt-10">
 
-            {/* Title */}
-            <h2
-              className={`${chicle.className} text-4xl md:text-5xl my-3 text-[#ea9244] md:text-white`}
+          {/* Small Label */}
+          <div className="flex items-center gap-3 mb-5">
+            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F28C28] text-[#171310]">
+              <FaFire />
+            </span>
+
+            <span className="uppercase tracking-[0.25em] text-sm font-semibold text-[#F28C28]">
+              Straight From The Grill
+            </span>
+          </div>
+
+          {/* Main Heading */}
+          <h1
+            className={`
+              ${chicle.className}
+              text-6xl
+              sm:text-7xl
+              md:text-8xl
+              lg:text-9xl
+              leading-[0.88]
+              uppercase
+              text-[#FFF3E3]
+              drop-shadow-2xl
+            `}
+          >
+            GrillHut 
+            <br />
+
+            <span className="text-[#F28C28]">
+             Junction.
+            </span>
+             <span className="text-[#F28C28] text-xl">
+             Love it.
+            </span>
+          </h1>
+
+          {/* Description */}
+          <p className="mt-7 max-w-xl text-base md:text-lg leading-7 text-[#E4D8CC]">
+            Juicy & smoky grills, loaded sides and bold flavours —
+            made fresh and served hot at Grill Hut Junction.
+          </p>
+
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-4 mt-9">
+
+            <Link
+              href="/menu"
+              className="
+                inline-flex
+                items-center
+                gap-3
+                rounded-full
+                bg-[#F28C28]
+                px-7
+                py-4
+                text-[#171310]
+                font-bold
+                uppercase
+                tracking-wide
+                shadow-lg
+                shadow-orange-950/30
+                transition
+                hover:bg-[#FF9F3D]
+                hover:scale-[1.02]
+              "
             >
-              Grill Hut Junction
-            </h2>
+              Order Now
+              <FaArrowRight />
+            </Link>
 
-            {/* Features */}
-            <ul className="space-y-2 text-base text-[12px]">
-              <li className="flex items-center justify-center md:justify-start gap-2 text-[#5e8147] md:text-white">
-                <FaThumbsUp className="text-[#5e8147] md:text-white" />
-                No platform fees
-              </li>
-              <li className="flex items-center justify-center md:justify-start gap-2 text-[#5e8147] md:text-white">
-                <FaShieldAlt className="text-[#5e8147] md:text-white" />
-                No payment fees
-              </li>
-              <li className="flex items-center justify-center md:justify-start gap-2 text-[#5e8147] md:text-white">
-                <FaSmile className="text-[#5e8147] md:text-white" />
-                1235{" "}
-                <a
-                  href="#"
-                  className="underline text-[#5e8147] md:text-white hover:text-green-400"
-                >
-                  Guest Recommendations
-                </a>
-              </li>
-            </ul>
-
-            {/* Buttons */}
-            <div className="flex flex-col md:flex-row justify-start gap-4 pt-4">
-              <Link
-                href="/#order_now"
-                rel="noopener noreferrer"
-                data-aos="fade-left"
-                className={`${chicle.className} bg-[#ea9244] border-white border-2 hover:bg-[#657f53] text-2xl text-white font-semibold px-6 py-1 rounded-xl transition text-center tracking-wide`}
-              >
-                🍴 ORDER MENU
-              </Link>
-
-              <Link
-                href="/menu"
-                rel="noopener noreferrer"
-                className={`${chicle.className} bg-white text-[#ea9244] text-2xl font-bold px-6 py-1 rounded-xl border border-[#ea9244] hover:bg-[#5e8147] hover:text-white transition text-center`}
-              >
-                Menu
-              </Link>
-            </div>
+            <Link
+              href="/menu"
+              className="
+                inline-flex
+                items-center
+                rounded-full
+                border
+                border-[#FFF3E3]/40
+                bg-white/5
+                backdrop-blur-sm
+                px-7
+                py-4
+                text-[#FFF3E3]
+                font-semibold
+                uppercase
+                tracking-wide
+                transition
+                hover:bg-[#FFF3E3]
+                hover:text-[#171310]
+              "
+            >
+              Explore Menu
+            </Link>
 
           </div>
+
+          {/* Bottom Highlights */}
+          <div className="flex flex-wrap gap-6 mt-12 text-sm text-[#C9BDB1]">
+            <div>
+              <span className="text-[#F28C28] font-bold">🔥</span>{" "}
+              Freshly Grilled
+            </div>
+
+            <div>
+              <span className="text-[#F28C28] font-bold">●</span>{" "}
+              Made To Order
+            </div>
+
+            <div>
+              <span className="text-[#F28C28] font-bold">★</span>{" "}
+              Big Flavours
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
   );
 }
+ 

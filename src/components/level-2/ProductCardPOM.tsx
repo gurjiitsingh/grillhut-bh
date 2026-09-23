@@ -1,18 +1,24 @@
 "use client";
-// import { fetchProductByBaseProductId } from "@/app/(universal)/action/productsaddon/dbOperation";
-// import { AddOnProductSchemaType } from "@/lib/types/productAddOnType";
+
 import { UseSiteContext } from "@/SiteContext/SiteContext";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { cartProductType } from "@/lib/types/cartDataType";
 import { ProductType } from "@/lib/types/productType";
-import { addOnType } from "@/lib/types/addOnType";
-import { IoMdAdd } from "react-icons/io";
-import toast from "react-hot-toast";
-import AddOn from "../level-1/AddOn";
 import { formatCurrencyNumber } from "@/utils/formatCurrency";
-import CartButtonAdd from "../AddToCart/CartButtonAdd";
+
 import { Lato } from "next/font/google";
+import {
+  Flame,
+  Leaf,
+} from "lucide-react";
+
+import {
+  FaFireAlt,
+  FaHeart,
+  FaLeaf,
+  FaSmile,
+} from "react-icons/fa";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -21,59 +27,44 @@ const lato = Lato({
   display: "swap",
 });
 
-import {
- 
-  Info,
-  Flame,
-  Utensils,
-  Leaf,
-  CircleHelp,
-} from "lucide-react";
-import { FaFireAlt, FaHeart, FaLeaf, FaSmile } from "react-icons/fa";
-
 export default function ProductCardPrductOfMonth({
   product,
- 
 }: {
   product: ProductType;
-  
 }) {
+  const { settings } = UseSiteContext();
 
-  const {  settings } = UseSiteContext();
- 
-
-
-  //common code start
-
-  //const priceRegular = product.price?.toString().replace (/\./g, ",") ?? "0,00";
-  // const priceRegular = formatCurrencyNumber(
-  //   product.price ?? 0,
-  //   (settings.currency || "EUR") as string,
-  //   (settings.locale || "de-DE") as string
-  // );
+  // =========================================================
+  // PRICE
+  // =========================================================
 
   const priceRegular = formatCurrencyNumber(
-  product.price ?? 0,       // numeric value
-    (settings.currency ) as string,
-      (settings.locale ) as string
-);
+    product.price ?? 0,
+    settings.currency as string,
+    settings.locale as string
+  );
 
   let priceDiscounted;
   let priceTarget = product.price ?? 0;
+
   if (product.discountPrice && product.discountPrice > 0) {
     priceTarget = product.discountPrice;
-    // priceDiscounted = product.discountPrice.toString().replace (/\./g, ",");
+
     priceDiscounted = formatCurrencyNumber(
       product.discountPrice,
-      (settings.currency ) as string,
-      (settings.locale ) as string
+      settings.currency as string,
+      settings.locale as string
     );
   }
+
+  // =========================================================
+  // CART PRODUCT
+  // =========================================================
 
   const cartProduct: cartProductType = {
     id: product.id,
     quantity: 1,
-    currentStock:product.currentStock!,
+    currentStock: product.currentStock!,
     price: priceTarget,
     name: product.name,
     image: product.image,
@@ -81,88 +72,175 @@ export default function ProductCardPrductOfMonth({
     productCat: product.productCat!,
     taxRate: product.taxRate,
     taxType: product.taxType,
-    
   };
 
+  // =========================================================
+  // TIME RESTRICTION
+  // =========================================================
+
   const isCartDisabled = (() => {
-    if (product.categoryId !== "2vvuGl0pgbvvyEPc7o83") return false;
+    if (product.categoryId !== "2vvuGl0pgbvvyEPc7o83") {
+      return false;
+    }
+
     const berlinTime = new Date().toLocaleString("en-US", {
       timeZone: "Europe/Berlin",
     });
+
     const berlinHour = new Date(berlinTime).getHours();
+
     return !(berlinHour >= 11 && berlinHour < 16);
   })();
 
-  //common code end
+  // =========================================================
+  // UI
+  // =========================================================
+
   return (
-  <div
-                key={product.id}
-                className=" w-[240px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0 snap-center"
-              >
-                <div className="relative bg-white  rounded-2xl  transition px-3 pt-3 pb-0">
-                  {/* Discount badge */}
-                  {/* {product.discountPrice && (
-                    <div className="absolute top-2 right-2 bg-[#8b0000] text-white text-[10px] sm:text-xs px-0 py-1 rounded-md font-semibold">
-                      -
-                      {Math.round(
-                        100 - (product.discountPrice / product.price) * 100
-                      )}
-                      %
-                    </div>
-                  )} */}
+    <div
+      key={product.id}
+      className="
+        w-[240px]
+        sm:min-w-[280px]
+        md:min-w-[300px]
+        flex-shrink-0
+        snap-center
+      "
+    >
+      {/* Main Card */}
+      <div
+        className="
+          relative
+          bg-[#171310]
+          border
+          border-[#FFF3E3]/10
+          rounded-2xl
+          overflow-hidden
+          transition
+          duration-300
+          hover:border-[#F28C28]/40
+          hover:-translate-y-1
+        "
+      >
+        <button className="text-left w-full px-4 pt-4 pb-3">
 
-                  <button className="text-left w-full">
-                    <h3
-                      className={`${lato.className} w-full   text-xl font-bold sm:text-lg text-[#2B2E4A] mb-0`}
-                    >
-                      {product.name}
-                    </h3>
-                    {/* <p className="italic text-gray-500 text-xs sm:text-sm mb-1">
-                      Empfehlung vom Chefkoch
-                    </p> */}
+          {/* Product Name */}
+          <h3
+            className={`
+              ${lato.className}
+              w-full
+              text-lg
+              sm:text-xl
+              font-bold
+              text-[#FFF3E3]
+              mb-2
+              line-clamp-2
+            `}
+          >
+            {product.name}
+          </h3>
 
-                    <div className="flex items-center gap-2 text-[#d24a0f] text-xs mb-0">
-                      <FaFireAlt /> <FaLeaf /> 🌶️
-                    </div>
+          {/* Food Indicators */}
+          <div className="flex items-center gap-3 text-[#F28C28] text-xs mb-2">
+            <span className="flex items-center gap-1">
+              <FaFireAlt />
+              Grilled
+            </span>
 
-                    <p className=" w-full h-[60px] text-gray-700 text-xs sm:text-[13spx] leading-snug mb-0">
-                      {product.productDesc || "Leckeres Gericht des Monats"}
-                    </p>
+            <span className="flex items-center gap-1">
+              <FaLeaf />
+              Fresh
+            </span>
 
-                    {/* Price */}
-                   
-<div className="w-full flex justify-end">
-                      {product.discountPrice !== undefined &&
-              product.discountPrice > 0 ? (
-                <div className="text-base font-bold text-[#d24a0f] flex items-center gap-1">
-                  {" "}
-                  <div className="line-through text-gray-400 text-sm">{priceRegular}</div>
-                  <div className="text-md font-bold ">{priceDiscounted}</div>
-                  
-                  {" "}
-                  </div>
-              ) : (
-                <div className="text-base font-bold text-[#d24a0f] flex items-center gap-1">{priceRegular}</div>
-              )}</div>
+            <span>🌶️</span>
+          </div>
 
-                   
-                  </button>
+          {/* Description */}
+          <p
+            className="
+              w-full
+              h-[60px]
+              text-[#B9ADA0]
+              text-xs
+              sm:text-[13px]
+              leading-snug
+              mb-2
+              overflow-hidden
+            "
+          >
+            {product.productDesc ||
+              "Delicious grilled favourite from Grill Hut Junction."}
+          </p>
+
+          {/* Price */}
+          <div className="w-full flex justify-end">
+
+            {product.discountPrice !== undefined &&
+            product.discountPrice > 0 ? (
+              <div className="text-base font-bold text-[#F28C28] flex items-center gap-2">
+
+                <div className="line-through text-[#857A71] text-sm">
+                  {priceRegular}
                 </div>
-                <div className="">
- {/* Reactions */}
-                    <div className="flex items-center gap-3 px-2  mt-[-1px] text-xs sm:text-sm">
-                      <span className="flex items-center gap-1 text-gray-600 bg-white p-1 rounded-b-lg">
-                        <FaHeart className="text-[#d24a0f]" /> 41
-                      </span>
-                      <span className="flex items-center gap-1 text-gray-600 bg-white p-1 rounded-b-lg">
-                        <FaSmile className="text-[#d24a0f]" /> 13
-                      </span>
-                    </div>
 
+                <div className="text-base font-bold text-[#F28C28]">
+                  {priceDiscounted}
                 </div>
+
               </div>
+            ) : (
+              <div className="text-base font-bold text-[#F28C28]">
+                {priceRegular}
+              </div>
+            )}
+
+          </div>
+        </button>
+      </div>
+
+      {/* Reactions */}
+      <div className="flex items-center gap-3 px-2 mt-[-1px] text-xs sm:text-sm">
+
+        <span
+          className="
+            flex
+            items-center
+            gap-1
+            text-[#B9ADA0]
+            bg-[#171310]
+            border-x
+            border-b
+            border-[#FFF3E3]/10
+            px-2
+            py-1
+            rounded-b-lg
+          "
+        >
+          <FaHeart className="text-[#F28C28]" />
+          41
+        </span>
+
+        <span
+          className="
+            flex
+            items-center
+            gap-1
+            text-[#B9ADA0]
+            bg-[#171310]
+            border-x
+            border-b
+            border-[#FFF3E3]/10
+            px-2
+            py-1
+            rounded-b-lg
+          "
+        >
+          <FaSmile className="text-[#F28C28]" />
+          13
+        </span>
+
+      </div>
+    </div>
   );
 }
-
-//bg-[#FF8989]
-//bg-amber-400
+ 
