@@ -203,7 +203,7 @@ export default function Footer({ outlet }: Props) {
                     w-auto
                     object-contain
                   "
-                  src={outlet?.logo || "/logo.png"}
+                  src={outlet?.logo || "/logo.jpg"}
                   alt={fallbackText.logo_alt}
                 />
 
