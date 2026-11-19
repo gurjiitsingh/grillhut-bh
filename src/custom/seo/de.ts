@@ -12,14 +12,14 @@ export const BRANDING = {
   home_page_disclaimer: "",//"Das Essen kann vom Bild abweichen",
   brand: "Masala",
   tag_line: "Taste of India",
-  brand_name: "Masala Taste of India",
+  brand_name: "Food App",
 
    poweredBy: "Bereitgestellt von",
   poweredByUrl: "https://www.gstadeveloper.com",
   copyright: {
     prefix: "Urheberrecht ©",
     suffix: "Alle Rechte vorbehalten von",
-    company: "Masala Taste of India",
+    company: "Food App",
   },
 
 
@@ -30,15 +30,15 @@ export const BRANDING = {
   copyright: {
     prefix: "Copyright ©",
     suffix: "Alle Rechte vorbehalten von",
-    company: "Masala Taste of India",
+    company: "Food App",
   },
 },
 
 
   // Order complete
   order_complete_heading: "Ihre Bestellung ist abgeschlossen",
-  pickup_time: "Abholen: 20–25 Minuten",
-  delivery_time: "Lieferzeit: 40–55 Minuten",
+  pickup_time: "",
+  delivery_time: " ",
 shop_more_button_order_complete: "Mehr einkaufen",
 
 

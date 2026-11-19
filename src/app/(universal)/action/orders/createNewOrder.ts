@@ -25,8 +25,8 @@ import { toTimestamp } from "@/utils/toTimestamp";
 import { toAdminTimestamp } from "@/utils/toAdminTimestamp";
 import { processSaleInventory } from "../inventory/processSaleInventory";
 import { checkStockAvailabilityV2 } from "../inventory/checkStockAvailabilityV2";
-import { addOrderToMaster } from "./addOrderToMaster";
-import { addProductDraft } from "./addProductDraft";
+import {  addOrderWithProducts } from "./addOrderToMaster";
+ 
 import { marketingData } from "./marketingData";
 import {   getFinancialYearCode, getNextWebOrderSerial } from "./getNextWebOrderSerial";
 
@@ -131,48 +131,52 @@ export async function createNewOrder(purchaseData: orderDataType) {
 // 4️⃣ TIMESTAMPS
 // =====================================================
 
-const nowUTC = new Date().toISOString();
+ 
 
-const nowGerman = new Date().toLocaleString("en-DE", {
-  dateStyle: "medium",
-  timeStyle: "medium",
-  timeZone: "Europe/Berlin",
-});
-
-const timeNow = new Date().toLocaleString("en-IN", {
-  dateStyle: "medium",
-  timeStyle: "medium",
-  timeZone: "Asia/Kolkata",
-});
+ 
+ 
 
 
 // =====================================================
 // 5️⃣ VALIDATE SCHEDULED TIME
 // =====================================================
 
-const scheduledTimestamp = toAdminTimestamp(scheduledAt);
+// =====================================================
+// 5️⃣ VALIDATE SCHEDULED TIME
+// Preserve the exact restaurant-local date and time
+// =====================================================
 
-if (
-  scheduledTimestamp &&
-  scheduledTimestamp.toMillis() < Date.now()
-) {
+
+ // =====================================================
+ // 5️⃣ VALIDATE SCHEDULED TIME
+ // Interpret selected time in Europe/Madrid
+ // Store as Firestore Timestamp
+ // =====================================================
+
+
+const scheduledTimestamp = toAdminTimestamp(
+  scheduledAt || null
+);
+
+if (scheduledAt && !scheduledTimestamp) {
   return {
     success: false,
-    message: "Scheduled time is in the past",
+    message: "Invalid scheduled time",
   };
 }
 
-const MIN_BUFFER_MS = 30 * 60 * 1000; // 30 minutes
-
+// Compare absolute timestamps, not formatted clock times.
 if (
   scheduledTimestamp &&
-  scheduledTimestamp.toMillis() < Date.now() + MIN_BUFFER_MS
+  scheduledTimestamp.toMillis() <= Date.now()
 ) {
   return {
     success: false,
-    message: "Please select a time at least 30 minutes from now",
+    message: "Scheduled time must be in the future",
   };
 }
+
+
 
 
 // =====================================================
@@ -341,7 +345,7 @@ dueAmount:
   // =====================================================
   // SYNC / OFFLINE (POS SAFE)
   // =====================================================
-  syncStatus: "SYNCED", //  default
+  syncStatus: "NEWONLINE", //  default
   lastSyncedAt: admin.firestore.FieldValue.serverTimestamp(),
 
   // =====================================================
@@ -375,14 +379,14 @@ dueAmount:
   // =====================================================
   // 8️⃣ SAVE ORDER MASTER
   // =====================================================
-  const orderMasterId = await addOrderToMaster(orderMasterData);
+  //const orderMasterId = await addOrderToMaster(orderMasterData);
+  const orderMasterId = await addOrderWithProducts(
+  orderMasterData,
+  cartWithTax,
+  userId!
+);
 
-  // =====================================================
-  // 9️⃣ SAVE ORDER PRODUCTS (WITH TAX SNAPSHOT)
-  // =====================================================
-  for (const product of cartWithTax) {
-    await addProductDraft(product, userId!, orderMasterId!);
-  }
+ 
 
   // ===================================================
 // 9.5️⃣ PROCESS INVENTORY

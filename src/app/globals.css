@@ -3,7 +3,6 @@
 /* text-[#64870d] */
 /* text-emerald-800 */
 
-
 .input-style-4 {
   @apply w-full rounded-xl border border-gray-200 bg-white px-3 py-2
   text-sm outline-none transition-all
@@ -29,9 +28,6 @@
 }
 
 
-
-
-
 .input-style1 {
   @apply border border-slate-300 rounded focus:outline-none py-[.5rem] px-1 text-slate-700 text-[.8rem];
 }
@@ -42,10 +38,6 @@
   @apply border border-gray-300 rounded-lg px-4 py-1 focus:outline-none focus:ring-2 focus:ring-[#64870d];
 } 
 
-
-.label-style-4 {
-  @apply text-sm font-medium text-gray-700;
-}
 
 .label-style{
   @apply text-gray-500  text-xs;
@@ -98,9 +90,7 @@
   @apply bg-[#121C1B]; /* Very dark teal slate background */
 }
 
-.sb-tab {
-  @apply text-slate-300 hover:bg-[#1C2B29]; /* Soft slate hover */
-}
+
 
 .sb-tab-active {
   @apply bg-[#00897B] text-white shadow-md; /* Main active tab color */
@@ -388,7 +378,7 @@ button:disabled {
 
 
 /* category product slider */
-/* ✅ Add this to your globals.css */
+/*  Add this to your globals.css */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }

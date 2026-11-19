@@ -27,6 +27,7 @@
     "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
+    "date-fns-tz": "^3.2.0",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.4.0",
     "framer-motion": "^12.4.10",
@@ -62,5 +63,8 @@
     "tailwindcss": "^4",
     "ts-prune": "^0.10.3",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "@next/swc-win32-x64-msvc": "^16.0.8"
   }
 }

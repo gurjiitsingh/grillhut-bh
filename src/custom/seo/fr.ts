@@ -1,7 +1,7 @@
 export const SEO = {
-  title: "Grill hut junction – ",
+  title: "Food App – ",
   description:
-    "Authentic Indian food at Grill hut junction Gifhorn. Order online for delivery or visit us in Lower Saxony.",
+    "Authentic Indian food at Food App Gifhorn. Order online for delivery or visit us in Lower Saxony.",
 };
 
 
@@ -11,15 +11,15 @@ export const BRANDING = {
   offer_instruction: "",
   delivery_note: "Delivery is also available.",
   home_page_disclaimer:"",// "Food may differ from image.",
-  brand: "Grill hut junction",
+  brand: "Food App",
   tag_line: "",
-  brand_name: "Grill hut junction ",
+  brand_name: "Food App ",
    poweredBy: "Powered by",
     poweredByUrl: "http://www.gstadeveloper.com",
     copyright: {
       prefix: "Copyright ©",
       suffix: "All Rights Reserved by",
-      company: "Grill hut junction "
+      company: "Food App "
     },
 
 
@@ -30,7 +30,7 @@ export const BRANDING = {
   copyright: {
     prefix: "Copyright ©",
     suffix: "All Rights Reserved by",
-    company: "Grill hut junction ",
+    company: "Food App ",
   },
 },
 

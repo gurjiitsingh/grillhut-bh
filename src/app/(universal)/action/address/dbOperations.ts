@@ -63,40 +63,147 @@ export async function editCustomerAddress(formData: FormData) {
 }
 
 //  Search address by email
-export async function searchAddressEmail(email: string): Promise<addressResType | null> {
-  console.log("INSIDE : searchAddressEmail ------------------", email)
-if (!email) return null;
+ 
+export async function searchAddressEmail(
+  email: string
+): Promise<addressResType | null> {
+  console.log("INSIDE : searchAddressEmail ------------------", email);
 
-const value = email.trim();
- const field = value.includes("@") ? "email" : "mobNo";
+  if (!email) return null;
+
+  const value = email.trim();
+  const field = value.includes("@") ? "email" : "mobNo";
+
   const querySnapshot = await adminDb
     .collection("address")
-     .where(field, "==", value)
-   // .where("email", "==", email)
+    .where(field, "==", value)
     .get();
 
   if (querySnapshot.empty) return null;
 
   const doc = querySnapshot.docs[0];
   const docData = doc.data();
-console.log("data---------------------",docData)
+
+  console.log("data---------------------", docData);
+
+  // Support Firestore Timestamp, Date, ISO string, and numeric timestamps.
+  const rawCreatedAt = docData.createdAt;
+
+  let createdAt = "";
+
+  if (rawCreatedAt) {
+    if (typeof rawCreatedAt.toDate === "function") {
+      // Firestore Timestamp
+      createdAt = rawCreatedAt.toDate().toISOString();
+    } else if (rawCreatedAt instanceof Date) {
+      // JavaScript Date
+      createdAt = Number.isNaN(rawCreatedAt.getTime())
+        ? ""
+        : rawCreatedAt.toISOString();
+    } else if (
+      typeof rawCreatedAt === "string" ||
+      typeof rawCreatedAt === "number"
+    ) {
+      // ISO string or Unix timestamp in milliseconds
+      const date = new Date(rawCreatedAt);
+
+      createdAt = Number.isNaN(date.getTime())
+        ? ""
+        : date.toISOString();
+    }
+  }
+
   return {
     id: doc.id,
-    addressLine1: docData.addressLine1 || '',
-    addressLine2: docData.addressLine2 || '',
-    city: docData.city || '',
-    state: docData.state || '',
-    zipCode: docData.zipCode || '',
-    email: docData.email || '',
-    firstName: docData.firstName || '',
-    lastName: docData.lastName || '',
-    mobNo: docData.mobNo || '',
-    userId: docData.userId || '',
-    createdAt: docData.createdAt?.toDate().toISOString() || '',
+    addressLine1: docData.addressLine1 || "",
+    addressLine2: docData.addressLine2 || "",
+    city: docData.city || "",
+    state: docData.state || "",
+    zipCode: docData.zipCode || "",
+    email: docData.email || "",
+    firstName: docData.firstName || "",
+    lastName: docData.lastName || "",
+    mobNo: docData.mobNo || "",
+    userId: docData.userId || "",
+
+    // SPAIN / ADDITIONAL ADDRESS
+    portal: docData.portal || "",
+    staircase: docData.staircase || "",
+    floor: docData.floor || "",
+    door: docData.door || "",
+    deliveryNotes: docData.deliveryNotes || "",
+
+    createdAt,
   };
 }
+ 
 
+ 
 export async function searchAddressByMob(
+  mobNo: string
+): Promise<addressResType | null> {
+  console.log("mobNo--------------------", mobNo);
+
+  const querySnapshot = await adminDb
+    .collection("address")
+    .where("mobNo", "==", mobNo)
+    .limit(1)
+    .get();
+
+  if (querySnapshot.empty) return null;
+
+  const doc = querySnapshot.docs[0];
+  const docData = doc.data();
+
+  // Handle Firestore Timestamp, Date, ISO string, and numeric timestamps.
+  const rawCreatedAt = docData.createdAt;
+  let createdAt = "";
+
+  if (rawCreatedAt) {
+    if (typeof rawCreatedAt.toDate === "function") {
+      createdAt = rawCreatedAt.toDate().toISOString();
+    } else if (rawCreatedAt instanceof Date) {
+      createdAt = Number.isNaN(rawCreatedAt.getTime())
+        ? ""
+        : rawCreatedAt.toISOString();
+    } else if (
+      typeof rawCreatedAt === "string" ||
+      typeof rawCreatedAt === "number"
+    ) {
+      const date = new Date(rawCreatedAt);
+
+      createdAt = Number.isNaN(date.getTime())
+        ? ""
+        : date.toISOString();
+    }
+  }
+
+  return {
+    id: doc.id,
+    addressLine1: docData.addressLine1 || "",
+    addressLine2: docData.addressLine2 || "",
+    city: docData.city || "",
+    state: docData.state || "",
+    zipCode: docData.zipCode || "",
+    email: docData.email || "",
+    firstName: docData.firstName || "",
+    lastName: docData.lastName || "",
+    mobNo: docData.mobNo || "",
+    userId: docData.userId || "",
+
+    // SPAIN / ADDITIONAL ADDRESS
+    portal: docData.portal || "",
+    staircase: docData.staircase || "",
+    floor: docData.floor || "",
+    door: docData.door || "",
+    deliveryNotes: docData.deliveryNotes || "",
+
+    createdAt,
+  };
+}
+ 
+
+export async function findAddressByMob_old(
   mobNo: string
 ): Promise<addressResType | null> {
 
@@ -126,35 +233,70 @@ export async function searchAddressByMob(
     createdAt: docData.createdAt?.toDate().toISOString() || "",
   };
 }
+
 
 export async function findAddressByMob(
   mobNo: string
 ): Promise<addressResType | null> {
+  // Normalize mobile number
+  let normalizedMob = mobNo.replace(/\D/g, "");
+
+  // India: +91 / 91 / leading 0
+  if (normalizedMob.startsWith("91") && normalizedMob.length === 12) {
+    normalizedMob = normalizedMob.substring(2);
+  } else if (
+    normalizedMob.startsWith("0") &&
+    normalizedMob.length === 11
+  ) {
+    normalizedMob = normalizedMob.substring(1);
+  }
+
+  // Spain: +34 / 34
+  if (normalizedMob.startsWith("34") && normalizedMob.length === 11) {
+    normalizedMob = normalizedMob.substring(2);
+  }
 
   const querySnapshot = await adminDb
     .collection("address")
-    .where("mobNo", "==", mobNo)
+    .where("mobNo", "==", normalizedMob)
     .limit(1)
     .get();
 
-  if (querySnapshot.empty) return null;
+  if (querySnapshot.empty) {
+    return null;
+  }
 
   const doc = querySnapshot.docs[0];
   const docData = doc.data();
 
   return {
     id: doc.id,
+
+    // Common address fields
     addressLine1: docData.addressLine1 || "",
     addressLine2: docData.addressLine2 || "",
     city: docData.city || "",
     state: docData.state || "",
     zipCode: docData.zipCode || "",
+
+    // Customer
     email: docData.email || "",
     firstName: docData.firstName || "",
     lastName: docData.lastName || "",
-    mobNo: docData.mobNo || "",
+    mobNo: docData.mobNo || normalizedMob,
     userId: docData.userId || "",
-    createdAt: docData.createdAt?.toDate().toISOString() || "",
+
+    // Spain / additional address fields
+    portal: docData.portal || "",
+    staircase: docData.staircase || "",
+    floor: docData.floor || "",
+    door: docData.door || "",
+    deliveryNotes: docData.deliveryNotes || "",
+
+    // Created date
+    createdAt: docData.createdAt?.toDate
+      ? docData.createdAt.toDate().toISOString()
+      : "",
   };
 }
 
@@ -253,26 +395,65 @@ export async function addCustomerAddressDirect(formData: FormData) {
 export async function addCustomerAddressDirectPrimaryMOB(
   formData: FormData
 ): Promise<string | null> {
-
   const receivedData = {
-    email: formData.get("email")?.toString() || "dummy@maill.com",
-    firstName: formData.get("firstName")?.toString() || "",
-    lastName: formData.get("lastName")?.toString() || "",
-    userId: formData.get("userId")?.toString() || "",
-    mobNo: formData.get("mobNo")?.toString() || "",
-    password: formData.get("password")?.toString() || "",
-    addressLine1: formData.get("addressLine1")?.toString() || "",
-    addressLine2: formData.get("addressLine2")?.toString() || "",
-    city: formData.get("city")?.toString() || "",
-    state: formData.get("state")?.toString() || "",
-    zipCode: formData.get("zipCode")?.toString() || "",
+    email:
+      formData.get("email")?.toString() || "dummy@maill.com",
+
+    firstName:
+      formData.get("firstName")?.toString() || "",
+
+    lastName:
+      formData.get("lastName")?.toString() || "",
+
+    userId:
+      formData.get("userId")?.toString() || "",
+
+    mobNo:
+      formData.get("mobNo")?.toString() || "",
+
+    password:
+      formData.get("password")?.toString() || "",
+
+    addressLine1:
+      formData.get("addressLine1")?.toString() || "",
+
+    addressLine2:
+      formData.get("addressLine2")?.toString() || "",
+
+    city:
+      formData.get("city")?.toString() || "",
+
+    state:
+      formData.get("state")?.toString() || "",
+
+    zipCode:
+      formData.get("zipCode")?.toString() || "",
+
+    // Spain / additional address fields
+    portal:
+      formData.get("portal")?.toString() || "",
+
+    staircase:
+      formData.get("staircase")?.toString() || "",
+
+    floor:
+      formData.get("floor")?.toString() || "",
+
+    door:
+      formData.get("door")?.toString() || "",
+
+    deliveryNotes:
+      formData.get("deliveryNotes")?.toString() || "",
   };
 
-  // 🛡 Validate (ZIP optional)
+  // Validate using the common address schema
   const result = addressSchimaCheckout.safeParse(receivedData);
-  if (!result.success || !receivedData.mobNo) return null;
 
-  // 🔍 1️⃣ Search address by mobile number
+  if (!result.success || !receivedData.mobNo) {
+    return null;
+  }
+
+  // Search existing address by mobile
   const querySnapshot = await adminDb
     .collection("address")
     .where("mobNo", "==", receivedData.mobNo)
@@ -281,16 +462,23 @@ export async function addCustomerAddressDirectPrimaryMOB(
 
   const recordId = querySnapshot.docs[0]?.id;
 
-  // 📦 2️⃣ If address exists → return existing id
-  if (recordId) return recordId;
+  // Address already exists
+  if (recordId) {
+    return recordId;
+  }
 
-  // ✍️ 3️⃣ Otherwise create new
+  // Create new address
   const addressData = {
     ...receivedData,
     createdAt: FieldValue.serverTimestamp(),
   };
 
-  const docRef = await adminDb.collection("address").add(addressData);
+  const docRef = await adminDb
+    .collection("address")
+    .add(addressData);
 
   return docRef.id;
 }
+
+
+ 

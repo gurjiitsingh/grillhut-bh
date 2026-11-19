@@ -119,21 +119,32 @@ export type cartDataT = {
 
 export type purchaseDataT = {
   userId: string | undefined;
-  cartData: ProductType[];
-  total: number;
-  totalDiscountG: number;
+
+  cartData?: ProductType[];
+  total?: number;
+  totalDiscountG?: number;
+
   address: {
     firstName: string;
     lastName: string;
-    //   password:string;
+
     userId: string | undefined;
     email: string;
     mobNo: string;
+
     addressLine1: string | undefined;
     addressLine2: string | undefined;
+
     city: string;
     state: string;
     zipCode: string;
+
+    // Spain / additional address fields
+    portal?: string;
+    staircase?: string;
+    floor?: string;
+    door?: string;
+    deliveryNotes?: string;
   };
 };
 
@@ -147,7 +158,14 @@ export type orderDataType = {
   email: string;
 
   tableNo: string | null;          // Only for DINE_IN
-  orderType: "DINE_IN" | "TAKEAWAY" | "DELIVERY" | "ONLINE";
+ orderType:
+  | "DELIVERY"
+  | "PICKUP"
+  | "DINE_IN"
+  | "TAKEAWAY"
+  | "ONLINE"
+  | "ONLINE-PICKUP"
+  | "ONLINE-DELIVERY";
 
   // -----------------------------
   // CART SNAPSHOT (REQUIRED)
