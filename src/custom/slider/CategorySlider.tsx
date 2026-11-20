@@ -95,76 +95,161 @@ useEffect(() => {
   };
 
   return (
-    <div id="order_now" className="scroll-mt-24 relative max-w-7xl mx-auto  px-4 sm:px-6 lg:px-12 my-6">
-      {/* Arrows */}
-      <button
-        onClick={() => scroll("left")}
-        className="absolute opacity-[65%] left-0 top-[37%] -translate-y-1/2 z-10 bg-gray-300 text-white p-2 sm:p-3 rounded-full  transition shadow-md"
-        aria-label="Scroll Left"
-      >
-        <FaChevronLeft className="text-sm sm:text-base" />
-      </button>
-
-      <button
-        onClick={() => scroll("right")}
-        className="absolute opacity-[65%] right-0 top-[37%] -translate-y-1/2 z-10 bg-gray-300 text-white p-2 sm:p-3 rounded-full  transition shadow-md"
-        aria-label="Scroll Right"
-      >
-        <FaChevronRight className="text-sm sm:text-base" />
-      </button>
-
-      {/* Category scroll area */}
-      <div
-        ref={scrollRef}
-        className="flex gap-3 sm:gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide justify-start px-0"
-      >
-        {categoryData.length > 0 ? (
-          categoryData.map((category) => {
-            const isActive = displayCategory === category.id;
-      return (
-  <div key={category.id} className="flex-shrink-0 snap-start">
+  <div
+    id="order_now"
+    className="scroll-mt-24 relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 my-6"
+  >
+    {/* Left Arrow */}
     <button
-      onClick={() => setProductCategoryIdG(category.id)}
-      className={`group w-[120px] sm:w-[140px] h-[170px] bg-white rounded-xl  transition-all duration-300 ease-in-out flex flex-col items-center justify-start gap-3`}
+      onClick={() => scroll("left")}
+      className="
+        absolute opacity-90 left-1 sm:left-2 top-[37%]
+        -translate-y-1/2 z-10
+        bg-[#F28C28]
+        text-[#171310]
+        p-2 sm:p-3
+        rounded-full
+        shadow-lg shadow-black/20
+        hover:bg-[#FF9F3D]
+        transition
+      "
+      aria-label="Scroll Left"
     >
-      <div
-        className={`${
-          isActive
-            ? "relative rounded-xl overflow-hidden bg-gray-100 shadow-inner border-slate-200 border-2"
-            : "relative rounded-xl overflow-hidden bg-gray-100 shadow-inner"
-        } w-full h-[100px] sm:h-[110px]`}
-      >
-        <img
-          src={category.image || "/com.jpg"}
-          alt={category.name || "Category"}
-          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-        />
-      </div>
-
-      <span
-        className={`text-center text-[14px] font-bold leading-tight ${
-          isActive
-            ? "text-zinc-700"
-            : "text-slate-500 group-hover:text-slate-400"
-        }`}
-      >
-        {category.name}
-      </span>
+      <FaChevronLeft className="text-sm sm:text-base" />
     </button>
+
+    {/* Right Arrow */}
+    <button
+      onClick={() => scroll("right")}
+      className="
+        absolute opacity-90 right-1 sm:right-2 top-[37%]
+        -translate-y-1/2 z-10
+        bg-[#F28C28]
+        text-[#171310]
+        p-2 sm:p-3
+        rounded-full
+        shadow-lg shadow-black/20
+        hover:bg-[#FF9F3D]
+        transition
+      "
+      aria-label="Scroll Right"
+    >
+      <FaChevronRight className="text-sm sm:text-base" />
+    </button>
+
+    {/* Category Scroll Area */}
+    <div
+      ref={scrollRef}
+      className="
+        flex
+        gap-3 sm:gap-4
+        overflow-x-auto
+        scroll-smooth
+        snap-x snap-mandatory
+        scrollbar-hide
+        justify-start
+        px-1
+        py-2
+      "
+    >
+      {categoryData.length > 0 ? (
+        categoryData.map((category) => {
+          const isActive = displayCategory === category.id;
+
+          return (
+            <div
+              key={category.id}
+              className="flex-shrink-0 snap-start"
+            >
+              <button
+                onClick={() => setProductCategoryIdG(category.id)}
+                className={`
+                  group
+                  w-[120px] sm:w-[140px]
+                  h-[170px]
+                  rounded-xl
+                  transition-all duration-300 ease-in-out
+                  flex flex-col items-center justify-start gap-3
+                  border
+                  ${
+                    isActive
+                      ? "bg-[#33271F] border-[#F28C28]/70 shadow-lg shadow-black/20"
+                      : "bg-[#211B17] border-[#FFF3E3]/10 hover:border-[#F28C28]/40 hover:bg-[#2A211B]"
+                  }
+                `}
+              >
+                {/* Category Image */}
+                <div
+                  className={`
+                    relative
+                    w-full
+                    h-[100px] sm:h-[110px]
+                    rounded-xl
+                    overflow-hidden
+                    bg-[#171310]
+                    ${
+                      isActive
+                        ? "border-2 border-[#F28C28]"
+                        : "border border-[#FFF3E3]/10"
+                    }
+                  `}
+                >
+                  <img
+                    src={category.image || "/com.jpg"}
+                    alt={category.name || "Category"}
+                    className="
+                      w-full h-full
+                      object-cover
+                      transition-transform duration-300
+                      group-hover:scale-105
+                    "
+                  />
+
+                  {isActive && (
+                    <div className="absolute inset-0 bg-[#F28C28]/10 pointer-events-none" />
+                  )}
+                </div>
+
+                {/* Category Name */}
+                <span
+                  className={`
+                    text-center
+                    text-[14px]
+                    font-bold
+                    leading-tight
+                    px-2
+                    transition-colors
+                    ${
+                      isActive
+                        ? "text-[#F28C28]"
+                        : "text-[#FFF3E3] group-hover:text-[#FF9F3D]"
+                    }
+                  `}
+                >
+                  {category.name}
+                </span>
+              </button>
+            </div>
+          );
+        })
+      ) : (
+        /* Skeleton Loader */
+        [...Array(4)].map((_, i) => (
+          <div
+            key={i}
+            className="
+              w-[130px] h-[150px]
+              bg-[#211B17]
+              border border-[#FFF3E3]/10
+              animate-pulse
+              rounded-xl
+              flex-shrink-0
+              snap-start
+            "
+          />
+        ))
+      )}
+    </div>
   </div>
 );
-
-          })
-        ) : (
-          // Skeleton Loader
-          [...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="w-[130px] h-[150px] bg-gray-100 animate-pulse rounded-xl flex-shrink-0 snap-start"
-            />
-          ))
-        )}
-      </div>
-    </div>
-  );
 }
